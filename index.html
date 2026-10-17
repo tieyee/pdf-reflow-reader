@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fbfaf7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reflow">
+<meta name="description" content="Read PDF books on your phone with reflowed, resizable text. Free, no account, nothing uploaded.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Reflow PDF Reader</title>
+<style>
+:root{--size:19px;--lh:1.6;--margin:20px;--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6e6a62;--line:#e4e0d6;--card:#fff;--accent:#2f5d50;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,"Noto Serif",serif;color-scheme:light}
+[data-theme=sepia]{--bg:#f3ead6;--fg:#3a2f22;--muted:#7a6a55;--line:#e0d3b8;--card:#f8f1e1;--accent:#8a5523}
+[data-theme=dark]{--bg:#121211;--fg:#dcd8cf;--muted:#948f85;--line:#2e2d2a;--card:#1c1b19;--accent:#8fc1a9;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,label.btn{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,label.btn:focus-within,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:22px;border:1px solid var(--line);background:var(--card)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+
+/* Library */
+#library{max-width:640px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left));min-height:100vh}
+.lhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.lhead h1{margin:0;font:600 28px/1.1 var(--serif);letter-spacing:-.01em}
+.sub{margin:0 0 20px;color:var(--muted);font-size:14px}
+#status{min-height:1.4em;margin:0 0 12px;color:var(--muted);font-size:14px}
+#shelf{list-style:none;margin:0;padding:0}
+.book{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.book .open{flex:1;min-width:0;text-align:left;padding:14px 16px;background:none;border:0}
+.book .t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 17px/1.3 var(--serif)}
+.pbar{display:block;height:4px;margin:10px 0 6px;border-radius:2px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--accent)}
+.book .meta{font-size:13px;color:var(--muted)}
+.book .del{width:52px;flex:none;background:none;border:0;border-left:1px solid var(--line);color:var(--muted);font-size:18px}
+.empty{color:var(--muted);text-align:center;padding:48px 16px;border:2px dashed var(--line);border-radius:14px}
+body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
+
+/* Reader */
+.rbar{position:fixed;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:4px;padding:env(safe-area-inset-top) max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));
+  background:var(--bg);border-bottom:1px solid var(--line);transition:transform .2s}
+.rbar button{min-width:44px;height:44px;padding:0 10px;background:none;border:0;border-radius:8px;font-size:15px}
+.rbar #back{font-size:28px;line-height:1}
+#rtitle{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;color:var(--muted)}
+#reader.hide .rbar{transform:translateY(-100%)}
+#reader.hide #pos{opacity:0}
+#settings{position:fixed;z-index:6;top:calc(52px + env(safe-area-inset-top));right:8px;left:8px;max-width:360px;margin-left:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 8px 30px rgba(0,0,0,.18)}
+#settings label{display:block;font-size:14px;margin-bottom:12px}
+#settings input[type=range]{display:block;width:100%;margin-top:6px;accent-color:var(--accent)}
+.themes{display:flex;gap:8px}
+.themes button{flex:1;height:44px;border-radius:10px;border:2px solid var(--line)}
+.themes [data-t=light]{background:#fbfaf7;color:#1d1d1b}.themes [data-t=sepia]{background:#f3ead6;color:#3a2f22}.themes [data-t=dark]{background:#121211;color:#dcd8cf}
+.themes [aria-pressed=true]{border-color:var(--accent)}
+#text{max-width:calc(34em + 2 * var(--margin));margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) max(var(--margin),env(safe-area-inset-right)) 35vh max(var(--margin),env(safe-area-inset-left));
+  font-family:var(--serif);font-size:var(--size);line-height:var(--lh);overflow-wrap:break-word}
+#text p{margin:0 0 .75em}
+#text h2{font-size:1.45em;line-height:1.25;margin:2.2em 0 1em}
+#text h3{font-size:1.15em;line-height:1.3;margin:1.8em 0 .6em}
+#text .c{text-align:center}
+#text .note{font-size:.82em;color:var(--muted)}
+#text .sep::before{content:"\2042";display:block;text-align:center;color:var(--muted);margin:.6em 0 1em}
+#text figure{margin:1.2em 0}
+#text .pg{background:#fff;border:1px solid var(--line)}
+#text .pg img{display:block;width:100%;height:auto}
+#text figcaption{font:13px/1.4 system-ui,sans-serif;color:var(--muted);margin-top:6px;text-align:center}
+#pos{position:fixed;bottom:0;left:0;right:0;padding:4px 12px calc(4px + env(safe-area-inset-bottom));text-align:center;font-size:12px;color:var(--muted);background:var(--bg);transition:opacity .2s}
+
+/* Original page overlay */
+#orig{position:fixed;inset:0;z-index:10;overflow:auto;background:var(--bg)}
+.obar{position:sticky;top:0;display:flex;align-items:center;gap:4px;padding:env(safe-area-inset-top) 8px 0;background:var(--bg);border-bottom:1px solid var(--line)}
+.obar button{min-width:44px;height:44px;background:none;border:0;font-size:22px}
+.obar .done{font-size:15px;font-weight:600;color:var(--accent);margin-left:auto}
+#opage{font-size:14px;color:var(--muted)}
+#ocanvas{display:block;margin:16px auto calc(16px + env(safe-area-inset-bottom));max-width:100%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="library">
+  <div class="lhead">
+    <h1>Reflow</h1>
+    <label class="btn primary">Add PDF<input id="file" type="file" accept="application/pdf,.pdf" multiple hidden></label>
+  </div>
+  <p class="sub">PDF books as resizable text. Everything stays on this device.</p>
+  <p id="status" role="status" aria-live="polite"></p>
+  <ul id="shelf"></ul>
+  <p id="empty" class="empty">Add a PDF, or drop one here.<br>Nothing is uploaded: your books and progress are stored only in this browser.</p>
+</main>
+
+<div id="reader" hidden>
+  <header class="rbar">
+    <button id="back" aria-label="Back to library">&lsaquo;</button>
+    <span id="rtitle"></span>
+    <button id="origBtn" aria-label="View original page">Original</button>
+    <button id="setBtn" aria-label="Text settings" aria-expanded="false">Aa</button>
+  </header>
+  <div id="settings" hidden>
+    <label>Text size <input id="s-size" type="range" min="14" max="34" step="1"></label>
+    <label>Line spacing <input id="s-lh" type="range" min="1.2" max="2.2" step="0.05"></label>
+    <label>Margins <input id="s-margin" type="range" min="4" max="64" step="2"></label>
+    <div class="themes" role="group" aria-label="Theme">
+      <button data-t="light">Light</button><button data-t="sepia">Sepia</button><button data-t="dark">Dark</button>
+    </div>
+  </div>
+  <article id="text"></article>
+  <footer id="pos" aria-live="off"></footer>
+</div>
+
+<div id="orig" hidden role="dialog" aria-label="Original page">
+  <div class="obar">
+    <button id="oprev" aria-label="Previous page">&lsaquo;</button>
+    <span id="opage"></span>
+    <button id="onext" aria-label="Next page">&rsaquo;</button>
+    <button class="done" id="oclose">Done</button>
+  </div>
+  <canvas id="ocanvas"></canvas>
+</div>
+
+<script id="reflow-core">
+// Reflow core: pure functions, no DOM, no pdf.js. Coordinates are page space with y pointing down.
+// Self-check: `node test/selftest.mjs` (or Reflow.selfTest() in the console).
+const Reflow = (() => {
+  'use strict';
+  const HEAD = 1.18;                                  // heading if the line's main font is >= 1.18 x body size
+  const ENDS = /[.!?…]['"”’»)\]]*$|[—–-]['"”’]$/u;   // line ends a sentence
+  const WORD = /[\p{L}\p{N}](?:[\p{L}\p{N}'’-]*[\p{L}\p{N}])?/gu;
+  const ROMAN = /^(?=[ivxlcdm]+$)m{0,3}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/i;
+  const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0; };
+
+  function isPageNum(t) {
+    const m = t.trim().match(/^[-–—\s]*(?:page\s*)?([0-9]{1,4}|[ivxlcdm]{1,7})(?:\s*(?:of|\/)\s*[0-9]{1,4})?[-–—\s]*$/i);
+    return !!m && (/^[0-9]/.test(m[1]) || ROMAN.test(m[1]));
+  }
+
+  // 1) Text items {str, x, y (baseline), w, size} -> lines {text, x, xEnd, y, size}, top to bottom.
+  function lines(items) {
+    const its = items.filter(i => i.str).sort((a, b) => a.y - b.y || a.x - b.x), groups = [];
+    for (const it of its) {
+      const g = groups[groups.length - 1];
+      if (g && Math.abs(it.y - g.y) < 0.45 * Math.max(it.size, g.max)) {
+        g.items.push(it);
+        if (it.size > g.max) { g.max = it.size; g.y = it.y; }
+      } else groups.push({ y: it.y, max: it.size, items: [it] });
+    }
+    return groups.map(g => {
+      g.items.sort((a, b) => a.x - b.x);
+      let text = '', end = -Infinity, x = Infinity, last = null;
+      const chars = new Map();
+      for (const it of g.items) {
+        const s = it.str;
+        if (!s.trim()) { if (text && !/\s$/.test(text)) text += ' '; continue; }
+        if (last && s === last.str && Math.abs(it.x - last.x) < 0.2 * it.size) continue;   // fake bold: same text printed twice
+        if (text && !/\s$/.test(text) && !/^\s/.test(s) && it.x - end > 0.15 * it.size) text += ' ';
+        text += s; end = Math.max(end, it.x + it.w); x = Math.min(x, it.x); last = it;
+        const k = Math.round(it.size * 2) / 2;
+        chars.set(k, (chars.get(k) || 0) + s.length);
+      }
+      const size = [...chars].sort((a, b) => b[1] - a[1])[0];
+      return { text: text.replace(/\s+/g, ' ').trim(), x, xEnd: end, y: g.y, size: size ? size[0] : g.max };
+    }).filter(l => l.text);
+  }
+
+  // Body font size (most characters) and normal line pitch (median baseline gap of body lines).
+  function stats(pages) {
+    const hist = new Map(), gaps = [];
+    for (const pg of pages) for (const l of pg.lines) {
+      const k = Math.round(l.size * 2) / 2;
+      hist.set(k, (hist.get(k) || 0) + l.text.length);
+    }
+    const top = [...hist].sort((a, b) => b[1] - a[1])[0], body = top ? top[0] : 12;
+    const isBody = l => Math.abs(l.size - body) < 0.15 * body;
+    for (const pg of pages) for (let i = 1; i < pg.lines.length; i++) {
+      const a = pg.lines[i - 1], b = pg.lines[i], gap = b.y - a.y;
+      if (isBody(a) && isBody(b) && gap > 0.6 * body && gap < 3 * body) gaps.push(gap);
+    }
+    return { body, pitch: median(gaps) || body * 1.2 };
+  }
+
+  // 2) Running headers, footers and page numbers. Only the top 2 and bottom 2 lines of a page are candidates.
+  // Removed if: a page number; or the same text (digits ignored) on >= 20% of pages; or it is set apart from
+  // the body by a gap and either its text repeats on >= 3 pages or its position repeats on >= 30% of pages.
+  function strip(pages, st) {
+    const n = pages.length, cands = [], byText = new Map(), byTextIso = new Map(), byPosIso = new Map();
+    const add = (m, k, p) => { let s = m.get(k); if (!s) m.set(k, s = new Set()); s.add(p); };
+    pages.forEach((pg, p) => {
+      const L = pg.lines, k = L.length, topN = Math.min(2, Math.ceil(k / 2));
+      for (const i of new Set([0, 1, k - 2, k - 1])) {
+        if (i < 0 || i >= k) continue;
+        const l = L[i];
+        if (l.size >= HEAD * st.body || !/[\p{L}\p{N}]/u.test(l.text)) continue;   // keep headings and "* * *"
+        const top = i < topN;
+        const gap = top ? (L[i + 1] ? L[i + 1].y - l.y : Infinity) : (L[i - 1] ? l.y - L[i - 1].y : Infinity);
+        const c = {
+          p, i, iso: gap > 1.6 * st.pitch,
+          text: l.text.toLowerCase().replace(/[0-9]+/g, '#').replace(/\s+/g, ' '),
+          pos: (top ? 't' : 'b') + Math.round((top ? l.y : pg.h - l.y) / 3),
+        };
+        cands.push(c);
+        add(byText, c.text, p);
+        if (c.iso) { add(byTextIso, c.text, p); add(byPosIso, c.pos, p); }
+      }
+    });
+    const drop = pages.map(() => new Set()), removed = [];
+    for (const c of cands) {
+      const l = pages[c.p].lines[c.i];
+      if (isPageNum(l.text) || byText.get(c.text).size >= Math.max(3, 0.2 * n) ||
+          c.iso && (byTextIso.get(c.text).size >= 3 || l.text.length <= 100 && byPosIso.get(c.pos).size >= Math.max(3, 0.3 * n))) {
+        drop[c.p].add(c.i); removed.push(l.text);
+      }
+    }
+    return { pages: pages.map((pg, p) => Object.assign({}, pg, { lines: pg.lines.filter((_, i) => !drop[p].has(i)) })), removed };
+  }
+
+  // 3) Lines -> blocks. Paragraph breaks come from first-line indent, extra vertical gap, short last lines,
+  // centring and font-size changes. Paragraphs continue across page breaks (footnotes in between are skipped).
+  function blocks(pages, st) {
+    const { body, pitch } = st, isBody = l => Math.abs(l.size - body) < 0.15 * body;
+    const geo = pages.map(pg => {
+      const bl = pg.lines.filter(isBody), xs = new Map();
+      for (const l of bl) { const k = Math.round(l.x); xs.set(k, (xs.get(k) || 0) + 1); }
+      const rep = [...xs].filter(e => e[1] >= 2).map(e => e[0]);
+      return { left: rep.length ? Math.min(...rep) : null, right: bl.length ? Math.max(...bl.map(l => l.xEnd)) : null, nb: bl.length };
+    });
+    const full = geo.filter(g => g.nb >= 5 && g.left != null);
+    const W = median(full.map(g => g.right - g.left)) || Math.max(1, ...pages.map(pg => pg.w)) * 0.75;
+    const parity = [0, 1].map(r => median(full.filter(g => geo.indexOf(g) % 2 === r).map(g => g.left)));
+    geo.forEach((g, p) => {      // pages with few body lines (or only indented ones) use the margin of same-parity pages
+      const pl = parity[p % 2] || parity[1 - p % 2];
+      const minX = pages[p].lines.length ? Math.min(...pages[p].lines.map(l => l.x)) : 0;
+      if (g.left == null || pl && (g.nb < 5 || g.left > pl + 0.5 * body)) g.left = pl || minX;
+      g.right = g.left + W;
+    });
+    let indented = 0, total = 0;
+    pages.forEach((pg, p) => { for (const l of pg.lines) if (isBody(l)) { total++; const d = l.x - geo[p].left; if (d > 0.5 * body && d < 0.35 * W) indented++; } });
+    const usesIndent = total > 0 && indented / total > 0.03;
+
+    const info = (l, g) => {
+      const ind = l.x - g.left, blank = g.right - l.xEnd;
+      const centered = ind > 0.1 * W && blank > 0.1 * W && Math.abs(ind - blank) < 0.1 * W;
+      return { l, blank, centered, ends: ENDS.test(l.text), kind: l.size >= HEAD * body ? 'h' : l.size < 0.88 * body ? 'n' : 'p',
+        indented: !centered && ind > 0.5 * l.size && ind < 0.35 * W };
+    };
+    const out = [];
+    let cur = null, prev = null, lastP = null;      // lastP: last body paragraph, for continuing across a page break
+    pages.forEach((pg, p) => {
+      if (pg.image) { out.push({ t: 'img', page: p, w: Math.round(pg.w), h: Math.round(pg.h) }); cur = prev = lastP = null; return; }
+      const g = geo[p];
+      pg.lines.forEach((l, i) => {
+        const c = info(l, g);
+        if (i === 0) { cur = c.kind === 'p' && lastP ? lastP.b : null; prev = cur ? lastP.c : null; }
+        let start = !cur || c.kind !== cur.t, sep = false;
+        if (!start) {
+          const gap = i ? l.y - prev.l.y : 0, scale = Math.max(l.size, prev.l.size) / body;
+          if (c.kind === 'h') start = !(i && Math.abs(l.size - prev.l.size) < 0.1 * l.size && gap < 1.8 * l.size && !prev.ends);
+          else {
+            // At a page break a block-paragraph document (no indents) gives no gap to look at: a sentence ending
+            // short of the right margin is taken as the paragraph's end.
+            // A lower-case start after an unfinished line is the same sentence, whatever the layout says.
+            start = !(/^\p{Ll}/u.test(l.text) && !prev.ends) && (c.centered || prev.centered
+              || i > 0 && gap > 1.45 * pitch * scale
+              || c.indented && (!prev.indented || prev.ends || prev.blank > 0.1 * W)
+              || prev.blank > 0.45 * W
+              || prev.ends && (prev.blank > 0.25 * W || i === 0 && !usesIndent && prev.blank > 0.04 * W));
+            sep = i > 0 && gap > 2.4 * pitch * scale;
+          }
+        }
+        if (start) {
+          cur = { t: c.kind, page: p, lines: [], size: l.size };
+          if (c.centered) cur.center = 1;
+          if (sep) cur.sep = 1;
+          out.push(cur);
+          if (c.kind === 'h') lastP = null;
+        }
+        cur.lines.push(l.text);
+        prev = c;
+        if (c.kind === 'p') lastP = { b: cur, c };
+      });
+    });
+
+    // Words seen whole (and the parts of hyphenated ones), used to decide line-end hyphens. The fragments on
+    // either side of a line-end hyphen are left out, or "hap-/pened" would make "pened" look like a word.
+    const vocab = new Set();
+    for (const b of out) if (b.lines) b.lines.forEach((s, k) => {
+      const toks = s.match(WORD) || [], cut = w => /\p{L}[-­‐]$/u.test(w || '');
+      for (let j = cut(b.lines[k - 1]) ? 1 : 0; j < toks.length - (cut(s) ? 1 : 0); j++) {
+        const t = toks[j].toLowerCase();
+        vocab.add(t);
+        if (t.includes('-')) for (const part of t.split('-')) vocab.add(part);
+      }
+    });
+    return out.map(b => {
+      if (b.t === 'img') return b;
+      const o = { t: b.t, page: b.page, text: join(b.lines, vocab) };
+      if (b.t === 'h') { if (o.text.length > 150 || b.lines.length > 3) o.t = 'p'; else o.lvl = b.size >= 1.35 * body ? 1 : 2; }
+      if (b.center) o.center = 1;
+      if (b.sep) o.sep = 1;
+      return o;
+    }).filter(b => b.t === 'img' || b.text);
+  }
+
+  // Join a paragraph's lines. Line-end hyphen: drop it ("hap-/pened") unless the document suggests a real
+  // compound ("snow-/heavy": hyphenated form seen elsewhere, or both halves are words and the joined form is not).
+  function join(ls, vocab) {
+    let out = '';
+    for (const raw of ls) {
+      const s = raw.trim();
+      if (!s) continue;
+      if (!out) { out = s; continue; }
+      const a = out.match(/(\p{L}+)[-­‐]$/u), b = s.match(/^\p{L}+/u);
+      if (a && b) {
+        const A = a[1].toLowerCase(), B = b[0].toLowerCase();
+        const keep = !out.endsWith('­') && (vocab.has(A + '-' + B) ||
+          !vocab.has(A + B) && (/^\p{Lu}/u.test(b[0]) || vocab.has(A) && vocab.has(B)));
+        out = keep ? out + s : out.slice(0, -1) + s;
+      } else if (/\S[—–]$/u.test(out) || /^[—–]\S/u.test(s)) out += s;
+      else out += ' ' + s;
+    }
+    return out;
+  }
+
+  // pages: [{lines, w, h, image?}] -> {blocks: [{t:'p'|'h'|'n'|'img', page, text, lvl?, center?, sep?}], removed}
+  function reflow(pages) {
+    const st = stats(pages), s = strip(pages, st);
+    return { blocks: blocks(s.pages, st), removed: s.removed };
+  }
+
+  function selfTest() {
+    const eq = (a, b, m) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(m + ':\n  got  ' + JSON.stringify(a) + '\n  want ' + JSON.stringify(b)); };
+    // lines: grouping, spaces from gaps, superscript joins its line, fake-bold duplicate dropped
+    eq(lines([
+      { str: 'world', x: 43, y: 100, w: 30, size: 10 }, { str: 'Hello', x: 10, y: 100, w: 30, size: 10 },
+      { str: '2', x: 73.5, y: 96, w: 4, size: 6 }, { str: 'Next', x: 10, y: 112, w: 20, size: 10 },
+      { str: 'Next', x: 10.5, y: 112, w: 20, size: 10 },
+    ]).map(l => l.text), ['Hello world2', 'Next'], 'lines');
+    // joining and hyphens
+    const v = new Set(['snow', 'heavy', 'inside', 'in', 'side', 'court-trained']);
+    eq(join(['the snow-', 'heavy sky'], v), 'the snow-heavy sky', 'compound kept');
+    eq(join(['it hap-', 'pened'], v), 'it happened', 'break hyphen dropped');
+    eq(join(['went in-', 'side'], v), 'went inside', 'joined form known');
+    eq(join(['a court-', 'trained man'], v), 'a court-trained man', 'hyphenated form known');
+    eq(join(['old gods', '—and I'], v), 'old gods—and I', 'em dash');
+    eq(join(['soft­', 'ware'], v), 'software', 'soft hyphen');
+    eq(isPageNum('xii') && isPageNum('Page 3 of 9') && isPageNum('— 12 —') && !isPageNum('mild') && !isPageNum('Did'), true, 'page numbers');
+
+    // A 6-page book: running header and page number on every page, a chapter heading, indented paragraphs that
+    // carry over page breaks, one page (2) ending exactly at a full stop, and a footnote on page 3.
+    const R = 310, words = ['amber', 'birch', 'cedar', 'dune', 'ember', 'fjord'];
+    const mk = (text, y, o = {}) => ({ text, x: o.x || 10, y, size: o.size || 10, xEnd: o.full === false ? (o.x || 10) + text.length * 5 : R });
+    const pages = words.map((w, p) => {
+      const L = [mk('The Lantern Keeper', 20, { x: 110, full: false })];
+      let y = 50;
+      const add = (text, o) => { L.push(mk(text, y, o)); y += 12; };
+      if (p === 0) { L.push(mk('Chapter One', 50, { x: 120, size: 18, full: false })); y = 90; }
+      if (p > 0 && p !== 3) add(`the ${w} road home.`, { full: false });      // end of the paragraph from the last page
+      add(`The ${w} lamp was lit at dusk`, { x: 25 }); add('and burned until the morning'); add('came at last.', { full: false });
+      add(`Then the ${w} keeper spoke`, { x: 25 }); add(p === 2 ? 'and the page ended exactly.' : `of the ${w} journey down`);
+      if (p === 3) L.push(mk('1. A footnote.', 300, { size: 8, full: false }));
+      L.push(mk(String(p + 1), 380, { x: 155, full: false }));
+      return { lines: L, w: 320, h: 400 };
+    });
+    const r = reflow(pages);
+    eq(r.removed.length, 12, 'header + page number removed on every page');
+    const want = ['h:Chapter One'];
+    words.forEach((w, p) => {
+      want.push(`The ${w} lamp was lit at dusk and burned until the morning came at last.`,
+        p === 2 ? 'Then the cedar keeper spoke and the page ended exactly.'
+          : `Then the ${w} keeper spoke of the ${w} journey down` + (p === 5 ? '' : ` the ${words[p + 1]} road home.`));
+      if (p === 3) want.push('n:1. A footnote.');
+    });
+    eq(r.blocks.map(b => (b.t === 'p' ? '' : b.t + ':') + b.text), want, 'paragraphs');
+    // One-page cases; a leading space marks an indented line.
+    const one = ls => reflow([{ w: 320, h: 400, lines: ls.map((t, i) => mk(t.trim(), 50 + 12 * i, { x: t[0] === ' ' ? 25 : 10 })) }]).blocks.map(b => b.text);
+    // Hyphen decisions use the document's own words; fragments next to a line-end hyphen don't count as words.
+    eq(one([' A half-forgotten tune on snow-heavy hills was half-for-', 'gotten by the snow-', 'heavy hills, and it hap-', 'pened.']),
+      ['A half-forgotten tune on snow-heavy hills was half-forgotten by the snow-heavy hills, and it happened.'], 'document vocabulary');
+    // An indented line that starts in lower case after an unfinished one continues it (centred copyright pages).
+    eq(one(['Margin line that ends here.', ' The notice says you may not copy', ' this book in any form.', ' Next paragraph', 'ends at the margin.']),
+      ['Margin line that ends here.', 'The notice says you may not copy this book in any form.', 'Next paragraph ends at the margin.'], 'lower-case continuation');
+    return true;
+  }
+
+  return { lines, stats, strip, blocks, join, reflow, isPageNum, selfTest };
+})();
+</script>
+
+<script type="module">
+const V = 1;   // bump when Reflow output changes: cached reflow results are rebuilt on next open
+const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/';
+const DATA = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/';       // CJK cmaps + standard fonts (not on cdnjs)
+// pdf.js 4.10 calls Promise.withResolvers (iOS 17.4+). Polyfill it here and inside the worker for older iPhones.
+const POLY = 'Promise.withResolvers||(Promise.withResolvers=function(){let a,b;const p=new Promise((x,y)=>{a=x;b=y});return{promise:p,resolve:a,reject:b}});';
+Promise.withResolvers ||= function () { let a, b; const promise = new Promise((x, y) => { a = x; b = y; }); return { promise, resolve: a, reject: b }; };
+
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const status = msg => { $('#status').textContent = msg; };
+
+let pdfjs;
+async function lib() {
+  if (pdfjs) return pdfjs;
+  pdfjs = await import(CDN + 'pdf.min.mjs');
+  // Same-origin blob worker (cross-origin worker URLs aren't allowed) that polyfills, then loads the CDN worker.
+  const src = POLY + `await import(${JSON.stringify(CDN + 'pdf.worker.min.mjs')});`;
+  pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+  return pdfjs;
+}
+const openPdf = async data => (await lib()).getDocument({ data, isEvalSupported: false, cMapUrl: DATA + 'cmaps/', cMapPacked: true, standardFontDataUrl: DATA + 'standard_fonts/' }).promise;
+
+// ---- Storage: IndexedDB stores meta (shelf info + position), files (PDF bytes), text (reflowed blocks) ----
+let db;
+try {
+  db = await new Promise((res, rej) => {
+    const r = indexedDB.open('reflow', 1);
+    r.onupgradeneeded = () => { for (const s of ['meta', 'files', 'text']) r.result.createObjectStore(s); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+} catch { status("This browser is blocking local storage (private mode?), so books can't be saved."); }
+const tx = (store, mode, fn) => new Promise((res, rej) => {
+  const t = db.transaction(store, mode), req = fn(t.objectStore(store));
+  t.oncomplete = () => res(req.result); t.onerror = t.onabort = () => rej(t.error);
+});
+const get = (s, k) => tx(s, 'readonly', o => o.get(k));
+const put = (s, k, v) => tx(s, 'readwrite', o => o.put(v, k));
+const del = (s, k) => tx(s, 'readwrite', o => o.delete(k));
+
+// ---- Settings ----
+const DEF = { size: 19, lh: 1.6, margin: 20, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' };
+let prefs = DEF;
+try { prefs = { ...DEF, ...JSON.parse(localStorage.getItem('reflow-settings')) }; } catch {}
+function applyPrefs() {
+  const r = document.documentElement;
+  r.style.setProperty('--size', prefs.size + 'px'); r.style.setProperty('--lh', prefs.lh); r.style.setProperty('--margin', prefs.margin + 'px');
+  r.dataset.theme = prefs.theme;
+  $('meta[name=theme-color]').content = getComputedStyle(r).getPropertyValue('--bg').trim();
+  $('#s-size').value = prefs.size; $('#s-lh').value = prefs.lh; $('#s-margin').value = prefs.margin;
+  for (const b of document.querySelectorAll('.themes button')) b.setAttribute('aria-pressed', b.dataset.t === prefs.theme);
+}
+function changePrefs(patch) {
+  const a = book && anchor();
+  prefs = { ...prefs, ...patch }; applyPrefs();
+  if (a) restore(a);
+  try { localStorage.setItem('reflow-settings', JSON.stringify(prefs)); } catch {}
+}
+applyPrefs();
+for (const k of ['size', 'lh', 'margin']) $('#s-' + k).oninput = e => changePrefs({ [k]: +e.target.value });
+for (const b of document.querySelectorAll('.themes button')) b.onclick = () => changePrefs({ theme: b.dataset.t });
+
+// ---- Library ----
+async function shelf() {
+  if (!db) return;
+  const books = (await tx('meta', 'readonly', o => o.getAll())).sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
+  $('#shelf').replaceChildren(...books.map(m => {
+    const li = el('li', 'book'), open = el('button', 'open'), rm = el('button', 'del', '✕'), bar = el('span', 'pbar');
+    bar.append(el('i')); bar.firstChild.style.width = (m.pct || 0) + '%';
+    open.append(el('span', 't', m.title), bar, el('span', 'meta', `${m.pct || 0}% read · page ${m.page || 1} of ${m.pages}`));
+    open.onclick = () => openBook(m.id);
+    rm.setAttribute('aria-label', 'Delete ' + m.title);
+    rm.onclick = async () => {
+      if (!confirm(`Delete “${m.title}” from this device?`)) return;
+      await Promise.all(['meta', 'files', 'text'].map(s => del(s, m.id)));
+      shelf();
+    };
+    li.append(open, rm);
+    return li;
+  }));
+  $('#empty').hidden = books.length > 0;
+}
+
+function cleanTitle(t) {
+  t = (t || '').trim();
+  return t.length > 2 && !/\.(pdf|docx?|indd|tex|rtf)$/i.test(t) && !/^(untitled|microsoft word)/i.test(t) ? t : '';
+}
+
+async function addFiles(files) {
+  if (!db) return;
+  navigator.storage?.persisted?.().then(p => p || navigator.storage.persist()).catch(() => {});   // keep books from being evicted
+  for (const f of files) {
+    if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { status(`“${f.name}” isn't a PDF.`); continue; }
+    const id = f.name + ':' + f.size;
+    if (await get('meta', id)) { status(`“${f.name}” is already on your shelf.`); continue; }
+    try {
+      const buf = await f.arrayBuffer();
+      const r = await processPdf(buf.slice(0), (n, of) => status(`Reading “${f.name}”: page ${n} of ${of}…`));
+      await put('files', id, buf);
+      await put('text', id, r.text);
+      await put('meta', id, { id, title: r.title || f.name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim(), pages: r.text.numPages, page: 1, pct: 0, added: Date.now() });
+      status('');
+    } catch (e) {
+      await Promise.all(['files', 'text'].map(s => del(s, id))).catch(() => {});
+      status(e?.name === 'PasswordException' ? `“${f.name}” is password-protected, which isn't supported.`
+        : e?.name === 'QuotaExceededError' ? 'There is not enough free storage on this device for that PDF.'
+        : `Couldn't read “${f.name}”: ${e?.message || e}`);
+    }
+    await shelf();
+  }
+}
+$('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+addEventListener('dragover', e => { e.preventDefault(); if (!book) document.body.classList.add('drag'); });
+addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('drag'); });
+addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('drag'); if (!book) addFiles([...e.dataTransfer.files]); });
+
+// ---- PDF -> reflowed blocks (runs once per book, result cached in IndexedDB) ----
+async function processPdf(buf, progress) {
+  const doc = await openPdf(buf), N = doc.numPages, pages = [];
+  try {
+    for (let n = 1; n <= N; n++) {
+      const page = await doc.getPage(n), vp = page.getViewport({ scale: 1 }), tc = await page.getTextContent(), items = [];
+      for (const it of tc.items) {
+        if (!it.str) continue;
+        const t = pdfjs.Util.transform(vp.transform, it.transform);       // viewport space: rotation applied, y down
+        if (it.str.trim() && (t[0] <= 0 || Math.abs(t[1]) > 0.1 * t[0])) continue;   // vertical / mirrored text
+        items.push({ str: it.str, x: t[4], y: t[5], w: it.width, size: Math.hypot(t[2], t[3]) });
+      }
+      const lines = Reflow.lines(items);
+      pages.push({ lines, w: vp.width, h: vp.height, chars: lines.reduce((s, l) => s + l.text.length, 0) });
+      page.cleanup();
+      if (n % 5 === 0 || n === N) progress(n, N);
+    }
+    // Pages with almost no text become image blocks if they paint something (cover, map, scanned page).
+    const O = pdfjs.OPS, IMG = new Set([O.paintImageXObject, O.paintInlineImageXObject, O.paintImageMaskXObject, O.paintImageXObjectRepeat,
+      O.paintImageMaskXObjectRepeat, O.paintInlineImageXObjectGroup, O.paintImageMaskXObjectGroup, O.paintSolidColorImageMask]);
+    for (const [i, p] of pages.entries()) {
+      if (p.chars >= 40) continue;
+      const ops = (await (await doc.getPage(i + 1)).getOperatorList()).fnArray;
+      p.image = ops.some(f => IMG.has(f)) || ops.filter(f => f === O.constructPath).length > 20;
+    }
+    const r = Reflow.reflow(pages), info = (await doc.getMetadata().catch(() => null))?.info;
+    return { title: cleanTitle(info?.Title), text: { v: V, numPages: N, scan: pages.filter(p => p.image).length >= N / 2, blocks: r.blocks, removed: r.removed.length } };
+  } finally { doc.destroy(); }
+}
+
+// ---- Reader ----
+let book = null, els = [];   // book: {id, meta, text, doc, urls, io}; els: one element per block
+const reader = $('#reader');
+
+async function openBook(id, push = true) {
+  const meta = await get('meta', id);
+  if (!meta) return;
+  let text = await get('text', id);
+  if (!text || text.v !== V) {
+    try { text = (await processPdf(await get('files', id), (n, of) => status(`Updating reflow: page ${n} of ${of}…`))).text; }
+    catch (e) { return status(`Couldn't open this book: ${e?.message || e}`); }
+    await put('text', id, text); status('');
+  }
+  book = { id, meta, text, doc: null, urls: [] };
+  if (push) history.pushState({ book: id }, '');
+  $('#library').hidden = true; reader.hidden = false;
+  $('#rtitle').textContent = meta.title;
+  render();
+  restore(meta.pos);
+  requestAnimationFrame(() => { restore(meta.pos); reader.classList.toggle('hide', scrollY > 80); });
+  meta.opened = Date.now(); put('meta', id, meta);
+}
+
+function render() {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); drawPage(e.target); } }), { rootMargin: '1200px 0px' });
+  book.io = io;
+  els = book.text.blocks.map((b, i) => {
+    let e;
+    if (b.t === 'img') {
+      e = el('figure'); const pg = el('div', 'pg'); pg.style.aspectRatio = b.w + ' / ' + b.h; e.append(pg);
+      if (book.text.scan) e.append(el('figcaption', '', "This page is a scan, so reflow isn't supported yet."));
+      io.observe(e);
+    } else {
+      e = el(b.t === 'h' ? (b.lvl === 1 ? 'h2' : 'h3') : 'p', [b.center && 'c', b.sep && 'sep', b.t === 'n' && 'note'].filter(Boolean).join(' '), b.text);
+    }
+    e.dataset.i = i; e.dataset.p = b.page;
+    return e;
+  });
+  if (!els.length) els = [el('p', 'c', 'No readable text was found in this PDF. Use “Original” to view its pages.')];
+  $('#text').replaceChildren(...els);
+  showPos();
+}
+
+const getDoc = () => book.doc ||= get('files', book.id).then(openPdf);
+
+async function drawPage(fig) {
+  const b = book, box = fig.firstChild, doc = await getDoc(), c = document.createElement('canvas');
+  await renderPage(doc, +fig.dataset.p, c, box.clientWidth);
+  c.toBlob(blob => {
+    if (book !== b || !blob) return;
+    const img = new Image(), url = URL.createObjectURL(blob); b.urls.push(url);
+    img.src = url; img.alt = 'Page ' + (+fig.dataset.p + 1); box.append(img); c.width = c.height = 0;
+  }, 'image/jpeg', 0.85);
+}
+
+async function renderPage(doc, p, canvas, cssWidth, task) {
+  const page = await doc.getPage(p + 1), w = page.getViewport({ scale: 1 }).width;
+  const vp = page.getViewport({ scale: cssWidth * Math.min(devicePixelRatio || 1, 2) / w });
+  canvas.width = Math.floor(vp.width); canvas.height = Math.floor(vp.height); canvas.style.width = cssWidth + 'px';
+  const t = page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
+  if (task) task.current = t;
+  await t.promise;
+}
+
+// Position = first block whose bottom is below the viewport top, plus how far into it we are (negative when
+// the viewport top sits in the margin above it).
+function anchor() {
+  let lo = 0, hi = els.length - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (els[m].getBoundingClientRect().bottom <= 0) lo = m + 1; else hi = m; }
+  const r = els[lo].getBoundingClientRect();
+  return { i: lo, f: r.height ? -r.top / r.height : 0 };
+}
+function restore(pos) {
+  const e = pos && els[pos.i];
+  if (!e) return scrollTo(0, 0);
+  const r = e.getBoundingClientRect();
+  scrollTo(0, scrollY + r.top + pos.f * r.height);
+}
+function where() {
+  const a = anchor(), N = book.text.numPages, atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+  const page = atEnd ? N : (+els[a.i].dataset.p || 0) + 1;
+  return { pos: a, page, pct: Math.round(page / N * 100) };
+}
+function showPos() { const w = where(); $('#pos').textContent = `Page ${w.page} of ${book.text.numPages} · ${w.pct}%`; }
+async function savePos() {
+  if (!book) return;
+  const w = where(), m = book.meta;
+  m.pos = w.pos; m.page = w.page; m.pct = w.pct;
+  await put('meta', book.id, m).catch(() => {});
+}
+
+let raf = 0, saveT = 0, lastY = 0;
+addEventListener('scroll', () => {
+  if (!book) return;
+  const y = scrollY;
+  if (Math.abs(y - lastY) > 8) { reader.classList.toggle('hide', y > lastY && y > 80 && $('#settings').hidden); lastY = y; }
+  if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (book) showPos(); });
+  clearTimeout(saveT); saveT = setTimeout(savePos, 400);
+}, { passive: true });
+addEventListener('pagehide', savePos);
+document.addEventListener('visibilitychange', () => { if (document.hidden) savePos(); });
+$('#text').onclick = () => { if (!getSelection().toString()) reader.classList.toggle('hide'); };
+
+$('#setBtn').onclick = () => {
+  const s = $('#settings'); s.hidden = !s.hidden;
+  $('#setBtn').setAttribute('aria-expanded', !s.hidden);
+};
+
+async function closeBook(pop = false) {
+  if (!book) return;
+  await savePos();
+  book.io?.disconnect(); book.urls.forEach(URL.revokeObjectURL);
+  book.doc?.then(d => d.destroy()).catch(() => {});
+  book = null; els = [];
+  $('#text').replaceChildren(); $('#settings').hidden = true; $('#orig').hidden = true;
+  reader.hidden = true; reader.classList.remove('hide'); $('#library').hidden = false;
+  scrollTo(0, 0);
+  if (!pop && history.state?.book) history.back();
+  shelf();
+}
+$('#back').onclick = () => closeBook();
+addEventListener('popstate', () => { if (book && !history.state?.book) closeBook(true); });
+
+// ---- Original page view ----
+let origP = 0;
+const origTask = { current: null };
+async function showOrig(p) {
+  const doc = await getDoc();
+  origP = Math.max(0, Math.min(doc.numPages - 1, p));
+  $('#orig').hidden = false;
+  $('#opage').textContent = `Page ${origP + 1} of ${doc.numPages}`;
+  origTask.current?.cancel();
+  const c = $('#ocanvas'); c.dataset.page = '';
+  try { await renderPage(doc, origP, c, Math.min(innerWidth - 16, 900), origTask); c.dataset.page = origP + 1; }
+  catch (e) { if (e?.name !== 'RenderingCancelledException') throw e; }
+}
+$('#origBtn').onclick = () => showOrig(where().page - 1);
+$('#oprev').onclick = () => showOrig(origP - 1);
+$('#onext').onclick = () => showOrig(origP + 1);
+$('#oclose').onclick = () => { $('#orig').hidden = true; };
+
+await shelf();
+if (history.state?.book) openBook(history.state.book, false);   // reload while reading: reopen at the saved spot
+</script>
+</body>
+</html>
