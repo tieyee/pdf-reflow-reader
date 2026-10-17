@@ -13,10 +13,12 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Reflow PDF Reader</title>
 <style>
-:root{--size:19px;--lh:1.6;--margin:20px;--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6e6a62;--line:#e4e0d6;--card:#fff;--accent:#2f5d50;
+:root{--size:19px;--lh:1.6;--margin:20px;--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6e6a62;--line:#e4e0d6;--card:#fff;--accent:#2f5d50;--danger:#a8322a;
+  --hover:rgba(29,29,27,.06);--ease:cubic-bezier(.2,.8,.2,1);
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,"Noto Serif",serif;color-scheme:light}
-[data-theme=sepia]{--bg:#f3ead6;--fg:#3a2f22;--muted:#7a6a55;--line:#e0d3b8;--card:#f8f1e1;--accent:#8a5523}
-[data-theme=dark]{--bg:#121211;--fg:#dcd8cf;--muted:#948f85;--line:#2e2d2a;--card:#1c1b19;--accent:#8fc1a9;color-scheme:dark}
+[data-theme=sepia]{--bg:#f3ead6;--fg:#3a2f22;--muted:#7a6a55;--line:#e0d3b8;--card:#f8f1e1;--accent:#8a5523;--danger:#9c3324;--hover:rgba(58,47,34,.07)}
+[data-theme=dark]{--bg:#121211;--fg:#dcd8cf;--muted:#948f85;--line:#2e2d2a;--card:#1c1b19;--accent:#8fc1a9;--danger:#f0a59e;--hover:rgba(220,216,207,.07);color-scheme:dark}
+::selection{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -26,22 +28,86 @@ button:focus-visible,label.btn:focus-within,input:focus-visible{outline:2px soli
 .btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:22px;border:1px solid var(--line);background:var(--card)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
 
+svg{display:block;flex:none}
+.btn{gap:6px}
+.btn svg{width:18px;height:18px;margin-left:-4px}
+.icon-btn{display:inline-grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:none;color:var(--muted);transition:background-color .15s,color .15s}
+.icon-btn svg{width:20px;height:20px}
+.icon-btn:hover{color:var(--fg);background:var(--hover)}
+.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
 /* Library */
-#library{max-width:640px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left));min-height:100vh}
-.lhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-.lhead h1{margin:0;font:600 28px/1.1 var(--serif);letter-spacing:-.01em}
-.sub{margin:0 0 20px;color:var(--muted);font-size:14px}
-#status{min-height:1.4em;margin:0 0 12px;color:var(--muted);font-size:14px}
-#shelf{list-style:none;margin:0;padding:0}
-.book{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
-.book .open{flex:1;min-width:0;text-align:left;padding:14px 16px;background:none;border:0}
-.book .t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 17px/1.3 var(--serif)}
-.pbar{display:block;height:4px;margin:10px 0 6px;border-radius:2px;background:var(--line);overflow:hidden}
-.pbar i{display:block;height:100%;background:var(--accent)}
-.book .meta{font-size:13px;color:var(--muted)}
-.book .del{width:52px;flex:none;background:none;border:0;border-left:1px solid var(--line);color:var(--muted);font-size:18px}
-.empty{color:var(--muted);text-align:center;padding:48px 16px;border:2px dashed var(--line);border-radius:14px}
+#library{max-width:980px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 64px max(16px,env(safe-area-inset-left));min-height:100vh}
+.lhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lhead h1{margin:0;font:600 30px/1.1 var(--serif);letter-spacing:-.015em}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+#status{min-height:1.4em;margin:10px 0 0;color:var(--muted);font-size:14px}
+.sec{margin-top:26px}
+.sech{display:flex;align-items:center;gap:8px;min-height:44px;margin:0 0 10px}
+.sech h2{margin:0;font:600 20px/1.2 var(--serif);letter-spacing:-.01em;overflow-wrap:anywhere}
+.sech .n{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.sech .icon-btn{margin:0 -10px 0 auto}
+.none{margin:0;padding:18px 0;color:var(--muted);font-size:14px}
+
+/* Continue reading: a swipeable row of the books in progress */
+.cont{display:flex;gap:12px;margin:0 -16px;padding:2px 16px 8px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none}
+.cont::-webkit-scrollbar{display:none}
+.citem{flex:0 0 min(320px,84%);scroll-snap-align:start;display:flex;gap:14px;align-items:center;padding:12px 14px 12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card);text-align:left;transition:border-color .15s}
+.citem:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.citem .cover{width:62px}
+.citem .info{flex:1;min-width:0}
+.citem .t{font:600 16px/1.3 var(--serif)}
+.citem .meta{display:block;margin-top:4px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pbar{display:block;height:3px;margin-top:10px;border-radius:2px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
+
+/* Shelves: a grid of covers */
+.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:20px 16px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:28px 24px}}
+.book{min-width:0}
+.book .open{display:block;width:100%;padding:0;border:0;background:none;text-align:left}
+.book .pbar{margin-top:8px}
+.book .t{min-height:2.6em;margin-top:8px;font:600 14px/1.3 var(--serif)}
+.brow{display:flex;align-items:center;justify-content:space-between;margin-top:1px}
+.brow .meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.brow .icon-btn{width:40px;height:36px;margin-right:-12px;border-radius:10px}
+.cover{position:relative;display:block;aspect-ratio:2/3;border-radius:2px 5px 5px 2px;overflow:hidden;background:var(--card);
+  box-shadow:0 1px 2px rgba(0,0,0,.14),0 8px 18px -8px rgba(0,0,0,.35);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.cover::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(255,255,255,.12) 2.5%,rgba(0,0,0,.04) 5%,transparent 9%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.cover img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.open:hover .cover{transform:translateY(-3px);box-shadow:0 2px 3px rgba(0,0,0,.12),0 16px 26px -10px rgba(0,0,0,.4)}
+.open:active .cover{transform:translateY(-1px) scale(.985)}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:14% 13% 16% 16%;overflow:hidden;
+  font:600 15px/1.2 var(--serif);color:var(--fg);background:linear-gradient(165deg,color-mix(in srgb,var(--accent) 22%,var(--card)),var(--card) 70%);hyphens:auto;-webkit-hyphens:auto}
+.ph::before{content:"";width:28%;height:2px;background:var(--accent)}
+.citem .ph{font-size:9px;padding:12% 10% 14% 14%;gap:4px}
+
+.empty{display:flex;flex-direction:column;align-items:center;margin-top:28px;padding:48px 24px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:16px}
+.empty svg{width:44px;height:44px;margin-bottom:14px;color:var(--accent)}
+.empty strong{font:600 20px/1.3 var(--serif);color:var(--fg)}
+.empty p{max-width:34ch;margin:6px 0 0;font-size:15px}
+#newShelf{margin-top:32px}
 body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
+
+/* Bottom sheet for book and shelf options */
+dialog.sheet{position:fixed;inset:auto 0 0;width:100%;max-width:520px;max-height:85vh;margin:0 auto;padding:10px 8px calc(12px + env(safe-area-inset-bottom));
+  border:0;border-radius:18px 18px 0 0;background:var(--card);color:var(--fg);box-shadow:0 -10px 34px rgba(0,0,0,.22);overflow:auto}
+dialog.sheet::backdrop{background:rgba(10,10,8,.4)}
+dialog.sheet[open],#settings:not([hidden]){animation:rise .24s var(--ease)}
+@keyframes rise{from{transform:translateY(28px);opacity:.5}}
+.sheet h2{margin:6px 12px 8px;font:600 17px/1.3 var(--serif)}
+.sheet .lbl{margin:10px 12px 2px;font-size:13px;color:var(--muted)}
+.sheet hr{border:0;border-top:1px solid var(--line);margin:6px 12px}
+.act{display:flex;align-items:center;gap:14px;width:100%;min-height:48px;padding:0 12px;border:0;border-radius:10px;background:none;text-align:left;font-size:16px;transition:background-color .15s}
+.act:hover{background:var(--hover)}
+.act svg{width:20px;height:20px;color:var(--muted)}
+.act span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act .on{color:var(--accent)}
+.act.danger,.act.danger svg{color:var(--danger)}
+.nameform{display:flex;gap:8px;padding:6px 12px 4px}
+.nameform input{flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:16px/1 inherit;font-family:inherit}
+.nameform input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
 
 /* Reader */
 .rbar{position:fixed;inset:0 0 auto;z-index:5;display:flex;align-items:center;gap:4px;padding:env(safe-area-inset-top) max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));
@@ -51,13 +117,32 @@ body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
 #rtitle{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;color:var(--muted)}
 #reader.hide .rbar{transform:translateY(-100%)}
 #reader.hide #pos{opacity:0}
-#settings{position:fixed;z-index:6;top:calc(52px + env(safe-area-inset-top));right:8px;left:8px;max-width:360px;margin-left:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 8px 30px rgba(0,0,0,.18)}
-#settings label{display:block;font-size:14px;margin-bottom:12px}
-#settings input[type=range]{display:block;width:100%;margin-top:6px;accent-color:var(--accent)}
-.themes{display:flex;gap:8px}
-.themes button{flex:1;height:44px;border-radius:10px;border:2px solid var(--line)}
-.themes [data-t=light]{background:#fbfaf7;color:#1d1d1b}.themes [data-t=sepia]{background:#f3ead6;color:#3a2f22}.themes [data-t=dark]{background:#121211;color:#dcd8cf}
-.themes [aria-pressed=true]{border-color:var(--accent)}
+.rbar svg{width:22px;height:22px;margin:auto}
+.rbar #setBtn{font:500 17px var(--serif)}
+.rbar #setBtn[aria-expanded=true]{color:var(--accent);background:var(--hover)}
+
+/* Reading settings: a sheet at the bottom, so the page above shows each change live */
+#settings{position:fixed;z-index:6;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;padding:14px max(20px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
+  border-radius:18px 18px 0 0;background:var(--card);box-shadow:0 -10px 34px rgba(0,0,0,.2)}
+#reader.set #pos{opacity:0}
+.size{display:flex;align-items:center;gap:6px}
+.size button{display:grid;place-items:center;width:44px;height:44px;flex:none;border:0;border-radius:50%;background:none;font-family:var(--serif);color:var(--fg)}
+.size button:hover{background:var(--hover)}
+#s-dn{font-size:15px}#s-up{font-size:25px}
+#s-size{flex:1;min-width:0;margin:0;accent-color:var(--accent)}
+#s-val{width:2.4ch;font-size:13px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 14px;margin-top:10px}
+.sl{display:block;margin:0 0 6px 2px;font-size:13px;color:var(--muted)}
+.seg{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.seg button{flex:1;display:grid;place-items:center;min-width:0;height:38px;padding:0;border:0;border-radius:9px;background:none;color:var(--muted);transition:background-color .15s,color .15s}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 18%,var(--card));color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.16)}
+.seg svg{width:22px;height:22px}
+.themes{gap:4px}
+.themes button{font:600 16px/1 var(--serif);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.themes button[data-t=light]{background:#fbfaf7;color:#1d1d1b}.themes button[data-t=sepia]{background:#f3ead6;color:#3a2f22}.themes button[data-t=dark]{background:#121211;color:#dcd8cf}
+.themes button[aria-pressed=true]{box-shadow:0 0 0 2px var(--accent)}
+[data-align=justify] #text p:not(.c){text-align:justify;-webkit-hyphens:auto;hyphens:auto}
 #text{max-width:calc(34em + 2 * var(--margin));margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) max(var(--margin),env(safe-area-inset-right)) 35vh max(var(--margin),env(safe-area-inset-left));
   font-family:var(--serif);font-size:var(--size);line-height:var(--lh);overflow-wrap:break-word}
 #text p{margin:0 0 .75em}
@@ -76,6 +161,7 @@ body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
 #orig{position:fixed;inset:0;z-index:10;overflow:auto;background:var(--bg)}
 .obar{position:sticky;top:0;display:flex;align-items:center;gap:4px;padding:env(safe-area-inset-top) 8px 0;background:var(--bg);border-bottom:1px solid var(--line)}
 .obar button{min-width:44px;height:44px;background:none;border:0;font-size:22px}
+.obar svg{width:24px;height:24px;margin:auto}
 .obar .done{font-size:15px;font-weight:600;color:var(--accent);margin-left:auto}
 #opage{font-size:14px;color:var(--muted)}
 #ocanvas{display:block;margin:16px auto calc(16px + env(safe-area-inset-bottom));max-width:100%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
@@ -86,27 +172,63 @@ body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
 <main id="library">
   <div class="lhead">
     <h1>Reflow</h1>
-    <label class="btn primary">Add PDF<input id="file" type="file" accept="application/pdf,.pdf" multiple hidden></label>
+    <label class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add PDF<input id="file" type="file" accept="application/pdf,.pdf" multiple hidden></label>
   </div>
   <p class="sub">PDF books as resizable text. Everything stays on this device.</p>
   <p id="status" role="status" aria-live="polite"></p>
-  <ul id="shelf"></ul>
-  <p id="empty" class="empty">Add a PDF, or drop one here.<br>Nothing is uploaded: your books and progress are stored only in this browser.</p>
+  <section id="contSec" class="sec" hidden>
+    <div class="sech"><h2>Continue reading</h2></div>
+    <div id="continue" class="cont"></div>
+  </section>
+  <div id="shelf"></div>
+  <button id="newShelf" class="btn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New shelf</button>
+  <div id="empty" class="empty" hidden>
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M8 9.5c5-2 11-2 16 1.5 5-3.5 11-3.5 16-1.5v28c-5-2-11-2-16 1.5-5-3.5-11-3.5-16-1.5z"/><path d="M24 11v28"/></svg>
+    <strong>Add your first book</strong>
+    <p>Choose a PDF with Add PDF, or drop one here. Nothing is uploaded: your books and progress stay in this browser.</p>
+  </div>
 </main>
+
+<dialog id="sheet" class="sheet" aria-labelledby="sheetTitle"><h2 id="sheetTitle" class="clamp"></h2><div id="sheetBody"></div></dialog>
 
 <div id="reader" hidden>
   <header class="rbar">
-    <button id="back" aria-label="Back to library">&lsaquo;</button>
+    <button id="back" aria-label="Back to library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
     <span id="rtitle"></span>
     <button id="origBtn" aria-label="View original page">Original</button>
-    <button id="setBtn" aria-label="Text settings" aria-expanded="false">Aa</button>
+    <button id="setBtn" aria-label="Reading settings" aria-expanded="false" aria-controls="settings">Aa</button>
   </header>
-  <div id="settings" hidden>
-    <label>Text size <input id="s-size" type="range" min="14" max="34" step="1"></label>
-    <label>Line spacing <input id="s-lh" type="range" min="1.2" max="2.2" step="0.05"></label>
-    <label>Margins <input id="s-margin" type="range" min="4" max="64" step="2"></label>
-    <div class="themes" role="group" aria-label="Theme">
-      <button data-t="light">Light</button><button data-t="sepia">Sepia</button><button data-t="dark">Dark</button>
+  <div id="settings" hidden role="group" aria-label="Reading settings">
+    <div class="size">
+      <button id="s-dn" aria-label="Smaller text">A</button>
+      <input id="s-size" type="range" min="14" max="34" step="1" aria-label="Text size">
+      <button id="s-up" aria-label="Larger text">A</button>
+      <span id="s-val" aria-hidden="true"></span>
+    </div>
+    <div class="sgrid">
+      <div><span class="sl" id="l-lh">Line spacing</span>
+        <div class="seg" data-k="lh" role="group" aria-labelledby="l-lh">
+          <button data-v="1.4" aria-label="Tight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 9h14M5 12h14M5 15h14"/></svg></button>
+          <button data-v="1.6" aria-label="Normal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7.5h14M5 12h14M5 16.5h14"/></svg></button>
+          <button data-v="1.85" aria-label="Relaxed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6h14M5 12h14M5 18h14"/></svg></button>
+          <button data-v="2.1" aria-label="Loose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4.5h14M5 12h14M5 19.5h14"/></svg></button>
+        </div></div>
+      <div><span class="sl" id="l-margin">Margins</span>
+        <div class="seg" data-k="margin" role="group" aria-labelledby="l-margin">
+          <button data-v="8" aria-label="Narrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M6.5 8.5h11M6.5 12h11M6.5 15.5h11"/></svg></button>
+          <button data-v="20" aria-label="Normal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M8 8.5h8M8 12h8M8 15.5h8"/></svg></button>
+          <button data-v="36" aria-label="Wide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M9.5 8.5h5M9.5 12h5M9.5 15.5h5"/></svg></button>
+          <button data-v="56" aria-label="Extra wide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M11 8.5h2M11 12h2M11 15.5h2"/></svg></button>
+        </div></div>
+      <div><span class="sl" id="l-align">Alignment</span>
+        <div class="seg" data-k="align" role="group" aria-labelledby="l-align">
+          <button data-v="start" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6.5h14M5 10.5h9M5 14.5h12M5 18.5h7"/></svg></button>
+          <button data-v="justify" aria-label="Justified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6.5h14M5 10.5h14M5 14.5h14M5 18.5h7"/></svg></button>
+        </div></div>
+      <div><span class="sl" id="l-theme">Theme</span>
+        <div class="seg themes" data-k="theme" role="group" aria-labelledby="l-theme">
+          <button data-v="light" data-t="light" aria-label="Light">Aa</button><button data-v="sepia" data-t="sepia" aria-label="Sepia">Aa</button><button data-v="dark" data-t="dark" aria-label="Dark">Aa</button>
+        </div></div>
     </div>
   </div>
   <article id="text"></article>
@@ -115,9 +237,9 @@ body.drag #library{outline:3px dashed var(--accent);outline-offset:-8px}
 
 <div id="orig" hidden role="dialog" aria-label="Original page">
   <div class="obar">
-    <button id="oprev" aria-label="Previous page">&lsaquo;</button>
+    <button id="oprev" aria-label="Previous page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
     <span id="opage"></span>
-    <button id="onext" aria-label="Next page">&rsaquo;</button>
+    <button id="onext" aria-label="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="done" id="oclose">Done</button>
   </div>
   <canvas id="ocanvas"></canvas>
@@ -412,12 +534,14 @@ async function lib() {
 }
 const openPdf = async data => (await lib()).getDocument({ data, isEvalSupported: false, cMapUrl: PDFJS + 'cmaps/', cMapPacked: true, standardFontDataUrl: PDFJS + 'standard_fonts/' }).promise;
 
-// ---- Storage: IndexedDB stores meta (shelf info + position), files (PDF bytes), text (reflowed blocks) ----
+// ---- Storage: IndexedDB stores meta (title, shelf, position), files (PDF bytes), text (reflowed blocks),
+// covers (page 1 as JPEG bytes, or null if it couldn't be drawn) and shelves ({id, name, order}) ----
 // Opened without awaiting, so every control is wired up at once (WebKit can take ~0.5 s to open it).
 let db;
+const BOOK_STORES = ['meta', 'files', 'text', 'covers'];
 const dbReady = new Promise((res, rej) => {
-  const r = indexedDB.open('reflow', 1);
-  r.onupgradeneeded = () => { for (const s of ['meta', 'files', 'text']) r.result.createObjectStore(s); };
+  const r = indexedDB.open('reflow', 2);
+  r.onupgradeneeded = () => { for (const s of [...BOOK_STORES, 'shelves']) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s); };
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 }).then(d => { db = d; }, () => status("This browser is blocking local storage (private mode?), so books can't be saved."));
 const tx = (store, mode, fn) => new Promise((res, rej) => {
@@ -427,18 +551,25 @@ const tx = (store, mode, fn) => new Promise((res, rej) => {
 const get = (s, k) => tx(s, 'readonly', o => o.get(k));
 const put = (s, k, v) => tx(s, 'readwrite', o => o.put(v, k));
 const del = (s, k) => tx(s, 'readwrite', o => o.delete(k));
+const all = s => tx(s, 'readonly', o => o.getAll());
+const keys = s => tx(s, 'readonly', o => o.getAllKeys());
 
 // ---- Settings ----
-const DEF = { size: 19, lh: 1.6, margin: 20, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' };
+const DEF = { size: 19, lh: 1.6, margin: 20, align: 'start', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' };
 let prefs = DEF;
 try { prefs = { ...DEF, ...JSON.parse(localStorage.getItem('reflow-settings')) }; } catch {}
 function applyPrefs() {
   const r = document.documentElement;
   r.style.setProperty('--size', prefs.size + 'px'); r.style.setProperty('--lh', prefs.lh); r.style.setProperty('--margin', prefs.margin + 'px');
-  r.dataset.theme = prefs.theme;
+  r.dataset.theme = prefs.theme; r.dataset.align = prefs.align;
   $('meta[name=theme-color]').content = getComputedStyle(r).getPropertyValue('--bg').trim();
-  $('#s-size').value = prefs.size; $('#s-lh').value = prefs.lh; $('#s-margin').value = prefs.margin;
-  for (const b of document.querySelectorAll('.themes button')) b.setAttribute('aria-pressed', b.dataset.t === prefs.theme);
+  $('#s-size').value = prefs.size; $('#s-val').textContent = prefs.size;
+  // Each choice group lights the option nearest the saved value (older saves can hold in-between numbers).
+  for (const g of document.querySelectorAll('#settings [data-k]')) {
+    const v = prefs[g.dataset.k], bs = [...g.querySelectorAll('button')];
+    const on = typeof v === 'number' ? bs.reduce((a, b) => Math.abs(b.dataset.v - v) < Math.abs(a.dataset.v - v) ? b : a) : bs.find(b => b.dataset.v === v);
+    for (const b of bs) b.setAttribute('aria-pressed', b === on);
+  }
 }
 function changePrefs(patch) {
   const a = book && anchor();
@@ -447,30 +578,163 @@ function changePrefs(patch) {
   try { localStorage.setItem('reflow-settings', JSON.stringify(prefs)); } catch {}
 }
 applyPrefs();
-for (const k of ['size', 'lh', 'margin']) $('#s-' + k).oninput = e => changePrefs({ [k]: +e.target.value });
-for (const b of document.querySelectorAll('.themes button')) b.onclick = () => changePrefs({ theme: b.dataset.t });
+$('#s-size').oninput = e => changePrefs({ size: +e.target.value });
+$('#s-dn').onclick = () => changePrefs({ size: Math.max(14, prefs.size - 1) });
+$('#s-up').onclick = () => changePrefs({ size: Math.min(34, prefs.size + 1) });
+for (const b of document.querySelectorAll('#settings [data-k] button'))
+  b.onclick = () => { const v = b.dataset.v; changePrefs({ [b.parentNode.dataset.k]: isNaN(v) ? v : +v }); };
 
 // ---- Library ----
+const svg = d => { const t = document.createElement('template');
+  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  return t.content.firstChild; };
+const ICON = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  more: '<circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  shelf: '<path d="M3.5 8a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+  tray: '<path d="M4 13.5 6.3 6h11.4l2.3 7.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18zM4 13.5h4.5l1 2h5l1-2H20"/>',
+  pencil: '<path d="M4.5 19.5h4l10-10-4-4-10 10zM13 7l4 4"/>',
+  trash: '<path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.9 11.6A1.5 1.5 0 0 0 8.9 20h6.2a1.5 1.5 0 0 0 1.5-1.4L17.5 7M9.5 7V4.5h5V7"/>',
+};
+const iconBtn = (name, label, fn) => { const b = el('button', 'icon-btn'); b.setAttribute('aria-label', label); b.append(svg(ICON[name])); b.onclick = fn; return b; };
+const progress = m => !m.pct ? 'New' : m.pct >= 100 ? 'Finished' : m.pct + '%';
+const bar = pct => { const b = el('span', 'pbar'), i = el('i'); i.style.width = pct + '%'; b.append(i); return b; };
+
+let coverUrls = [];
 async function shelf() {
   await dbReady;
   if (!db) return;
-  const books = (await tx('meta', 'readonly', o => o.getAll())).sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
-  $('#shelf').replaceChildren(...books.map(m => {
-    const li = el('li', 'book'), open = el('button', 'open'), rm = el('button', 'del', '✕'), bar = el('span', 'pbar');
-    bar.append(el('i')); bar.firstChild.style.width = (m.pct || 0) + '%';
-    open.append(el('span', 't', m.title), bar, el('span', 'meta', `${m.pct || 0}% read · page ${m.page || 1} of ${m.pages}`));
+  const [books, shelves, ck, cv] = await Promise.all([all('meta'), all('shelves'), keys('covers'), all('covers')]);
+  coverUrls.forEach(URL.revokeObjectURL); coverUrls = [];
+  const covers = new Map(ck.map((k, i) => [k, cv[i]]));
+  books.sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
+  shelves.sort((a, b) => a.order - b.order);
+
+  const cover = m => {
+    const c = el('span', 'cover'), bytes = covers.get(m.id);
+    if (bytes) { const img = el('img'), u = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); coverUrls.push(u); img.src = u; img.alt = ''; img.decoding = 'async'; c.append(img); }
+    else c.append(el('span', 'ph', m.title));
+    return c;
+  };
+  const reading = books.filter(m => m.pct > 0 && m.pct < 100).slice(0, 12);
+  $('#continue').replaceChildren(...reading.map(m => {
+    const b = el('button', 'citem'), info = el('span', 'info');
+    info.append(el('span', 't clamp', m.title), el('span', 'meta', `Page ${m.page} of ${m.pages} · ${m.pct}%`), bar(m.pct));
+    b.append(cover(m), info);
+    b.onclick = () => openBook(m.id);
+    return b;
+  }));
+  $('#contSec').hidden = !reading.length;
+
+  const tile = m => {
+    const li = el('li', 'book'), open = el('button', 'open'), row = el('div', 'brow');
+    open.append(cover(m));
+    if (m.pct > 0 && m.pct < 100) open.append(bar(m.pct));
+    open.append(el('span', 't clamp', m.title));
     open.onclick = () => openBook(m.id);
-    rm.setAttribute('aria-label', 'Delete ' + m.title);
-    rm.onclick = async () => {
-      if (!confirm(`Delete “${m.title}” from this device?`)) return;
-      await Promise.all(['meta', 'files', 'text'].map(s => del(s, m.id)));
-      shelf();
-    };
-    li.append(open, rm);
+    row.append(el('span', 'meta', progress(m)), iconBtn('more', 'Options for ' + m.title, () => bookMenu(m, shelves)));
+    li.append(open, row);
     return li;
+  };
+  const known = new Set(shelves.map(s => s.id)), groups = shelves.map(s => ({ s, books: books.filter(m => m.shelf === s.id) }));
+  const loose = books.filter(m => !known.has(m.shelf));
+  if (loose.length) groups.push({ s: null, books: loose });
+  $('#shelf').replaceChildren(...groups.map(({ s, books: list }) => {
+    const sec = el('section', 'sec'), head = el('div', 'sech');
+    head.append(el('h2', '', s ? s.name : shelves.length ? 'Unsorted' : 'All books'), el('span', 'n', list.length));
+    if (s) head.append(iconBtn('more', `Options for shelf ${s.name}`, () => shelfMenu(s)));
+    const grid = el('ul', 'grid');
+    grid.append(...list.map(tile));
+    sec.append(head, list.length ? grid : el('p', 'none', 'No books here yet. Open a book’s options to move it onto this shelf.'));
+    return sec;
   }));
   $('#empty').hidden = books.length > 0;
+  $('#newShelf').hidden = !books.length;
+  backfillCovers(books.filter(m => !covers.has(m.id)));
 }
+
+// Books added before covers existed get one in the background, one at a time.
+let filling = false;
+async function backfillCovers(list) {
+  if (filling || !list.length) return;
+  filling = true;
+  for (const m of list) {
+    let blob = null;
+    try {
+      const doc = await openPdf(await get('files', m.id));
+      try { blob = await makeCover(doc); } finally { doc.destroy(); }
+    } catch {}
+    await put('covers', m.id, blob).catch(() => {});   // null marks "tried", so a broken PDF isn't retried forever
+  }
+  filling = false;
+  if (!book) shelf();
+}
+
+// ---- Options sheet ----
+const sheet = $('#sheet');
+sheet.onclick = e => { if (e.target === sheet) sheet.close(); };   // tap outside the sheet closes it
+function openSheet(title, fill) {
+  $('#sheetTitle').textContent = title;
+  $('#sheetBody').replaceChildren();
+  fill($('#sheetBody'));
+  if (!sheet.open) sheet.showModal();
+}
+// One row of the sheet. fn returning false keeps the sheet open (it asked for a name, or a confirm was declined).
+function act(label, icon, fn, opts = {}) {
+  const b = el('button', 'act' + (opts.danger ? ' danger' : ''));
+  b.append(svg(ICON[icon]), el('span', '', label));
+  if (opts.on) { const c = svg(ICON.check); c.classList.add('on'); b.append(c); b.setAttribute('aria-current', 'true'); }
+  b.onclick = async () => { if (await fn() !== false) { sheet.close(); shelf(); } };
+  return b;
+}
+function askName(title, value, label, save, what = 'Shelf name', max = 60) {
+  openSheet(title, body => {
+    const f = el('form', 'nameform'), input = el('input'), ok = el('button', 'btn primary', label);
+    input.value = value; input.maxLength = max; input.placeholder = what; input.setAttribute('aria-label', what); input.enterKeyHint = 'done';
+    f.onsubmit = async e => {
+      e.preventDefault();
+      const name = input.value.trim();
+      if (!name) return input.focus();
+      await save(name); sheet.close(); shelf();
+    };
+    f.append(input, ok); body.append(f);
+    requestAnimationFrame(() => input.focus());
+  });
+  return false;
+}
+const addShelf = async name => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now() }; await put('shelves', s.id, s); return s.id; };
+async function moveBook(id, shelfId) {
+  const m = await get('meta', id);
+  if (shelfId) m.shelf = shelfId; else delete m.shelf;
+  await put('meta', id, m);
+}
+function bookMenu(m, shelves) {
+  openSheet(m.title, body => {
+    const here = shelves.some(s => s.id === m.shelf) ? m.shelf : null;
+    body.append(el('p', 'lbl', 'Shelf'));
+    for (const s of shelves) body.append(act(s.name, 'shelf', () => moveBook(m.id, s.id), { on: here === s.id }));
+    if (shelves.length) body.append(act('Unsorted', 'tray', () => moveBook(m.id, null), { on: !here }));
+    body.append(act('New shelf…', 'plus', () => askName('New shelf', '', 'Create', async name => moveBook(m.id, await addShelf(name)))),
+      el('hr'),
+      act('Rename book', 'pencil', () => askName('Rename book', m.title, 'Save',
+        async title => { const x = await get('meta', m.id); x.title = title; await put('meta', m.id, x); }, 'Book title', 200)),
+      act('Delete from this device', 'trash', async () => {
+        if (!confirm(`Delete “${m.title}” from this device? Its reading position goes too.`)) return false;
+        await Promise.all(BOOK_STORES.map(s => del(s, m.id)));
+      }, { danger: true }));
+  });
+}
+function shelfMenu(s) {
+  openSheet(s.name, body => body.append(
+    act('Rename shelf', 'pencil', () => askName('Rename shelf', s.name, 'Save', name => put('shelves', s.id, { ...s, name }))),
+    act('Delete shelf', 'trash', async () => {
+      if (!confirm(`Delete the shelf “${s.name}”? Its books move to Unsorted.`)) return false;
+      for (const m of await all('meta')) if (m.shelf === s.id) await moveBook(m.id, null);
+      await del('shelves', s.id);
+    }, { danger: true })));
+}
+$('#newShelf').onclick = () => askName('New shelf', '', 'Create', addShelf);
 
 function cleanTitle(t) {
   t = (t || '').trim();
@@ -490,10 +754,11 @@ async function addFiles(files) {
       const r = await processPdf(buf.slice(0), (n, of) => status(`Reading “${f.name}”: page ${n} of ${of}…`));
       await put('files', id, buf);
       await put('text', id, r.text);
+      await put('covers', id, r.cover);
       await put('meta', id, { id, title: r.title || f.name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim(), pages: r.text.numPages, page: 1, pct: 0, added: Date.now() });
       status('');
     } catch (e) {
-      await Promise.all(['files', 'text'].map(s => del(s, id))).catch(() => {});
+      await Promise.all(['files', 'text', 'covers'].map(s => del(s, id))).catch(() => {});
       status(e?.name === 'PasswordException' ? `“${f.name}” is password-protected, which isn't supported.`
         : e?.name === 'QuotaExceededError' ? 'There is not enough free storage on this device for that PDF.'
         : `Couldn't read “${f.name}”: ${e?.message || e}`);
@@ -505,6 +770,17 @@ $('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = '';
 addEventListener('dragover', e => { e.preventDefault(); if (!book) document.body.classList.add('drag'); });
 addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('drag'); });
 addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('drag'); if (!book) addFiles([...e.dataTransfer.files]); });
+
+// Page 1 drawn 360 px wide as JPEG bytes (~30 KB): the book's cover on the shelf. Stored as an ArrayBuffer,
+// not a Blob: some WebKit builds can't put Blobs in IndexedDB.
+async function makeCover(doc) {
+  const page = await doc.getPage(1), vp = page.getViewport({ scale: 360 / page.getViewport({ scale: 1 }).width });
+  const c = document.createElement('canvas');
+  c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+  await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  return blob ? blob.arrayBuffer() : null;
+}
 
 // ---- PDF -> reflowed blocks (runs once per book, result cached in IndexedDB) ----
 async function processPdf(buf, progress) {
@@ -532,7 +808,7 @@ async function processPdf(buf, progress) {
       p.image = ops.some(f => IMG.has(f)) || ops.filter(f => f === O.constructPath).length > 20;
     }
     const r = Reflow.reflow(pages), info = (await doc.getMetadata().catch(() => null))?.info;
-    return { title: cleanTitle(info?.Title), text: { v: V, numPages: N, scan: pages.filter(p => p.image).length >= N / 2, blocks: r.blocks, removed: r.removed.length } };
+    return { title: cleanTitle(info?.Title), cover: await makeCover(doc).catch(() => null), text: { v: V, numPages: N, scan: pages.filter(p => p.image).length >= N / 2, blocks: r.blocks, removed: r.removed.length } };
   } finally { doc.destroy(); }
 }
 
@@ -637,12 +913,17 @@ addEventListener('scroll', () => {
 }, { passive: true });
 addEventListener('pagehide', savePos);
 document.addEventListener('visibilitychange', () => { if (document.hidden) savePos(); });
-$('#text').onclick = () => { if (!getSelection().toString()) reader.classList.toggle('hide'); };
-
-$('#setBtn').onclick = () => {
-  const s = $('#settings'); s.hidden = !s.hidden;
-  $('#setBtn').setAttribute('aria-expanded', !s.hidden);
+function showSettings(open) {
+  $('#settings').hidden = !open; reader.classList.toggle('set', open);
+  $('#setBtn').setAttribute('aria-expanded', open);
+}
+// Tapping the page closes the settings sheet if it's open, otherwise shows or hides the toolbar.
+$('#text').onclick = () => {
+  if (!$('#settings').hidden) showSettings(false);
+  else if (!getSelection().toString()) reader.classList.toggle('hide');
 };
+$('#setBtn').onclick = () => showSettings($('#settings').hidden);
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#settings').hidden) showSettings(false); });
 
 async function closeBook(pop = false) {
   if (!book) return;
@@ -650,7 +931,7 @@ async function closeBook(pop = false) {
   book.io?.disconnect(); book.urls.forEach(URL.revokeObjectURL);
   book.doc?.then(d => d.destroy()).catch(() => {});
   book = null; els = [];
-  $('#text').replaceChildren(); $('#settings').hidden = true; $('#orig').hidden = true;
+  $('#text').replaceChildren(); showSettings(false); $('#orig').hidden = true;
   reader.hidden = true; reader.classList.remove('hide'); $('#library').hidden = false;
   scrollTo(0, 0);
   if (!pop && history.state?.book) history.back();
