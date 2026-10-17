@@ -414,14 +414,13 @@ async function lib() {
 const openPdf = async data => (await lib()).getDocument({ data, isEvalSupported: false, cMapUrl: DATA + 'cmaps/', cMapPacked: true, standardFontDataUrl: DATA + 'standard_fonts/' }).promise;
 
 // ---- Storage: IndexedDB stores meta (shelf info + position), files (PDF bytes), text (reflowed blocks) ----
+// Opened without awaiting, so every control is wired up at once (WebKit can take ~0.5 s to open it).
 let db;
-try {
-  db = await new Promise((res, rej) => {
-    const r = indexedDB.open('reflow', 1);
-    r.onupgradeneeded = () => { for (const s of ['meta', 'files', 'text']) r.result.createObjectStore(s); };
-    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
-  });
-} catch { status("This browser is blocking local storage (private mode?), so books can't be saved."); }
+const dbReady = new Promise((res, rej) => {
+  const r = indexedDB.open('reflow', 1);
+  r.onupgradeneeded = () => { for (const s of ['meta', 'files', 'text']) r.result.createObjectStore(s); };
+  r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+}).then(d => { db = d; }, () => status("This browser is blocking local storage (private mode?), so books can't be saved."));
 const tx = (store, mode, fn) => new Promise((res, rej) => {
   const t = db.transaction(store, mode), req = fn(t.objectStore(store));
   t.oncomplete = () => res(req.result); t.onerror = t.onabort = () => rej(t.error);
@@ -454,6 +453,7 @@ for (const b of document.querySelectorAll('.themes button')) b.onclick = () => c
 
 // ---- Library ----
 async function shelf() {
+  await dbReady;
   if (!db) return;
   const books = (await tx('meta', 'readonly', o => o.getAll())).sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
   $('#shelf').replaceChildren(...books.map(m => {
@@ -479,6 +479,7 @@ function cleanTitle(t) {
 }
 
 async function addFiles(files) {
+  await dbReady;
   if (!db) return;
   navigator.storage?.persisted?.().then(p => p || navigator.storage.persist()).catch(() => {});   // keep books from being evicted
   for (const f of files) {
