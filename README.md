@@ -5,7 +5,7 @@ PDFs, the reflowed text and your reading position stay in the browser (IndexedDB
 
 ## Run locally
 
-It needs `http://`, not `file://` (IndexedDB and the pdf.js worker), and internet for pdf.js from cdnjs.
+It needs `http://`, not `file://` (IndexedDB, the pdf.js worker and the service worker). After the first visit it works offline.
 
 ```
 npx serve .                 # or: python -m http.server 8000
@@ -20,13 +20,13 @@ The Playwright end-to-end suite lives in the author's local project, not in this
 
 ## Host it for free
 
-Deploy only these four files: `index.html`, `manifest.json`, `icon-192.png`, `icon-512.png`.
+Deploy only the app: `index.html`, `sw.js`, `manifest.json`, `icon-192.png`, `icon-512.png` and the `vendor/` folder.
 Never deploy `test-pdfs/` (`.gitignore` keeps it out of git).
 
 **GitHub Pages**: push the repo to GitHub, then *Settings → Pages → Deploy from a branch → main, / (root)*.
 The app is at `https://<user>.github.io/<repo>/`.
 
-**Cloudflare Pages**: *Workers & Pages → Create → Pages → Upload assets* and drop a folder holding the four files, or
+**Cloudflare Pages**: *Workers & Pages → Create → Pages → Upload assets* and drop a folder holding those files, or
 connect the GitHub repo with no build command and output directory `/`. From the command line:
 `npx wrangler pages deploy <folder> --project-name reflow`.
 
@@ -49,4 +49,6 @@ All in the `<script id="reflow-core">` block of `index.html`, as pure functions:
 
 Known limits: multi-column layouts, tables, drop caps, and headings that are only bold at body size don't reflow well.
 Use **Original** to see the page as printed.
-pdf.js itself is pinned to 4.10.38 on cdnjs. Its CJK character maps and standard fonts load from jsdelivr, because cdnjs doesn't carry them.
+pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, so nothing loads from other sites.
+The one edit: a `Promise.withResolvers` polyfill line prepended to `pdf.worker.min.mjs` for iPhones older than iOS 17.4.
+`sw.js` keeps the app on the device for offline use; when updating pdf.js, use a new `vendor/` folder and bump `CACHE` in `sw.js`.

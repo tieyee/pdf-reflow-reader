@@ -392,11 +392,12 @@ const Reflow = (() => {
 
 <script type="module">
 const V = 1;   // bump when Reflow output changes: cached reflow results are rebuilt on next open
-const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/';
-const DATA = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/';       // CJK cmaps + standard fonts (not on cdnjs)
-// pdf.js 4.10 calls Promise.withResolvers (iOS 17.4+). Polyfill it here and inside the worker for older iPhones.
-const POLY = 'Promise.withResolvers||(Promise.withResolvers=function(){let a,b;const p=new Promise((x,y)=>{a=x;b=y});return{promise:p,resolve:a,reject:b}});';
+// pdf.js 4.10.38 (Apache-2.0), copied from the pdfjs-dist package so the reader works offline. It calls
+// Promise.withResolvers (iOS 17.4+): polyfilled here, and prepended to the vendored worker file.
+const PDFJS = new URL('vendor/pdfjs-4.10.38/', location.href).href;
 Promise.withResolvers ||= function () { let a, b; const promise = new Promise((x, y) => { a = x; b = y; }); return { promise, resolve: a, reject: b }; };
+// Offline support: sw.js keeps the app on the device. Books themselves are already local (IndexedDB).
+navigator.serviceWorker?.register('sw.js').catch(() => {});
 
 const $ = s => document.querySelector(s);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -405,13 +406,11 @@ const status = msg => { $('#status').textContent = msg; };
 let pdfjs;
 async function lib() {
   if (pdfjs) return pdfjs;
-  pdfjs = await import(CDN + 'pdf.min.mjs');
-  // Same-origin blob worker (cross-origin worker URLs aren't allowed) that polyfills, then loads the CDN worker.
-  const src = POLY + `await import(${JSON.stringify(CDN + 'pdf.worker.min.mjs')});`;
-  pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+  pdfjs = await import(PDFJS + 'pdf.min.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.mjs';
   return pdfjs;
 }
-const openPdf = async data => (await lib()).getDocument({ data, isEvalSupported: false, cMapUrl: DATA + 'cmaps/', cMapPacked: true, standardFontDataUrl: DATA + 'standard_fonts/' }).promise;
+const openPdf = async data => (await lib()).getDocument({ data, isEvalSupported: false, cMapUrl: PDFJS + 'cmaps/', cMapPacked: true, standardFontDataUrl: PDFJS + 'standard_fonts/' }).promise;
 
 // ---- Storage: IndexedDB stores meta (shelf info + position), files (PDF bytes), text (reflowed blocks) ----
 // Opened without awaiting, so every control is wired up at once (WebKit can take ~0.5 s to open it).
