@@ -1,7 +1,8 @@
 // Keeps the app usable offline. Books and reading positions live in IndexedDB, not in this cache.
-const CACHE = 'reflow-v1';                  // bump when the pdf.js folder below changes
+const CACHE = 'reflow-v2';                  // bump when the pdf.js or font files below change
 const PDFJS = 'vendor/pdfjs-4.10.38/';
-const SHELL = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png', PDFJS + 'pdf.min.mjs', PDFJS + 'pdf.worker.min.mjs'];
+const FONTS = ['albert-sans-latin', 'albert-sans-latin-ext', 'young-serif-latin', 'young-serif-latin-ext'].map(f => `vendor/fonts/${f}.woff2`);
+const SHELL = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png', PDFJS + 'pdf.min.mjs', PDFJS + 'pdf.worker.min.mjs', ...FONTS];
 
 self.oninstall = e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 self.onactivate = e => e.waitUntil(caches.keys()

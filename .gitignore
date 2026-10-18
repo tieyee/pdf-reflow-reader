@@ -1,3 +1,6 @@
 node_modules/
 test-pdfs/
 test/out/
+PRODUCT.md
+DESIGN.md
+.impeccable/

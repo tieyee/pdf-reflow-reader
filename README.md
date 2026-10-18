@@ -3,6 +3,11 @@
 One static `index.html` that turns PDF books into resizable, scrolling text for phones. No account, no server, no build step.
 PDFs, the reflowed text and your reading position stay in the browser (IndexedDB); nothing is uploaded.
 
+Four tabs: **Library** (the book you're reading on top with one Resume button, filters, sort), **Search** (words and
+titles across every book, offline; a result opens the book at that paragraph with a "Back to page N" button),
+**Shelves** (your own groups of books) and **Settings** (theme, text, storage). The look is the "Ink and brass" theme:
+Young Serif and Albert Sans, warm stone, navy and one brass accent, with light, dark and system themes and a sepia page.
+
 ## Run locally
 
 It needs `http://`, not `file://` (IndexedDB, the pdf.js worker and the service worker). After the first visit it works offline.
@@ -11,7 +16,7 @@ It needs `http://`, not `file://` (IndexedDB, the pdf.js worker and the service 
 npx serve .                 # or: python -m http.server 8000
 ```
 
-Open the printed URL, then add a PDF with **Add PDF** or by dropping it on the page.
+Open the printed URL, then add a PDF with **Choose a PDF** (or the **+** button), or by dropping it on the page.
 
 ## Test
 
@@ -48,7 +53,8 @@ All in the `<script id="reflow-core">` block of `index.html`, as pure functions:
    each one is labelled "This page is a scan, so reflow isn't supported yet."
 
 Known limits: multi-column layouts, tables, drop caps, and headings that are only bold at body size don't reflow well.
-Use **Original** to see the page as printed.
-pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, so nothing loads from other sites.
+Use the page button at the top right of the reader to see the page as printed.
+pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, and the fonts (Young Serif and Albert Sans,
+SIL Open Font License, licences beside them) into `vendor/fonts/`, so nothing loads from other sites.
 The one edit: a `Promise.withResolvers` polyfill line prepended to `pdf.worker.min.mjs` for iPhones older than iOS 17.4.
-`sw.js` keeps the app on the device for offline use; when updating pdf.js, use a new `vendor/` folder and bump `CACHE` in `sw.js`.
+`sw.js` keeps the app on the device for offline use; when updating pdf.js or the fonts, use new file paths and bump `CACHE` in `sw.js`.
