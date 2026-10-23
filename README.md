@@ -1,12 +1,21 @@
-# Reflow PDF Reader
+# Folio
 
 One static `index.html` that turns PDF books into resizable, scrolling text for phones. No account, no server, no build step.
-PDFs, the reflowed text and your reading position stay in the browser (IndexedDB); nothing is uploaded.
+PDFs, the reflowed text, bookmarks and your reading position stay in the browser (IndexedDB); nothing is uploaded.
 
-Four tabs: **Library** (the book you're reading on top with one Resume button, filters, sort), **Search** (words and
-titles across every book, offline; a result opens the book at that paragraph with a "Back to page N" button),
-**Shelves** (your own groups of books) and **Settings** (theme, text, storage). The look is the "Ink and brass" theme:
-Young Serif and Albert Sans, warm stone, navy and one brass accent, with light, dark and system themes and a sepia page.
+Three tabs. **Library**: the book you're reading on top (stopped-at line, chapter, minutes and % left, one Resume reading
+button), then shelves of covers: Reading now and one per collection. The magnifier finds books by title or author; hold a
+cover for its options. **Collections**: All books (filters, sort) and your own collections. **Settings**: theme, text and
+page, storage.
+
+The reader keeps every control in the bottom bar: Aa (Reflow or Page view, size, typeface, spacing, margins, justify,
+sepia), search inside the book (a hit jumps there, highlighted, with "Back to page N"), a drag scrubber, the chapter and
+page ("Ch. 7 · 9 min left", "p. 42 of 186 · 77% left"; tap for chapters and bookmarks) and the bookmark, which hangs an
+oxblood ribbon on the page. Leave the app and come back within 15 minutes to land exactly where you were; later, it
+opens on the Library.
+
+The look is the "Linen" theme: cool woven linen, white cards, near-black ink and one oxblood accent; Schibsted Grotesk
+for the interface, Literata for books (or Schibsted Grotesk or Atkinson Hyperlegible Next), light, dark and system themes.
 
 ## Run locally
 
@@ -33,7 +42,7 @@ The app is at `https://<user>.github.io/<repo>/`.
 
 **Cloudflare Pages**: *Workers & Pages → Create → Pages → Upload assets* and drop a folder holding those files, or
 connect the GitHub repo with no build command and output directory `/`. From the command line:
-`npx wrangler pages deploy <folder> --project-name reflow`.
+`npx wrangler pages deploy <folder> --project-name folio`.
 
 On the phone, open the URL, then *Share → Add to Home Screen* (iPhone Safari) or *⋮ → Add to Home screen* (Android Chrome).
 
@@ -50,11 +59,11 @@ All in the `<script id="reflow-core">` block of `index.html`, as pure functions:
    or both halves are words and the joined form is not).
 5. **Headings**: lines at 1.18× the body size or larger.
 6. **Pages with almost no text** that paint an image (cover, map, scan) appear as the page image. When most pages are images,
-   each one is labelled "This page is a scan, so reflow isn't supported yet."
+   each one is labelled "This page is a scan, so it can’t be reflowed."
 
 Known limits: multi-column layouts, tables, drop caps, and headings that are only bold at body size don't reflow well.
-Use the page button at the top right of the reader to see the page as printed.
-pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, and the fonts (Young Serif and Albert Sans,
+Switch to Page under Aa in the reader to see the pages as printed.
+pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, and the fonts (Schibsted Grotesk, Literata and Atkinson Hyperlegible Next,
 SIL Open Font License, licences beside them) into `vendor/fonts/`, so nothing loads from other sites.
 The one edit: a `Promise.withResolvers` polyfill line prepended to `pdf.worker.min.mjs` for iPhones older than iOS 17.4.
 `sw.js` keeps the app on the device for offline use; when updating pdf.js or the fonts, use new file paths and bump `CACHE` in `sw.js`.
