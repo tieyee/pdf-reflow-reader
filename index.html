@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#eef0ef">
+<meta name="theme-color" content="#f1eee8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Folio">
@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preload" href="vendor/fonts/schibsted-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="vendor/fonts/garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="vendor/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
 <title>Folio</title>
 <script>
@@ -22,11 +22,12 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   r.dataset.font = p.font || 'literata'; } catch {}
 </script>
 <style>
-/* Fonts (SIL Open Font License, see vendor/fonts/): Schibsted Grotesk for the interface, Literata for books,
-   Schibsted Grotesk and Atkinson Hyperlegible Next as the other two book faces. All variable, latin + latin-ext. */
-@font-face{font-family:"Schibsted Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url(vendor/fonts/schibsted-latin-ext.woff2) format("woff2");
-  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:"Schibsted Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url(vendor/fonts/schibsted-latin.woff2) format("woff2");
+/* Fonts (SIL Open Font License, see vendor/fonts/): EB Garamond for book titles and headings, Literata for books,
+   EB Garamond and Atkinson Hyperlegible Next as the other two book faces. All variable, latin + latin-ext.
+   The interface itself uses the phone's own face (San Francisco on iPhone), like Apple's apps. */
+@font-face{font-family:"EB Garamond";font-style:normal;font-weight:400 800;font-display:swap;src:url(vendor/fonts/garamond-latin-ext.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"EB Garamond";font-style:normal;font-weight:400 800;font-display:swap;src:url(vendor/fonts/garamond-latin.woff2) format("woff2");
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Literata";font-style:normal;font-weight:400 600;font-display:swap;src:url(vendor/fonts/literata-latin-ext.woff2) format("woff2");
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
@@ -37,33 +38,36 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
 @font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:400 700;font-display:swap;src:url(vendor/fonts/atkinson-next-latin.woff2) format("woff2");
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
-/* Linen: cool woven linen, white cards, near-black ink, oxblood as the only voice. Components use these tokens only.
-   accent fills (buttons, ribbon); accent-ink is oxblood as text, strokes and thin fills (progress, active tab, focus). */
+/* Folio: book paper with a fine grain, oak shelves, white cards, warm near-black ink, oxblood as the only voice.
+   Components use these tokens only. accent fills (buttons, ribbon); accent-ink is oxblood as text, strokes and thin fills. */
 :root{--accent:#7a1f30;--on-accent:#fff;--accent-ink:#7a1f30;
-  --bg:#eef0ef;--surface:#fff;--sunk:#e1e5e3;--line:#d3d8d5;--ink:#17181b;--ink-2:#5d5e63;
+  --bg:#f1eee8;--surface:#fffefb;--sunk:#e7e3db;--line:#ddd7cc;--ink:#1b1a17;--ink-2:#605b53;
   --page:#f8f9f8;--page-ink:#1c1c1e;--page-ink-2:#6a6a6e;--highlight:#f1dcc2;
-  --shelf:#c5ccc8;--shelf-edge:#dce1de;--cover-a:#7a1f30;--cover-b:#2f4a5e;--cover-c:#b9893a;--cover-d:#3e5a3a;--on-cover:#f4efe6;
-  --scrim:rgba(23,24,27,.38);--thread:rgba(23,24,27,.035);--thread-2:rgba(23,24,27,.025);
-  --lift:0 1px 1px rgba(23,24,27,.12),0 6px 12px -4px rgba(23,24,27,.22);--sheet-lift:0 -8px 30px rgba(23,24,27,.14);--knob:0 1px 3px rgba(23,24,27,.22);
-  --ui:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Literata",Georgia,serif;--book:var(--serif);
+  --shelf:#c6a47a;--shelf-edge:#dfc7a2;--cover-a:#7a1f30;--cover-b:#2f4a5e;--cover-c:#b9893a;--cover-d:#3e5a3a;--on-cover:#f4efe6;
+  --scrim:rgba(27,26,23,.38);
+  /* paper grain: fine speckle plus a faint cloudy formation, as in uncoated book paper */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .24 0 0 0 0 .18 0 0 0 0 .1 .34 0 0 0 -.12'/%3E%3C/filter%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .12 .2 0 0 0 -.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --lift:0 1px 1px rgba(27,26,23,.12),0 6px 12px -4px rgba(27,26,23,.24);--sheet-lift:0 -8px 30px rgba(27,26,23,.14);--knob:0 1px 3px rgba(27,26,23,.22);
+  --ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --display:"EB Garamond",Garamond,"Iowan Old Style",Georgia,serif;--serif:"Literata",Georgia,serif;--book:var(--serif);
   --ease:cubic-bezier(.2,.8,.2,1);--size:18px;--lh:1.62;--margin:24px;color-scheme:light}
 [data-theme=dark]{--accent:#a33449;--on-accent:#fff;--accent-ink:#e8909e;
-  --bg:#121514;--surface:#1b1f1e;--sunk:#272c2b;--line:#2f3534;--ink:#eceeed;--ink-2:#a3a8a6;
+  --bg:#151412;--surface:#1e1c19;--sunk:#2a2723;--line:#35312b;--ink:#eeebe5;--ink-2:#aaa59c;
   --page:#121514;--page-ink:#dfe2e0;--page-ink-2:#9ea3a1;--highlight:#5c4430;
-  --shelf:#2c3230;--shelf-edge:#3b4240;--cover-c:#9a722f;
-  --scrim:rgba(0,0,0,.55);--thread:rgba(255,255,255,.028);--thread-2:rgba(255,255,255,.02);
+  --shelf:#4b3a29;--shelf-edge:#5f4b36;--cover-c:#9a722f;
+  --scrim:rgba(0,0,0,.55);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .88 .16 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --lift:0 1px 1px rgba(0,0,0,.4),0 6px 12px -4px rgba(0,0,0,.6);--sheet-lift:0 -8px 30px rgba(0,0,0,.5);--knob:0 1px 3px rgba(0,0,0,.5);color-scheme:dark}
 [data-tint=sepia]{--page:#f3ead6;--page-ink:#3a2f22;--page-ink-2:#6e5f4c;--highlight:#e6cb9c}
 [data-theme=dark][data-tint=sepia]{--page:#1e1a14;--page-ink:#e6dccb;--page-ink-2:#a89a86;--highlight:#5a4426}
-[data-font=schibsted]{--book:"Schibsted Grotesk",system-ui,sans-serif}
+[data-font=garamond]{--book:"EB Garamond",Garamond,Georgia,serif}
 [data-font=atkinson]{--book:"Atkinson Hyperlegible Next",system-ui,sans-serif}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrollbar-color:var(--line) transparent;background:var(--bg)}
-/* The weave: laid over the ground on Home, book grids and Settings, never under book text */
-body{margin:0;min-height:100dvh;background-color:var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none;
-  background-image:repeating-linear-gradient(0deg,var(--thread) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,var(--thread-2) 0 1px,transparent 1px 3px)}
+/* Paper grain on Home, book grids and Settings, never under book text */
+body{margin:0;min-height:100dvh;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
 body.reading{background:var(--page)}
 ::selection{background:var(--highlight);color:inherit}
 h1,h2,h3,p,blockquote,figure{margin:0}
@@ -79,17 +83,18 @@ img{-webkit-touch-callout:none}
 .num{font-variant-numeric:tabular-nums}
 
 /* Type */
-.screen-title{font:700 30px/34px var(--ui);letter-spacing:-.02em;overflow-wrap:anywhere;text-wrap:balance}
-.shelf-title{font:700 17px/22px var(--ui)}
-.card-title{font:700 16px/20px var(--ui);overflow-wrap:anywhere}
-.meta{font:500 13px/18px var(--ui);color:var(--ink-2)}
-.label{font:600 13px/1.2 var(--ui);color:var(--ink-2)}
-.count{margin-left:6px;font:500 13px/1 var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums}
+/* Book titles and headings are set in Garamond, like a title page; everything you tap or scan is in the phone's own face */
+.screen-title{font:500 36px/40px var(--display);letter-spacing:-.01em;overflow-wrap:anywhere;text-wrap:balance}
+.shelf-title{font:500 23px/28px var(--display)}
+.card-title{font:500 20px/24px var(--display);overflow-wrap:anywhere}
+.meta{font:400 13px/18px var(--ui);color:var(--ink-2)}
+.label{font:500 13px/1.2 var(--ui);color:var(--ink-2)}
+.count{margin-left:7px;font:400 14px/1 var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums}
 .note{font:400 13px/18px var(--ui);color:var(--ink-2);text-wrap:pretty}
 
 /* Buttons: oxblood pill for the one next step, 34px circles for icon actions, text links in oxblood */
 .pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;max-width:100%;padding:0 20px;border:0;border-radius:999px;
-  background:var(--sunk);color:var(--ink);font:700 14px/1 var(--ui);white-space:nowrap;transition:filter .15s,transform .15s var(--ease),background-color .15s}
+  background:var(--sunk);color:var(--ink);font:600 15px/1 var(--ui);white-space:nowrap;transition:filter .15s,transform .15s var(--ease),background-color .15s}
 .pill.primary{background:var(--accent);color:var(--on-accent)}
 .pill.block{display:flex;width:100%}
 .pill.ink{background:var(--ink);color:var(--bg)}
@@ -105,13 +110,13 @@ img{-webkit-touch-callout:none}
 .icon-btn svg{width:20px;height:20px}
 .icon-btn.soft{color:var(--ink-2)}
 @media (hover:hover){.icon-btn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}}
-.link{min-height:44px;padding:0 4px;border:0;background:none;color:var(--accent-ink);font:600 13px/18px var(--ui);white-space:nowrap}
+.link{min-height:44px;padding:0 4px;border:0;background:none;color:var(--accent-ink);font:400 15px/18px var(--ui);white-space:nowrap}
 @media (hover:hover){.link:hover{text-decoration:underline;text-underline-offset:3px}}
 
 /* Controls: segmented track, toggle, slider */
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:3px;border-radius:999px;background:var(--sunk)}
 .seg button{position:relative;display:grid;place-items:center;min-width:0;height:30px;padding:0 10px;border:0;border-radius:999px;background:none;color:var(--ink-2);
-  font:600 13px/1 var(--ui);white-space:nowrap;transition:background-color .15s,color .15s,box-shadow .15s}
+  font:500 13px/1 var(--ui);white-space:nowrap;transition:background-color .15s,color .15s,box-shadow .15s}
 .seg button::after{content:"";position:absolute;inset:-7px 0}
 @media (hover:hover){.seg button:hover{color:var(--ink)}}
 .seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(23,24,27,.16)}
@@ -140,7 +145,8 @@ input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;hei
 .card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px}
 .vhead.home{align-items:flex-start;padding-top:2px}
 .vhead.home .hbtns{gap:10px;padding-top:4px}
-@media (max-width:380px){.vhead.home .screen-title{font-size:26px;line-height:32px}.vhead.home .hbtns{gap:8px}}
+.vhead.home .screen-title{font-size:32px;line-height:38px}
+@media (max-width:380px){.vhead.home .screen-title{font-size:28px;line-height:34px}.vhead.home .hbtns{gap:8px}}
 #hsub{margin-top:2px}
 body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border-radius:12px}
 
@@ -163,10 +169,10 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .resume{display:flex;flex-direction:column;gap:14px;padding:16px}
 .rhead{display:flex;align-items:flex-start;gap:14px;width:100%;padding:0;border:0;background:none;text-align:left;color:inherit}
 .rinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:2px}
-.resume .rinfo .card-title{font-size:18px;line-height:23px;letter-spacing:-.01em}
+.resume .rinfo .card-title{font-size:23px;line-height:27px}
 .rinfo .by{font:400 14px/19px var(--ui);color:var(--ink-2)}
 .rinfo .meta{margin-top:6px;color:var(--ink)}
-.quote{position:relative;padding-left:14px;font:400 14px/1.5 var(--serif);color:var(--ink-2);text-wrap:pretty}
+.quote{position:relative;padding-left:14px;font:400 16px/1.42 var(--display);color:var(--ink-2);text-wrap:pretty}
 .quote::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--line)}
 .pline{display:flex;align-items:center;gap:12px}
 .pline .pbar{flex:1}
@@ -181,7 +187,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .mini{flex:none;display:flex;align-items:center;gap:12px;width:min(244px,72vw);padding:10px 14px 10px 10px;text-align:left;scroll-snap-align:start;touch-action:manipulation;transition:transform .15s var(--ease)}
 .mini:active{transform:scale(.98)}
 .mini .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.mini .t{font:600 14px/18px var(--ui);overflow-wrap:anywhere}
+.mini .t{font:500 17px/20px var(--display);overflow-wrap:anywhere}
 .mini .meta{font-size:12px;line-height:16px}
 .mini .pbar{height:3px;margin-top:4px}
 .cover.mid{width:40px}.cover.hero{width:76px}
@@ -191,6 +197,10 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .addtile:active{transform:scale(.97)}
 @media (hover:hover){.addtile:hover{color:var(--accent-ink)}}
 .sidenote{padding:8px 4px 0;max-width:46ch}
+.more{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:-4px}
+.more .link{display:inline-flex;align-items:center;gap:6px;margin-left:-4px}
+.more .link svg{width:18px;height:18px}
+.more .note{padding:0 4px;max-width:46ch}
 .first{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:22px 16px}
 .first .big{width:40px;height:40px;color:var(--accent-ink)}
 .first .lead{max-width:36ch;text-wrap:pretty}
@@ -202,10 +212,13 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .shead h2{display:flex;align-items:baseline;min-width:0}
 .shead h2 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sacts{display:flex;align-items:center;flex:none;margin-right:-12px}
+.sacts>.link:last-child{margin-right:8px}   /* Unsorted has See all but no options button */
 .srow{display:flex;align-items:flex-end;gap:10px;height:90px;margin:0 -16px;padding:0 16px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none}
 .srow::-webkit-scrollbar{display:none}
 .srow .book{flex:none}
-.ledge{position:relative;height:11px;margin:0 -8px;border-top:2px solid var(--shelf-edge);border-radius:0 0 3px 3px;background:var(--shelf)}
+/* The ledge is an oak shelf: a lighter top edge, faint grain along its length, darker toward the bottom */
+.ledge{position:relative;height:11px;margin:0 -8px;border-top:2px solid var(--shelf-edge);border-radius:0 0 3px 3px;
+  background:repeating-linear-gradient(0deg,rgba(60,35,10,.07) 0 1px,transparent 1px 3px),linear-gradient(var(--shelf),color-mix(in srgb,var(--shelf),#000 14%))}
 .ledge::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;background:linear-gradient(var(--scrim),transparent);opacity:.35;pointer-events:none}
 
 /* Books and covers: page 1 of the PDF when it is cover art, else a bookcloth cover with the title set in type */
@@ -218,7 +231,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 2px),repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 2px)}
 .cover.ka{--cv:var(--cover-a)}.cover.kb{--cv:var(--cover-b)}.cover.kc{--cv:var(--cover-c);--on-cover:#2b1f0b}.cover.kd{--cv:var(--cover-d)}
 .cover .ct,.cover .ca{position:absolute;z-index:1;left:15%;right:9%;color:var(--on-cover);overflow-wrap:anywhere}
-.cover .ct{top:11%;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font:700 13cqw/1.12 var(--ui);letter-spacing:-.01em}
+.cover .ct{top:11%;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font:500 15.5cqw/1.04 var(--display)}
 .cover .ca{bottom:9%;font:500 8.5cqw/1.2 var(--ui);opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cover .ct::after{content:"";display:block;width:28%;height:max(1px,1.6cqw);margin-top:9cqw;background:currentColor;opacity:.55}
 @container (max-width:40px){.cover .ct,.cover .ca{display:none}}
@@ -229,12 +242,12 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .group{margin:0;padding:0;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .group>li+li{border-top:1px solid var(--line)}
 .glabel{margin:0 0 8px 4px}
-.lrow{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 12px;border:0;background:none;text-align:left;color:var(--ink);font:500 14px/1.2 var(--ui);transition:background-color .15s}
+.lrow{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 12px;border:0;background:none;text-align:left;color:var(--ink);font:400 16px/1.2 var(--ui);transition:background-color .15s}
 @media (hover:hover){.lrow:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}}
 .lrow:active{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .lrow>svg{width:18px;height:18px}
 .lrow .lt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lrow .lv{flex:none;font:500 13px/18px var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .lv{flex:none;font:400 14px/18px var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lrow .chev{width:16px;height:16px;margin-right:-4px;color:var(--ink-2)}
 .lrow.add,.lrow.add>svg{color:var(--accent-ink)}
 .lrow.stack{flex-direction:column;align-items:stretch;gap:8px;padding:12px}
@@ -242,7 +255,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .brow{display:flex;align-items:center}
 .brow .open{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 0 8px 12px;border:0;background:none;text-align:left;color:inherit}
 .brow .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.brow .t{font:600 15px/20px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .t{font:500 18px/22px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brow .pbar{margin-top:5px;height:3px}
 @media (hover:hover){.brow .open:hover .t{color:var(--accent-ink)}}
 .brow .icon-btn{color:var(--ink-2)}
@@ -250,7 +263,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 
 /* Book grid pages: covers stand on ledges, the label strip under each ledge */
 .backrow{display:flex;justify-content:space-between;align-items:center;margin:-6px -12px -10px -12px}
-.backbtn{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 10px 0 4px;border:0;background:none;color:var(--accent-ink);font:500 15px/1 var(--ui)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 10px 0 4px;border:0;background:none;color:var(--accent-ink);font:400 17px/1 var(--ui)}
 .backbtn svg{width:22px;height:22px}
 .tools{display:flex;flex-direction:column;gap:10px}
 .tools .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px}
@@ -260,7 +273,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .gcells .book{width:100%}
 .glabels{margin-top:12px}
 .glabel2{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:0 2px}
-.glabel2 .t{font:600 13px/17px var(--ui);overflow-wrap:anywhere}
+.glabel2 .t{font:500 16px/18px var(--display);overflow-wrap:anywhere}
 .glabel2 .meta{grid-column:1;font-size:12px;line-height:16px}
 .glabel2 .icon-btn{grid-row:1/3;grid-column:2;width:32px;height:40px;margin:-10px -10px 0 0;color:var(--ink-2)}
 .glabel2 .icon-btn svg{width:18px;height:18px}
@@ -294,7 +307,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .shd .icon-btn{margin-right:-10px;color:var(--ink-2)}
 #sheetBody{min-height:0}
 .tall #sheetBody{flex:1;display:flex;flex-direction:column;gap:10px}
-.act{display:flex;align-items:center;gap:14px;width:calc(100% + 24px);min-height:48px;margin:0 -12px;padding:0 12px;border:0;border-radius:10px;background:none;text-align:left;color:var(--ink);font:500 15px/1.2 var(--ui);transition:background-color .15s}
+.act{display:flex;align-items:center;gap:14px;width:calc(100% + 24px);min-height:48px;margin:0 -12px;padding:0 12px;border:0;border-radius:10px;background:none;text-align:left;color:var(--ink);font:400 16px/1.2 var(--ui);transition:background-color .15s}
 @media (hover:hover){.act:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}}
 .act:active{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .act svg{width:18px;height:18px;color:var(--ink-2)}
@@ -331,7 +344,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .panel .seg svg{width:22px;height:22px}
 .pfield{display:flex;flex-direction:column;gap:6px}
 .sizerow{display:flex;align-items:center;gap:4px}
-.sizerow button{display:grid;place-items:center;flex:none;width:40px;height:44px;padding:0;border:0;border-radius:999px;background:none;color:var(--ink-2);font-family:var(--serif)}
+.sizerow button{display:grid;place-items:center;flex:none;width:40px;height:44px;padding:0;border:0;border-radius:999px;background:none;color:var(--ink-2);font-family:var(--display)}
 @media (hover:hover){.sizerow button:hover{color:var(--ink)}}
 #s-dn{font-size:14px}#s-up{font-size:22px}
 .faces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -340,42 +353,43 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .face .fn{font:500 12px/1.2 var(--ui);color:var(--ink-2)}
 .face[aria-pressed=true]{border-color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent-ink)}
 .pgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.swrow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0;border:0;border-top:1px solid var(--line);background:none;text-align:left;color:var(--ink);font:500 14px/1.2 var(--ui)}
+.swrow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0;border:0;border-top:1px solid var(--line);background:none;text-align:left;color:var(--ink);font:400 16px/1.2 var(--ui)}
 .textonly{transition:opacity .2s}
 .panel[data-mode=page] .textonly{opacity:.4;pointer-events:none}
 .pnote{margin-top:-6px}
 .panel:not([data-mode=page]) .pnote{display:none}
 
 /* Reader: a top bar with back and the title, and every control used while reading in the bottom bar */
-.rtop,.rbot{position:fixed;left:0;right:0;z-index:20;background:var(--page);color:var(--page-ink);transition:transform .22s var(--ease)}
-.rtop{top:0;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px;padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) 0 max(4px,env(safe-area-inset-left));
-  box-shadow:0 1px 0 color-mix(in srgb,var(--page-ink) 7%,transparent)}
+.rtop,.rbot{position:fixed;z-index:20;color:var(--page-ink);transition:transform .22s var(--ease)}
+.rtop{top:0;left:0;right:0;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px;padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) 0 max(4px,env(safe-area-inset-left));
+  background:var(--page);box-shadow:0 1px 0 color-mix(in srgb,var(--page-ink) 7%,transparent)}
 .rtop .icon-btn,.rbot .icon-btn{color:var(--page-ink)}
 .rtitle{display:flex;flex-direction:column;align-items:center;min-width:0;padding:7px 0 8px;text-align:center}
-#rtitle{max-width:100%;font:600 14px/19px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rtitle{max-width:100%;font:500 17px/21px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #rauthor{max-width:100%;color:var(--page-ink-2);font-size:12px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #rauthor:empty{display:none}
-/* Bottom bar: where you are, the scrubber, then four labelled tools spread under the thumb */
-.rbot{bottom:0;padding:10px max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
-  box-shadow:0 -1px 0 color-mix(in srgb,var(--page-ink) 7%,transparent)}
-.rbot>*{max-width:560px;margin-left:auto;margin-right:auto}
+/* Bottom: one floating glass bar, like Apple's tab bars. Where you are, the scrubber, then four small labelled tabs. */
+.rbot{left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:max(10px,calc(env(safe-area-inset-bottom) - 12px));max-width:520px;margin:0 auto;
+  padding:7px 6px 3px;border-radius:28px;border:.5px solid color-mix(in srgb,var(--page-ink) 12%,transparent);
+  background:color-mix(in srgb,var(--page) 94%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.08)}
 #reader.hide .rtop{transform:translateY(-100%)}
-#reader.hide .rbot{transform:translateY(100%)}
-.rread{display:flex;align-items:baseline;gap:12px;padding:0 4px}
-#chap{flex:1;min-width:0;font:600 13px/18px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#reader.hide .rbot{transform:translateY(calc(100% + 48px))}
+.rread{display:flex;align-items:baseline;gap:12px;padding:0 12px}
+#chap{flex:1;min-width:0;font:500 12px/16px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #chap:empty{display:none}
-#pos{flex:none;margin-left:auto;font:500 12.5px/18px var(--ui);color:var(--page-ink-2)}
-#scrub{display:block;width:100%;height:30px;margin:2px auto 4px}
+#pos{flex:none;margin-left:auto;font:400 12px/16px var(--ui);color:var(--page-ink-2)}
+#scrub{display:block;width:calc(100% - 12px);height:24px;margin:0 auto}
 #scrub::-webkit-slider-runnable-track{height:4px;border-radius:999px;background:linear-gradient(var(--accent-ink) 0 0) 0/var(--fill,0%) 100% no-repeat,color-mix(in srgb,var(--page-ink) 14%,transparent)}
-#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;background:var(--accent-ink);box-shadow:0 0 0 3px var(--page)}
+#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;background:var(--accent-ink);box-shadow:0 0 0 2.5px var(--page)}
 #scrub::-moz-range-track{height:4px;border-radius:999px;background:color-mix(in srgb,var(--page-ink) 14%,transparent)}
 #scrub::-moz-range-progress{height:4px;background:var(--accent-ink)}
-#scrub::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:var(--accent-ink)}
-.rtools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
-.tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:58px;padding:6px 2px 5px;border:0;border-radius:14px;background:none;color:var(--page-ink);
-  font:600 12px/1 var(--ui);transition:background-color .15s,color .15s,transform .15s var(--ease)}
-.tool svg{width:24px;height:24px}
-.tool .aa{display:block;height:24px;font:500 21px/24px var(--serif)}
+#scrub::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--accent-ink)}
+.rtools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+.tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:46px;padding:4px 2px 3px;border:0;border-radius:999px;background:none;color:var(--page-ink);
+  font:500 11px/1 var(--ui);transition:background-color .15s,color .15s,transform .15s var(--ease)}
+.tool svg{width:22px;height:22px}
+.tool .aa{display:block;height:22px;font:500 21px/22px var(--display)}
 .tool>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tool:active{transform:scale(.95)}
 @media (hover:hover){.tool:hover{background:color-mix(in srgb,var(--page-ink) 6%,transparent)}}
@@ -408,10 +422,10 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 [data-align=justify] #text p:not(.c){text-align:justify;-webkit-hyphens:auto;hyphens:auto}
 .endwrap{max-width:calc(34em + 2 * var(--margin));margin:0 auto;padding:8px max(var(--margin),env(safe-area-inset-right)) 40vh max(var(--margin),env(safe-area-inset-left))}
 .endcard{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:20px 16px}
-.endcard h2{font:600 24px/30px var(--serif);letter-spacing:-.01em}
+.endcard h2{font:500 28px/32px var(--display)}
 .endcard .rhead{align-items:center}
 .endcard .btns{align-self:stretch;margin-top:4px}
-#retBtn{position:fixed;z-index:22;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);box-shadow:0 8px 24px rgba(23,24,27,.28);animation:pop .26s var(--ease)}
+#retBtn{position:fixed;z-index:22;left:50%;bottom:max(122px,calc(env(safe-area-inset-bottom) + 100px));transform:translateX(-50%);box-shadow:0 8px 24px rgba(23,24,27,.28);animation:pop .26s var(--ease)}
 @keyframes pop{from{opacity:0;transform:translate(-50%,12px)}}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -452,13 +466,10 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <div id="also" class="also"></div>
       </section>
       <div id="shelves"></div>
-      <section id="moreSec" aria-label="Your books" hidden>
-        <ul class="group">
-          <li><button id="allRow" class="lrow tall"></button></li>
-          <li><button id="newColl" class="lrow tall add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span class="lt">New collection</span></button></li>
-        </ul>
-        <p id="collNote" class="note sidenote" hidden>A collection gives a group of books its own shelf on this page.</p>
-      </section>
+      <div id="moreSec" class="more" hidden>
+        <button id="newColl" class="link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>New collection</button>
+        <p id="collNote" class="note" hidden>A collection gives a group of books its own shelf on this page.</p>
+      </div>
     </div>
     <section id="libResults" aria-labelledby="lqSum" hidden>
       <h2 id="lqSum" class="label glabel" aria-live="polite"></h2>
@@ -474,9 +485,6 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
     </div>
     <header class="vhead"><div><h1 id="shelfName" class="screen-title" tabindex="-1"></h1><p id="shelfCount" class="meta num"></p></div></header>
     <div class="tools">
-      <div id="filt" class="seg" role="group" aria-label="Show">
-        <button data-f="all" aria-pressed="true">All</button><button data-f="progress" aria-pressed="false">In progress</button><button data-f="unread" aria-pressed="false">Unread</button><button data-f="finished" aria-pressed="false">Finished</button>
-      </div>
       <div class="bar"><button id="sortBtn" class="link"></button><button id="shelfAdd" class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Add books</button></div>
     </div>
     <div id="grid" class="grid"></div>
@@ -540,7 +548,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   <div class="pfield textonly"><span class="label" id="l-font">Typeface</span>
     <div class="faces" data-k="font" role="group" aria-labelledby="l-font">
       <button class="face" data-v="literata"><span class="aa" style="font-family:Literata,Georgia,serif" aria-hidden="true">Aa</span><span class="fn">Literata</span></button>
-      <button class="face" data-v="schibsted"><span class="aa" style="font-family:'Schibsted Grotesk',sans-serif" aria-hidden="true">Aa</span><span class="fn">Schibsted</span></button>
+      <button class="face" data-v="garamond"><span class="aa" style="font-family:'EB Garamond',Georgia,serif;font-size:25px" aria-hidden="true">Aa</span><span class="fn">Garamond</span></button>
       <button class="face" data-v="atkinson"><span class="aa" style="font-family:'Atkinson Hyperlegible Next',sans-serif" aria-hidden="true">Aa</span><span class="fn">Atkinson</span></button>
     </div></div>
   <div class="pgrid textonly">
@@ -954,13 +962,10 @@ const ICON = {
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
   done: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
-  chev: '<path d="m9 18 6-6-6-6"/>',
   bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
   search: '<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/>',
-  library: '<path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/>',
 };
 const iconBtn = (name, label, fn) => { const b = el('button', 'icon-btn soft'); b.setAttribute('aria-label', label); b.append(svg(ICON[name])); b.onclick = fn; return b; };
-const chev = () => { const c = svg(ICON.chev); c.classList.add('chev'); return c; };
 const bar = (pct, cls = '') => { const b = el('span', 'pbar ' + cls), i = el('i'); i.style.width = Math.max(0, Math.min(100, pct)) + '%'; b.append(i); return b; };
 
 // ---- Status card at the top of the Library: progress while adding a book, errors, "ready to read" ----
@@ -1015,7 +1020,7 @@ const update = (id, fn) => tx('meta', 'readwrite', o => { const r = o.get(id); r
 
 // ---- Settings (shared by the Settings page and the Text and page sheet) ----
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44], SPEEDS = [200, 250, 320];
-const FONTS = { literata: 'Literata', schibsted: 'Schibsted Grotesk', atkinson: 'Atkinson Hyperlegible' };
+const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
 // wpm: reading speed for "min left"; autohide: the reader's bars slide away while scrolling down.
 const DEF = { v: 3, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', tint: 'none', sort: 'opened', font: 'literata', mode: 'reflow', wpm: 250, autohide: 'on' };
@@ -1138,7 +1143,8 @@ async function goHome() {
 }
 
 // ---- Library data ----
-let books = [], shelves = [], covers = new Map(), coverUrls = new Map(), filter = 'all', nowId = null;
+let books = [], shelves = [], covers = new Map(), coverUrls = new Map(), nowId = null;
+const unsorted = () => books.filter(m => !shelves.some(s => s.id === m.shelf));
 const state = m => !m.pct ? 'unread' : m.pct >= 100 ? 'finished' : 'progress';
 const touched = m => m.opened || m.added;
 const stateShort = m => { const s = state(m); return s === 'unread' ? 'New' : s === 'finished' ? 'Finished' : 100 - m.pct + '% left'; };
@@ -1230,17 +1236,17 @@ function renderLibrary() {
   $('#also').replaceChildren(...also.map(miniEl));
   $('#also').scrollLeft = x0;
   const list = shelves.map(s => ({ id: s.id, name: s.name, coll: s, list: sorted(books.filter(m => m.shelf === s.id)) }));
+  const loose = sorted(unsorted());
+  if (loose.length) list.push({ id: 'unsorted', name: 'Unsorted', list: loose });   // books in no collection, last
   const kept = new Map($$('#shelves .shelf').map(x => [x.dataset.id, x.querySelector('.srow').scrollLeft]));
   $('#shelves').replaceChildren(...(n ? list.map(shelfEl) : []));
   for (const x of $$('#shelves .shelf')) x.querySelector('.srow').scrollLeft = kept.get(x.dataset.id) || 0;
   $('#moreSec').hidden = !n;
-  const last = books.slice().sort(SORT.opened[1])[0];
-  $('#allRow').replaceChildren(last ? coverEl(last, 'tiny') : svg(ICON.library), el('span', 'lt', 'All books'), el('span', 'lv', plural(n, 'book')), chev());
   $('#collNote').hidden = shelves.length > 0;
   if (!$('#libFind').hidden) runLib();
 }
-$('#allRow').onclick = () => goShelf('all');
 $('#newColl').onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
+// A collection's shelf, or the Unsorted one (no coll: no options, never empty).
 function shelfEl(sh) {
   const sec = el('section', 'shelf'), head = el('div', 'shead'), h = el('h2', 'shelf-title'), acts = el('div', 'sacts'), row = el('div', 'srow');
   sec.dataset.id = sh.id; h.id = 'sh-' + sh.id; sec.setAttribute('aria-labelledby', h.id);
@@ -1251,10 +1257,10 @@ function shelfEl(sh) {
     see.onclick = () => goShelf(sh.id);
     acts.append(see);
   }
-  acts.append(iconBtn('more', 'Options for ' + sh.name, () => shelfMenu(sh.coll)));
+  if (sh.coll) acts.append(iconBtn('more', 'Options for ' + sh.name, () => shelfMenu(sh.coll)));
   head.append(h, acts);
   row.append(...sh.list.map(m => bookBtn(m)));
-  if (!sh.list.length) {
+  if (!sh.list.length && sh.coll) {
     const add = el('button', 'addtile');
     add.append(svg(ICON.plus), el('span', '', 'Add books'));
     add.setAttribute('aria-label', 'Add books to ' + sh.name);
@@ -1346,23 +1352,20 @@ $('#libFind').onsubmit = e => { e.preventDefault(); $('#lq').blur(); };
 $('#lqClear').onclick = () => { $('#lq').value = ''; runLib(); $('#lq').focus(); };
 $('#lqCancel').onclick = () => libFind(false);
 
-// ---- Book grid page: All books or one collection. Covers stand on ledges, titles below. ----
-const NONE = { all: '', progress: 'Nothing in progress. Open a book and it shows up here.', unread: 'Every book has been opened.', finished: 'No finished books yet.' };
+// ---- Book grid page: one collection, or Unsorted. Covers stand on ledges, titles below. ----
 let gridCols = 0;
 const colsFor = () => innerWidth >= 560 ? 4 : 3;
 function renderShelf(id) {
   if (!loaded) return;
-  const coll = shelves.find(x => x.id === id), kind = id === 'all' ? 'all' : 'coll';
-  if (kind === 'coll' && !coll) return toHome();   // it was deleted (or is the old Reading now shelf)
-  const name = kind === 'all' ? 'All books' : coll.name;
-  const list = sorted(kind === 'all' ? books.filter(m => filter === 'all' || state(m) === filter) : books.filter(m => m.shelf === id));
+  const coll = shelves.find(x => x.id === id), loose = id === 'unsorted';
+  if (!coll && !loose) return toHome();   // deleted, or an old page (All books, Reading now) that no longer exists
+  const name = loose ? 'Unsorted' : coll.name;
+  const list = sorted(loose ? unsorted() : books.filter(m => m.shelf === id));
   $('#shelfName').textContent = name;
-  $('#shelfCount').textContent = kind === 'all' && filter !== 'all' ? `${list.length} of ${plural(books.length, 'book')}` : plural(list.length, 'book');
-  $('#filt').hidden = kind !== 'all';
-  for (const b of $$('#filt button')) b.setAttribute('aria-pressed', b.dataset.f === filter);
+  $('#shelfCount').textContent = plural(list.length, 'book');
   $('#sortBtn').textContent = 'Sort: ' + SORTN[prefs.sort].toLowerCase();
-  $('#shelfAdd').hidden = kind !== 'coll';
-  $('#shelfMore').hidden = kind === 'all';
+  $('#shelfAdd').hidden = loose;
+  $('#shelfMore').hidden = loose;
   $('#shelfMore').setAttribute('aria-label', 'Options for ' + name);
   $('#shelfMore').onclick = () => shelfMenu(coll);
   if (coll) $('#shelfAdd').onclick = () => addToShelf(coll);
@@ -1382,9 +1385,8 @@ function renderShelf(id) {
   }
   $('#grid').replaceChildren(...rows);
   $('#gridNone').hidden = list.length > 0;
-  $('#gridNone').textContent = kind === 'all' ? (books.length ? NONE[filter] : 'No books yet. Add a PDF from Home.') : 'No books here yet. Add books puts some in.';
+  $('#gridNone').textContent = loose ? 'Every book is in a collection.' : 'No books here yet. Add books puts some in.';
 }
-for (const b of $$('#filt button')) b.onclick = () => { filter = b.dataset.f; renderShelf('all'); };
 // One order for every shelf and grid; set from a grid page or from Settings.
 $('#sortBtn').onclick = $('#sortRow').onclick = () => openSheet('Order books by', body => body.append(...Object.entries(SORT).map(([k, [name]]) =>
   act(name, null, () => changePrefs({ sort: k }), { on: prefs.sort === k }))));
@@ -1466,7 +1468,7 @@ function shelfMenu(s) {
   openSheet(s.name, body => body.append(
     act('Add books', 'plus', () => { addToShelf(s); return false; }),
     act('Rename collection', 'pencil', () => askName('Rename collection', s.name, 'Save', name => put('shelves', s.id, { ...s, name }))),
-    act('Delete collection', 'trash', () => askConfirm(`Delete “${s.name}”?`, 'The collection goes; its books stay, and are all still in All books.', 'Delete collection', async () => {
+    act('Delete collection', 'trash', () => askConfirm(`Delete “${s.name}”?`, 'The collection goes; its books stay, under Unsorted.', 'Delete collection', async () => {
       for (const m of books) if (m.shelf === s.id) await moveBook(m.id, null);
       await del('shelves', s.id);
       if (history.state?.shelf === s.id) history.back();

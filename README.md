@@ -5,17 +5,18 @@ PDFs, the reflowed text, bookmarks and your reading position stay in the browser
 
 **Home** is one page: the book you're reading on top (stopped-at line, chapter, minutes and % left, page, one Resume
 reading button), the other books in progress as small cards, then one shelf of covers per collection (an empty one has an
-"Add books" slot), and rows for All books (filters, sort) and New collection. The magnifier finds books by title or author;
+"Add books" slot), an Unsorted shelf for books in no collection, and a New collection link. The magnifier finds books by title or author;
 hold a cover for its options. **Settings** (the sliders button) has theme, a live reading preview, text and page, reading
 speed (for "min left"), whether the reader's bars hide while scrolling, and the order of books on shelves.
 
-The reader's bottom bar shows the chapter and page ("Ch. 7 · 9 min left", "p. 42 of 186 · 77% left"), a drag scrubber and
+The reader's bottom bar floats like an iPhone tab bar. It shows the chapter and page ("Ch. 7 · 9 min left", "p. 42 of 186 · 77% left"), a drag scrubber and
 four labelled buttons: Contents (chapters and bookmarks), Search (a hit jumps there, highlighted, with "Back to page N"),
 Text (Reflow or Page view, size, typeface, spacing, margins, justify, sepia) and Bookmark, which hangs an oxblood ribbon on
 the page. Leave the app and come back within 15 minutes to land exactly where you were; later, it opens on Home.
 
-The look is the "Linen" theme: cool woven linen, white cards, near-black ink and one oxblood accent; Schibsted Grotesk
-for the interface, Literata for books (or Schibsted Grotesk or Atkinson Hyperlegible Next), light, dark and system themes.
+The look: book paper with a fine grain, oak shelves, white cards, near-black ink and one oxblood accent. Book titles and
+headings are set in EB Garamond, the interface in the phone's own font (San Francisco on iPhone), and books in Literata (or
+EB Garamond or Atkinson Hyperlegible Next). Light, dark and system themes.
 
 ## Run locally
 
@@ -65,7 +66,7 @@ All in the `<script id="reflow-core">` block of `index.html`, as pure functions:
 
 Known limits: multi-column layouts, tables, drop caps drawn as pictures, and headings that are only bold at body size don't reflow well.
 Switch to Page under Text in the reader to see the pages as printed.
-pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, and the fonts (Schibsted Grotesk, Literata and Atkinson Hyperlegible Next,
+pdf.js 4.10.38 (Apache-2.0) is copied from the `pdfjs-dist` package into `vendor/`, and the fonts (EB Garamond, Literata and Atkinson Hyperlegible Next,
 SIL Open Font License, licences beside them) into `vendor/fonts/`, so nothing loads from other sites.
 The one edit: a `Promise.withResolvers` polyfill line prepended to `pdf.worker.min.mjs` for iPhones older than iOS 17.4.
 `sw.js` keeps the app on the device for offline use; when updating pdf.js or the fonts, use new file paths and bump `CACHE` in `sw.js`.
