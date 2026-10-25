@@ -147,7 +147,6 @@ input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;hei
 .vhead.home .hbtns{gap:10px;padding-top:4px}
 .vhead.home .screen-title{font-size:32px;line-height:38px}
 @media (max-width:380px){.vhead.home .screen-title{font-size:28px;line-height:34px}.vhead.home .hbtns{gap:8px}}
-#hsub{margin-top:2px}
 body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border-radius:12px}
 
 /* Home */
@@ -405,7 +404,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 @keyframes drop{0%{transform:translateY(-100%)}70%{transform:translateY(5%)}100%{transform:none}}
 #text{max-width:calc(34em + 2 * var(--margin));margin:0 auto;padding:calc(72px + env(safe-area-inset-top)) max(var(--margin),env(safe-area-inset-right)) 40px max(var(--margin),env(safe-area-inset-left));
   color:var(--page-ink);font-family:var(--book);font-size:var(--size);line-height:var(--lh);overflow-wrap:break-word}
-#text p{margin:0 0 .85em;text-wrap:pretty}
+#text p{margin:0 0 .85em}   /* no text-wrap:pretty here: on a whole book it makes every re-layout ~4x slower in Safari */
 #text h2{margin:1.8em 0 .9em;font-size:1.333em;line-height:1.25;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
 #text h3{margin:1.6em 0 .6em;font-size:1.1em;line-height:1.3;font-weight:600;text-wrap:balance}
 #text .c{text-align:center}
@@ -437,7 +436,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 
   <section id="v-library" class="view" aria-labelledby="h-library">
     <header class="vhead home">
-      <div><h1 id="h-library" class="screen-title">Folio</h1><p id="hsub" class="meta num" hidden></p></div>
+      <div><h1 id="h-library" class="screen-title">Folio</h1></div>
       <div class="hbtns">
         <button id="libSearch" class="circle" aria-label="Find a book" aria-expanded="false" aria-controls="libFind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg></button>
         <button id="goSettings" class="circle" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
@@ -509,9 +508,6 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
       <ul class="group">
         <li><button id="textRow" class="lrow" aria-controls="rset" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
           <span class="lt">Text and page</span><span id="textVal" class="lv"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></li>
-        <li class="lrow stack"><span class="lhead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4M12 14l3-3"/><circle cx="12" cy="14" r="8"/></svg><span id="t-wpm">Reading speed</span></span>
-          <div class="seg" data-k="wpm" role="group" aria-labelledby="t-wpm" aria-describedby="n-wpm"><button data-v="200">Relaxed</button><button data-v="250">Average</button><button data-v="320">Quick</button></div>
-          <p id="n-wpm" class="note">Sets the minutes left shown for each chapter.</p></li>
         <li><button role="switch" class="lrow" data-k="autohide" data-on="on" data-off="off" aria-checked="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>
           <span class="lt">Hide the bars while I scroll</span><span class="tg" aria-hidden="true"></span></button></li>
       </ul>
@@ -939,7 +935,7 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
-// The open book: {id, meta, text, doc, mode, io, far, q, heads, cw, first}; els: one element per block (Reflow) or per page (Page).
+// The open book: {id, meta, text, doc, mode, io, far, q, heads, first}; els: one element per block (Reflow) or per page (Page).
 let book = null, els = [], appY = 0, scrubbing = false;
 const reader = $('#reader');
 
@@ -1019,11 +1015,11 @@ const keys = s => tx(s, 'readonly', o => o.getAllKeys());
 const update = (id, fn) => tx('meta', 'readwrite', o => { const r = o.get(id); r.onsuccess = () => { if (r.result) { fn(r.result); o.put(r.result, id); } }; return r; });
 
 // ---- Settings (shared by the Settings page and the Text and page sheet) ----
-const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44], SPEEDS = [200, 250, 320];
+const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
-// wpm: reading speed for "min left"; autohide: the reader's bars slide away while scrolling down.
-const DEF = { v: 3, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', tint: 'none', sort: 'opened', font: 'literata', mode: 'reflow', wpm: 250, autohide: 'on' };
+// autohide: the reader's bars slide away while scrolling down.
+const DEF = { v: 3, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', tint: 'none', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1038,7 +1034,7 @@ function loadPrefs() {
   p.lh = near(+p.lh || DEF.lh, LHS); p.margin = near(+p.margin || DEF.margin, MARGINS);
   if (!FONTS[p.font]) p.font = DEF.font;
   if (p.mode !== 'page') p.mode = 'reflow';
-  p.wpm = SPEEDS.includes(+p.wpm) ? +p.wpm : DEF.wpm;
+  delete p.wpm;   // the old reading speed setting: "min left" is gone
   if (p.autohide !== 'off') p.autohide = 'on';
   if (!SORTN[p.sort]) p.sort = DEF.sort;
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
@@ -1083,9 +1079,16 @@ async function changePrefs(patch) {
 }
 applyPrefs();
 mq.addEventListener?.('change', () => { if (prefs.theme === 'system') applyPrefs(); });
-for (const s of $$('.size-range')) s.oninput = e => changePrefs({ size: +e.target.value });
-$('#s-dn').onclick = () => changePrefs({ size: Math.max(14, prefs.size - 1) });
-$('#s-up').onclick = () => changePrefs({ size: Math.min(28, prefs.size + 1) });
+// A size change re-lays out the whole book, and a dragged slider fires one per step: apply at most one a frame,
+// latest value wins, so a fast drag can't stack up seconds of layout (iPhone Safari kills a page frozen that long).
+let sizeWant = 0, sizeRaf = 0;
+function setSize(v) {
+  sizeWant = Math.min(28, Math.max(14, v));
+  sizeRaf ||= requestAnimationFrame(() => { sizeRaf = 0; const s = sizeWant; sizeWant = 0; changePrefs({ size: s }); });
+}
+for (const s of $$('.size-range')) s.oninput = e => setSize(+e.target.value);
+$('#s-dn').onclick = () => setSize((sizeWant || prefs.size) - 1);
+$('#s-up').onclick = () => setSize((sizeWant || prefs.size) + 1);
 for (const b of $$('.seg[data-k] button,.faces[data-k] button'))
   b.onclick = () => { const v = b.dataset.v; changePrefs({ [b.parentNode.dataset.k]: isNaN(v) ? v : +v }); };
 for (const s of $$('[role=switch][data-k]')) s.onclick = () => changePrefs({ [s.dataset.k]: prefs[s.dataset.k] === s.dataset.on ? s.dataset.off : s.dataset.on });
@@ -1225,8 +1228,6 @@ const greeting = h => h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 18 ? 'G
 function renderLibrary() {
   const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
   $('#h-library').textContent = n ? greeting(new Date().getHours()) : 'Folio';
-  $('#hsub').hidden = !n;
-  $('#hsub').textContent = [reading.length && `${reading.length} in progress`, plural(n, 'book')].filter(Boolean).join(' · ');
   $('#first').hidden = n > 0;
   const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0], also = reading.filter(m => m !== now);
   renderNow(now);
@@ -1288,7 +1289,7 @@ function renderNow(m) {
   t.id = 'nowT'; go.id = 'nowGo'; head.style.cursor = 'pointer';
   info.append(t);
   if (m.author) info.append(el('span', 'by', m.author));
-  info.append(el('span', 'meta num', started ? [m.chap, m.mins, leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`));
+  info.append(el('span', 'meta num', started ? [m.chap, leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`));
   head.append(coverEl(m, 'hero'), info);
   const kids = [head];
   if (started) {
@@ -1455,7 +1456,7 @@ function bookMenu(m) {
     if (here) body.append(act('Take out of ' + here.name, 'folderOut', () => moveBook(m.id, null)));
     body.append(el('hr'));
     if (st === 'progress') body.append(act('Mark as finished', 'done', () => update(m.id, x => { x.pct = 100; x.page = x.pages; })));
-    if (st === 'finished') body.append(act('Mark as unread', 'undo', () => update(m.id, x => { x.pct = 0; x.page = 1; delete x.pos; delete x.ppos; delete x.quote; delete x.chap; delete x.mins; })));
+    if (st === 'finished') body.append(act('Mark as unread', 'undo', () => update(m.id, x => { x.pct = 0; x.page = 1; delete x.pos; delete x.ppos; delete x.quote; delete x.chap; })));
     body.append(
       act('Rename book', 'pencil', () => askName('Rename book', m.title, 'Save', title => update(m.id, x => { x.title = title; }), 'Book title', 200)),
       act('Delete from this device', 'trash', () => askConfirm(`Delete “${m.title}”?`,
@@ -1624,16 +1625,15 @@ async function processPdf(buf, progress) {
 }
 
 // ---- Reader ----
-// Lookups for one book's text: heading block indexes, running word counts, and each page's first block.
+// Lookups for one book's text: heading block indexes and each page's first block.
 function prep(text) {
-  const bl = text.blocks, N = text.numPages, heads = [], cw = [0], first = new Array(N).fill(-1);
+  const bl = text.blocks, N = text.numPages, heads = [], first = new Array(N).fill(-1);
   bl.forEach((b, i) => {
     if (b.t === 'h') heads.push(i);
-    cw.push(cw[i] + (b.text ? b.text.split(/\s+/).length : 0));
     if (b.page < N && first[b.page] < 0) first[b.page] = i;
   });
   for (let p = N - 1, next = Math.max(0, bl.length - 1); p >= 0; p--) { if (first[p] < 0) first[p] = next; else next = first[p]; }
-  return { heads, cw, first };
+  return { heads, first };
 }
 
 // When a newer reflow rebuilds a book's text, a saved spot (reading position or bookmark, {i: block, f, ...}) moves to
@@ -1827,14 +1827,6 @@ function headAt(i) {
   while (lo < hi) { const m = (lo + hi) >> 1; if (hs[m] <= i) lo = m + 1; else hi = m; }
   return lo - 1;
 }
-// Time left in the chapter at 250 words a minute (in the book, when it has no headings).
-function timeLeft(i, f, k) {
-  const end = book.heads[k + 1] ?? book.text.blocks.length, cw = book.cw;
-  const words = cw[end] - cw[i] - Math.max(0, f) * (cw[i + 1] - cw[i]);
-  if (!(words > 0)) return '';
-  const m = Math.max(1, Math.ceil(words / prefs.wpm)), h = Math.floor(m / 60);
-  return (h ? `${h} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`) + ' left';
-}
 const posLine = (page, N, pct) => `p. ${page} of ${N} · ${pct >= 100 ? 'finished' : 100 - pct + '% left'}`;
 function setScrub(page, N) {
   const s = $('#scrub');
@@ -1845,7 +1837,7 @@ function showPos() {
   if (!book) return;
   const w = where(), N = book.text.numPages, k = headAt(w.pos.i);
   const chap = k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '';
-  $('#chap').textContent = [chap, timeLeft(w.pos.i, w.pos.f, k)].filter(Boolean).join(' · ');
+  $('#chap').textContent = chap;
   $('#pos').textContent = posLine(w.page, N, w.pct);
   if (!scrubbing) setScrub(w.page, N);
   ribbon();
@@ -1854,7 +1846,7 @@ async function savePos() {
   if (!book || !els.length) return;
   const w = where(), k = headAt(w.pos.i);
   const v = { pos: w.pos, ppos: w.ppos, page: w.page, pct: w.pct, quote: quoteFrom(book.text.blocks, w.pos),
-    chap: k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '', mins: timeLeft(w.pos.i, w.pos.f, k) };
+    chap: k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '' };
   Object.assign(book.meta, v);
   await update(book.id, x => { Object.assign(x, v); }).catch(() => {});
 }

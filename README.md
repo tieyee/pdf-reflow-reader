@@ -3,13 +3,13 @@
 One static `index.html` that turns PDF books into resizable, scrolling text for phones. No account, no server, no build step.
 PDFs, the reflowed text, bookmarks and your reading position stay in the browser (IndexedDB); nothing is uploaded.
 
-**Home** is one page: the book you're reading on top (stopped-at line, chapter, minutes and % left, page, one Resume
+**Home** is one page: the book you're reading on top (stopped-at line, chapter, % left, page, one Resume
 reading button), the other books in progress as small cards, then one shelf of covers per collection (an empty one has an
 "Add books" slot), an Unsorted shelf for books in no collection, and a New collection link. The magnifier finds books by title or author;
-hold a cover for its options. **Settings** (the sliders button) has theme, a live reading preview, text and page, reading
-speed (for "min left"), whether the reader's bars hide while scrolling, and the order of books on shelves.
+hold a cover for its options. **Settings** (the sliders button) has theme, a live reading preview, text and page,
+whether the reader's bars hide while scrolling, and the order of books on shelves.
 
-The reader's bottom bar floats like an iPhone tab bar. It shows the chapter and page ("Ch. 7 · 9 min left", "p. 42 of 186 · 77% left"), a drag scrubber and
+The reader's bottom bar floats like an iPhone tab bar. It shows the chapter and page ("Ch. 7", "p. 42 of 186 · 77% left"), a drag scrubber and
 four labelled buttons: Contents (chapters and bookmarks), Search (a hit jumps there, highlighted, with "Back to page N"),
 Text (Reflow or Page view, size, typeface, spacing, margins, justify, sepia) and Bookmark, which hangs an oxblood ribbon on
 the page. Leave the app and come back within 15 minutes to land exactly where you were; later, it opens on Home.
