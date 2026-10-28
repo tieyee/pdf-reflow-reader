@@ -43,7 +43,7 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   --bg:#f1eee8;--surface:#fffefb;--sunk:#e7e3db;--line:#ddd7cc;--ink:#1b1a17;--ink-2:#605b53;
   --page:#f8f9f8;--page-ink:#1c1c1e;--page-ink-2:#6a6a6e;--highlight:#f1dcc2;
   --shelf:#c6a47a;--shelf-edge:#dfc7a2;--cover-a:#7a1f30;--cover-b:#2f4a5e;--cover-c:#b9893a;--cover-d:#3e5a3a;--on-cover:#f4efe6;
-  --scrim:rgba(27,26,23,.38);
+  --scrim:rgba(27,26,23,.38);--bar-dim:#a09d99;   /* the page colour under the scrim, for the status bar while the Library is open */
   /* paper grain: fine speckle plus a faint cloudy formation, as in uncoated book paper */
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .24 0 0 0 0 .18 0 0 0 0 .1 .34 0 0 0 -.12'/%3E%3C/filter%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .12 .2 0 0 0 -.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --lift:0 1px 1px rgba(27,26,23,.12),0 6px 12px -4px rgba(27,26,23,.24);--sheet-lift:0 -8px 30px rgba(27,26,23,.14);--knob:0 1px 3px rgba(27,26,23,.22);
@@ -54,7 +54,7 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   --bg:#151412;--surface:#1e1c19;--sunk:#2a2723;--line:#35312b;--ink:#eeebe5;--ink-2:#aaa59c;
   --page:#121514;--page-ink:#dfe2e0;--page-ink-2:#9ea3a1;--highlight:#5c4430;
   --shelf:#4b3a29;--shelf-edge:#5f4b36;--cover-c:#9a722f;
-  --scrim:rgba(0,0,0,.55);
+  --scrim:rgba(0,0,0,.55);--bar-dim:#090908;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .88 .16 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --lift:0 1px 1px rgba(0,0,0,.4),0 6px 12px -4px rgba(0,0,0,.6);--sheet-lift:0 -8px 30px rgba(0,0,0,.5);--knob:0 1px 3px rgba(0,0,0,.5);color-scheme:dark}
 [data-font=garamond]{--book:"EB Garamond",Garamond,Georgia,serif}
@@ -67,6 +67,11 @@ html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrol
 /* Paper grain on Home, book grids and Settings, never under book text */
 body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
 body.reading{background:var(--page)}
+/* iPhone paints the strip above the app (time, battery) in the flat theme colour; the grain fades in below it, so the
+   page meets that strip without an edge */
+body::before{content:"";position:fixed;z-index:15;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 22px);pointer-events:none;
+  background:linear-gradient(var(--bg) env(safe-area-inset-top),color-mix(in srgb,var(--bg) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent)}
+body.reading::before{display:none}
 body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:#000;opacity:var(--dim,0);pointer-events:none}
 body.reading dialog.sheet{filter:var(--dim-sheet,none)}   /* sheets sit above that layer; brightness(1 - dim) matches it */
 ::selection{background:var(--highlight);color:inherit}
@@ -174,10 +179,11 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .cover.hero{width:76px}
 /* Home: Folio and two round buttons, the book you're in as a big cover with one button back in, Up next,
    and the Library drawer's top edge along the bottom of the screen */
-.htop{display:flex;justify-content:space-between;align-items:center;min-height:44px}
-.wordmark{font:500 26px/30px var(--display)}
-.htools{display:flex;gap:8px;margin-right:-2px}
-.icon-btn.ring{border:1px solid var(--line);background:var(--surface)}
+.htop{display:flex;justify-content:space-between;align-items:center;min-height:52px}
+.wordmark{font:500 34px/38px var(--display);letter-spacing:-.01em}
+.htools{display:flex;gap:10px;margin-right:-2px}
+.icon-btn.ring{width:52px;height:52px;border:1px solid var(--line);background:var(--surface)}
+.icon-btn.ring svg{width:25px;height:25px}
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center}
 .hero .rhead{flex-direction:column;align-items:center;gap:0;width:auto;cursor:pointer;touch-action:manipulation}
 .heroart{position:relative;display:block;margin:6px 0 26px}
@@ -285,14 +291,16 @@ body.reading #peek,body.reading #drawer,body.reading #dscrim{display:none}
 .drawer:not(.inshelf) #shelfBack,.drawer:not(.inshelf) #shelfMore,.drawer.inshelf #h-lib{display:none}
 #dLib,#v-shelf{display:flex;flex-direction:column;gap:16px;padding-top:6px}
 #dLib .find .field{background:var(--sunk);border-color:transparent}
-.chips{display:flex;gap:8px;margin:-4px -16px 0;padding:0 16px;overflow-x:auto;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chips button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--ink);font:600 14px/1 var(--ui);transition:background-color .15s,color .15s}
-.chips button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .sbtns{display:flex;gap:14px}
 .sbtns .link,.shead .link{min-height:36px}
-/* A collection is one oak shelf: its name, its covers standing on the ledge, the ledge running edge to edge */
-#shelfRows{display:flex;flex-direction:column;gap:12px}
+.link.add{display:inline-flex;align-items:center;gap:4px}
+.link.add svg{width:16px;height:16px}
+/* Fiction, then Non-fiction: a heading with Arrange and Add, then each collection as one oak shelf (its name, its
+   covers standing on the ledge, the ledge running edge to edge) */
+#shelfRows{display:flex;flex-direction:column;gap:28px}
+.lsec{display:flex;flex-direction:column;gap:12px}
+.lsec .shead{margin:0}
+.lsec>.note{margin:-4px 0 0}
 .sname{display:flex;align-items:center;gap:6px;width:100%;min-height:40px;padding:0;border:0;background:none;color:var(--ink);text-align:left;touch-action:manipulation}
 .sname .sn{min-width:0;font:500 18px/22px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sname .meta{flex:none}
@@ -304,11 +312,6 @@ body.reading #peek,body.reading #drawer,body.reading #dscrim{display:none}
 .addslot{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:52px;height:78px;padding:0;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-bottom:0;border-radius:4px 4px 0 0;background:none;color:var(--ink-2);font:500 10px/12px var(--ui)}
 .addslot svg{width:18px;height:18px}
 .srow .ledge,#v-shelf .ledge{margin:0 -16px;border-radius:0}
-.bgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 12px}
-.bgrid li{display:flex;flex-direction:column;gap:6px;min-width:0}
-.bgrid .book{width:100%}
-.bgrid .t{font:500 12px/15px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (min-width:560px){.bgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 #shelfName{font-size:32px;line-height:36px}
 #v-shelf .tbar{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;margin-top:-6px}
 /* Arrange: rows with a grip on the right. Drag a grip (or press the arrow keys on it) to move a row. */
@@ -535,9 +538,10 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <p class="note">Nothing is uploaded: your books stay on this device.<span class="drophint"> You can also drop PDFs onto this page.</span></p>
       </div>
       <section id="nextSec" class="upnext" aria-labelledby="h-next" hidden>
-        <div class="shead"><h2 id="h-next" class="shelf-title">Up next</h2>
+        <div class="shead"><h2 id="h-next" class="shelf-title">Also reading</h2>
           <button id="pickBtn" class="link pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg>Pick for me</button></div>
         <div id="next" class="nexts"></div>
+        <p id="nextNone" class="note" hidden>No other books on the go.</p>
       </section>
   </section>
 
@@ -596,22 +600,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <button type="button" id="lqClear" class="icon-btn" aria-label="Clear" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></label>
       <button type="button" id="lqCancel" class="link" hidden>Cancel</button>
     </form>
-    <div id="chips" class="chips" role="group" aria-label="Show">
-      <button data-f="">All</button><button data-f="fiction">Fiction</button><button data-f="nonfiction">Non-fiction</button><button data-f="progress">Reading</button><button data-f="unread">Unread</button><button data-f="finished">Finished</button>
-    </div>
-    <div id="libMain" class="view" style="animation:none">
-      <section id="collSec" aria-labelledby="h-coll">
-        <div class="shead"><h3 id="h-coll" class="shelf-title">Collections</h3>
-          <span class="sbtns"><button id="arrColls" class="link">Arrange</button><button id="newColl" class="link">New</button></span></div>
-        <div id="shelfRows"></div>
-        <p id="collHint" class="note" hidden>Group books into collections: hold a cover and choose one, or tap New.</p>
-      </section>
-      <section id="allSec" aria-labelledby="h-all">
-        <div class="shead"><h3 id="h-all" class="shelf-title">All books</h3><button id="sortBtn" class="link"></button></div>
-        <ul id="allGrid" class="bgrid"></ul>
-        <p id="allNone" class="note none" hidden></p>
-      </section>
-    </div>
+    <div id="libMain"><div id="shelfRows"></div></div>
     <section id="libResults" aria-labelledby="lqSum" hidden>
       <h3 id="lqSum" class="label glabel" aria-live="polite"></h3>
       <ul id="lqList" class="group"></ul>
@@ -1136,9 +1125,9 @@ const updateMany = (store, ids, fn) => tx(store, 'readwrite', o => ids.map((id, 
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
-const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a book's or a collection's side; prefs.side is the Library filter ('' = all)
+const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a book's or a collection's category
 // autohide: the reader's bars slide away while scrolling down. dim (0–60) and warm (0–100) are percentages.
-const DEF = { v: 5, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, side: '', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
+const DEF = { v: 5, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1161,8 +1150,7 @@ function loadPrefs() {
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
   if (!['light', 'dark', 'system'].includes(p.theme)) p.theme = 'system';
   delete p.tint;
-  // Version 5: side was Home's Fiction | Non-fiction switch (always one of the two); it is the Library filter now, off at first.
-  if (!SIDES[p.side] || !(p.v >= 5)) p.side = DEF.side;
+  delete p.side;   // Home's old Fiction | Non-fiction switch: the Library shows both now
   const snap = (v, max, step) => Math.min(max, Math.max(0, Math.round((+v || 0) / step) * step));
   p.dim = snap(p.dim, 60, 5); p.warm = snap(p.warm, 100, 10);
   p.v = 5;
@@ -1176,7 +1164,8 @@ const TONE = {
 };
 const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
 const pct = v => v ? v + '%' : 'Off';
-const chrome = () => { $('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue(book ? '--page' : '--bg').trim(); };
+// The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, else the ground.
+const chrome = () => { $('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue(book ? '--page' : !$('#drawer').hidden ? '--bar-dim' : '--bg').trim(); };
 function applyPrefs() {
   const r = document.documentElement;
   r.style.setProperty('--size', prefs.size + 'px'); r.style.setProperty('--lh', prefs.lh); r.style.setProperty('--margin', prefs.margin + 'px');
@@ -1202,13 +1191,12 @@ function applyPrefs() {
   $('#sortVal').textContent = SORTN[prefs.sort];
 }
 // A change while reading keeps the reader on the same paragraph; switching Reflow / Page keeps the same page.
-const QUIET = new Set(['dim', 'warm', 'side']);
+const QUIET = new Set(['dim', 'warm']);
 async function changePrefs(patch) {
   if (!('size' in patch)) endSizing();
   const quiet = Object.keys(patch).every(k => QUIET.has(k)), at = !quiet && book && els.length ? where() : null, remode = 'mode' in patch && patch.mode !== prefs.mode;
   prefs = { ...prefs, ...patch }; applyPrefs();
   try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch {}
-  if ('side' in patch && loaded) renderLib();
   if (!at) return;
   if (remode) {
     const b = book;
@@ -1311,9 +1299,10 @@ let arranging = null;   // 'colls' or 'books' while their Arrange list shows
 let pushed = 0;         // drawer pages pushed this session: closing goes Back only through those, never out of the app
 function showDrawer(open, shelf) {
   const d = $('#drawer');
-  if (!open || (shelf ? arranging === 'colls' : arranging === 'books')) arranging = null;
+  if (!open || (shelf ? arranging?.startsWith('colls') : arranging === 'books')) arranging = null;
   d.hidden = $('#dscrim').hidden = !open;
   document.documentElement.classList.toggle('lib', open);
+  chrome();
   $('#libOpen').setAttribute('aria-expanded', open);
   if (!open) { closeFind(); return; }
   $('#dLib').hidden = !!shelf; $('#v-shelf').hidden = !shelf; d.classList.toggle('inshelf', !!shelf);
@@ -1442,16 +1431,18 @@ async function refresh() {
   backfill(books.filter(m => !covers.has(m.id) || m.author === undefined || m.art === undefined));
 }
 
-// ---- Home: the book you're in, as a big cover with one button back in, then Up next ----
+// ---- Home: the book you're in, as a big cover with one button back in, then Also reading ----
 function renderLibrary() {
   const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
   $('#first').hidden = n > 0;
   const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0];
   renderNow(now);
-  // Up next: the other books in progress, then the newest unread ones; three at most.
-  const next = [...reading.filter(m => m !== now), ...books.filter(m => !m.pct && m !== now).sort(SORT.added[1])].slice(0, 3);
-  $('#nextSec').hidden = !next.length;
-  $('#next').replaceChildren(...next.map(nextEl));
+  // Also reading: the other books in progress, opened last first, three at most. Pick for me sits in its heading,
+  // so the section stays while there is an unread book to pick.
+  const also = reading.filter(m => m !== now).slice(0, 3);
+  $('#nextSec').hidden = !also.length && !books.some(m => !m.pct && m !== now);
+  $('#next').replaceChildren(...also.map(nextEl));
+  $('#nextNone').hidden = also.length > 0;
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
@@ -1487,59 +1478,65 @@ function renderNow(m) {
   card.replaceChildren(head, where, go);
 }
 
-// ---- The Library drawer: search, filters, collections as shelves, all books ----
-// A book is Fiction or Non-fiction when you set it (Edit title and cover), else it takes its collection's side.
-// The chips filter by that and by reading state; a book with neither set shows only under All.
-const sideOf = m => m.side || shelves.find(s => s.id === m.shelf)?.side || '';
-let libSt = '';   // '', 'progress', 'unread' or 'finished'
-const passes = m => (!prefs.side || sideOf(m) === prefs.side) && (!libSt || state(m) === libSt);
+// ---- The Library drawer: Fiction, then Non-fiction, each with its collections as shelves and an Add button.
+// A book in no collection stands on its category's last shelf (Other fiction, Other non-fiction), or on
+// Not in a collection when it has no category either. Collections made before sides existed get their own heading. ----
+const SECTIONS = [['fiction', 'Fiction'], ['nonfiction', 'Non-fiction'], ['', 'Other collections']];
+const loose = side => books.filter(m => !shelves.some(s => s.id === m.shelf) && (m.side || '') === side);
+const looseName = side => side ? 'Other ' + SIDES[side].toLowerCase() : 'Not in a collection';
 // A collection's books in the order you arranged them; books never arranged follow, oldest added first.
 const inOrder = list => list.sort((a, b) => (a.rank ?? a.added) - (b.rank ?? b.added));
 function renderLib() {
   if (!loaded) return;
-  for (const c of $$('#chips button')) { const f = c.dataset.f; c.setAttribute('aria-pressed', f ? f === prefs.side || f === libSt : !prefs.side && !libSt); }
-  const filtering = !!(prefs.side || libSt);
-  const rows = shelves.map(s => ({ s, list: inOrder(books.filter(m => m.shelf === s.id)).filter(passes) })).filter(r => !filtering || r.list.length);
-  $('#collSec').hidden = filtering && !rows.length;
-  $('#collHint').hidden = shelves.length > 0;
-  $('#arrColls').hidden = shelves.length < 2 || filtering;
-  $('#arrColls').textContent = arranging === 'colls' ? 'Done' : 'Arrange';
-  $('#newColl').hidden = arranging === 'colls';
-  $('#shelfRows').replaceChildren(...(arranging === 'colls'
-    ? [arrangeList(shelves.map(s => ({ id: s.id, name: s.name, meta: plural(books.filter(m => m.shelf === s.id).length, 'book') })), saveCollOrder)]
-    : rows.map(shelfRow)));
-  const all = sorted(books.filter(passes));
-  $('#allGrid').replaceChildren(...all.map(m => { const li = el('li'); li.append(bookBtn(m, 'grid'), el('span', 't', m.title)); return li; }));
-  $('#allNone').hidden = all.length > 0;
-  const what = [prefs.side && SIDES[prefs.side], libSt && { progress: 'in progress', unread: 'unread', finished: 'finished' }[libSt]].filter(Boolean).join(', ').toLowerCase();
-  $('#allNone').textContent = !books.length ? 'No books yet. Add a PDF with the + button on Home.'
-    : prefs.side && !books.some(m => sideOf(m) === prefs.side) ? `No books are marked ${SIDES[prefs.side]} yet. Hold a cover and choose Edit title and cover to set one, or give a collection a side from its ⋯ menu.`
-    : `No ${what} books.`;
-  $('#sortBtn').textContent = SORTN[prefs.sort];
+  const out = [];
+  for (const [side, label] of SECTIONS) {
+    const colls = shelves.filter(s => (s.side || '') === side), free = side ? sorted(loose(side)) : [];
+    if (!side && !colls.length) continue;
+    const sec = el('section', 'lsec'), head = el('div', 'shead'), btns = el('span', 'sbtns'), arr = arranging === 'colls:' + side;
+    if (colls.length > 1) {
+      const a = el('button', 'link', arr ? 'Done' : 'Arrange');
+      a.setAttribute('aria-label', arr ? 'Done arranging' : `Arrange ${label} collections`);
+      a.onclick = () => { arranging = arr ? null : 'colls:' + side; renderLib(); };
+      btns.append(a);
+    }
+    if (side && !arr) {
+      const add = el('button', 'link add');
+      add.append(svg(ICON.plus), 'Add'); add.setAttribute('aria-label', `Add a ${label} collection`);
+      add.onclick = () => askName(`New ${label} collection`, '', 'Create', name => addShelf(name, side));
+      btns.append(add);
+    }
+    head.append(el('h3', 'shelf-title', label), btns);
+    sec.append(head);
+    if (arr) sec.append(arrangeList(colls.map(s => ({ id: s.id, name: s.name, meta: plural(books.filter(m => m.shelf === s.id).length, 'book') })), saveCollOrder));
+    else {
+      sec.append(...colls.map(s => shelfRow({ s, list: inOrder(books.filter(m => m.shelf === s.id)) })));
+      if (free.length) sec.append(shelfRow({ s: { id: 'loose:' + side, name: looseName(side) }, list: free }));
+      if (!colls.length && !free.length) sec.append(el('p', 'note', 'No collections yet.'));
+    }
+    out.push(sec);
+  }
+  const none = sorted(loose(''));
+  if (none.length) out.push(shelfRow({ s: { id: 'loose:', name: looseName('') }, list: none }));
+  $('#shelfRows').replaceChildren(...out);
 }
-// One collection as a shelf: its name (tap opens it, hold for its options), its covers on an oak ledge.
+// One shelf: its name (tap opens it; on a collection, hold for its options), its covers on an oak ledge.
 function shelfRow({ s, list }) {
   const sec = el('section', 'srow'), name = el('button', 'sname'), cov = el('div', 'scov');
   name.append(el('span', 'sn', s.name), el('span', 'meta num', String(list.length)), svg(ICON.chev));
   name.setAttribute('aria-label', `${s.name}, ${plural(list.length, 'book')}`);
-  pressable(name, () => goShelf(s.id), () => shelfMenu(s));
+  pressable(name, () => goShelf(s.id), () => { if (!s.id.startsWith('loose:')) shelfMenu(s); });
   if (list.length) cov.append(...list.map(m => bookBtn(m, 'sh')));
   else { const add = el('button', 'addslot'); add.append(svg(ICON.plus), el('span', '', 'Add books')); add.onclick = () => addToShelf(s); cov.append(add); }
   sec.append(name, cov, el('div', 'ledge'));
   return sec;
 }
-for (const c of $$('#chips button')) c.onclick = () => {
-  const f = c.dataset.f;
-  if (!f) { libSt = ''; changePrefs({ side: '' }); }
-  else if (SIDES[f]) changePrefs({ side: prefs.side === f ? '' : f });
-  else { libSt = libSt === f ? '' : f; renderLib(); }
-};
-$('#newColl').onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
-$('#arrColls').onclick = () => { arranging = arranging === 'colls' ? null : 'colls'; renderLib(); };
+// A section's collections in their new order take that section's places in the one order of all collections.
 const saveCollOrder = ids => {
-  shelves.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+  const mine = new Set(ids);
+  let k = 0;
+  shelves = shelves.map(s => { if (!mine.has(s.id)) return s; const id = ids[k++]; return shelves.find(x => x.id === id); });
   shelves.forEach((s, i) => { s.order = i; });
-  updateMany('shelves', ids, (s, i) => { s.order = i; }).catch(() => {});
+  updateMany('shelves', shelves.map(s => s.id), (s, i) => { s.order = i; }).catch(() => {});
 };
 
 // ---- Arrange: a list of rows with grips. Drag a grip and the rows it passes make room; let go to drop it there.
@@ -1602,14 +1599,9 @@ function arrangeList(items, changed) {
   return ul;
 }
 
-// ---- Pick: a random book you haven't started, Fiction or Non-fiction when the Library is filtered to one ----
-// When that side has nothing unread, any unread book will do. Never the same book twice in a row.
+// ---- Pick: a random book you haven't started, never the same book twice in a row ----
 let lastPick = null;
-function pickPool() {
-  const unread = books.filter(m => !m.pct);
-  const here = unread.filter(m => !prefs.side || sideOf(m) === prefs.side);
-  return here.length ? here : unread;
-}
+const pickPool = () => books.filter(m => !m.pct);
 async function pickBook() {
   if (!loaded) await refresh();   // tapped the moment the app opened: read the library first
   let pool = pickPool();
@@ -1652,7 +1644,7 @@ function runLib() {
   const raw = $('#lq').value, q = norm(raw.trim()), on = !!q;
   $('#lqClear').hidden = !raw;
   $('#lqCancel').hidden = !on && document.activeElement !== $('#lq');
-  $('#libMain').hidden = $('#chips').hidden = on; $('#libResults').hidden = !on;
+  $('#libMain').hidden = on; $('#libResults').hidden = !on;
   if (!on) return;
   const list = books.filter(m => norm(m.title).includes(q) || norm(m.author).includes(q)).sort(SORT.title[1]);
   $('#lqSum').textContent = list.length ? plural(list.length, 'book') + ' found' : '';
@@ -1673,19 +1665,23 @@ let gridCols = 0;
 const colsFor = () => innerWidth >= 560 ? 4 : 3;
 function renderShelf(id) {
   if (!loaded) return;
-  const coll = shelves.find(x => x.id === id);
-  if (!coll) { history.replaceState({ tab: 'library', lib: true }, ''); return show(history.state); }   // deleted, or an old Unsorted page
-  const list = inOrder(books.filter(m => m.shelf === id)), going = list.filter(m => state(m) === 'progress').length;
-  $('#shelfName').textContent = coll.name;
-  $('#shelfCount').textContent = [plural(list.length, 'book'), SIDES[coll.side], going && going + ' in progress'].filter(Boolean).join(' · ');
-  $('#shelfMore').setAttribute('aria-label', 'Options for ' + coll.name);
-  $('#shelfMore').onclick = () => shelfMenu(coll);
-  $('#shelfAdd').onclick = () => addToShelf(coll);
-  $('#arrBooks').hidden = list.length < 2;
+  // A collection, or 'loose:<side>': the books in no collection with that category ('' = none).
+  const side = id.startsWith('loose:') ? id.slice(6) : null, coll = side == null && shelves.find(x => x.id === id);
+  if (side == null && !coll) { history.replaceState({ tab: 'library', lib: true }, ''); return show(history.state); }   // deleted, or an old page
+  const list = coll ? inOrder(books.filter(m => m.shelf === id)) : sorted(loose(side)), going = list.filter(m => state(m) === 'progress').length;
+  $('#shelfName').textContent = coll ? coll.name : looseName(side);
+  $('#shelfCount').textContent = [plural(list.length, 'book'), SIDES[coll?.side], going && going + ' in progress'].filter(Boolean).join(' · ');
+  $('#shelfMore').hidden = $('#shelfAdd').hidden = !coll;
+  if (coll) {
+    $('#shelfMore').setAttribute('aria-label', 'Options for ' + coll.name);
+    $('#shelfMore').onclick = () => shelfMenu(coll);
+    $('#shelfAdd').onclick = () => addToShelf(coll);
+  }
+  $('#arrBooks').hidden = !coll || list.length < 2;
   $('#arrBooks').textContent = arranging === 'books' ? 'Done' : 'Arrange';
   $('#arrBooks').onclick = () => { arranging = arranging === 'books' ? null : 'books'; renderShelf(id); };
   $('#gridNone').hidden = list.length > 0;
-  $('#gridNone').textContent = 'No books here yet. Add books puts some in.';
+  $('#gridNone').textContent = coll ? 'No books here yet. Add books puts some in.' : 'Every book here is in a collection now.';
   if (arranging === 'books') return $('#grid').replaceChildren(arrangeList(list.map(m => ({ id: m.id, name: m.title, m })), ids => {
     ids.forEach((bid, i) => { const m = books.find(x => x.id === bid); if (m) m.rank = i; });
     updateMany('meta', ids, (x, i) => { x.rank = i; }).catch(() => {});
@@ -1706,8 +1702,8 @@ function renderShelf(id) {
   }
   $('#grid').replaceChildren(...rows);
 }
-// The order of All books in the Library; set there or from Settings. Collections keep the order you arranged.
-$('#sortBtn').onclick = $('#sortRow').onclick = () => openSheet('Order books by', body => body.append(...Object.entries(SORT).map(([k, [name]]) =>
+// The order of the shelves of books in no collection; set from Settings. Collections keep the order you arranged.
+$('#sortRow').onclick = () => openSheet('Order books by', body => body.append(...Object.entries(SORT).map(([k, [name]]) =>
   act(name, null, () => changePrefs({ sort: k }), { on: prefs.sort === k }))));
 let resizeT = 0;
 addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { const s = history.state || {}; if (s.shelf && !book && colsFor() !== gridCols && arranging !== 'books') renderShelf(s.shelf); }, 150); });
@@ -1735,18 +1731,25 @@ function act(label, icon, fn, opts = {}) {
   b.onclick = async () => { if (await fn() !== false) { sheet.close(); refresh(); } };
   return b;
 }
-function askName(title, value, label, save, what = 'Collection name', max = 60) {
+// side: when given, the sheet also asks Fiction or Non-fiction (starting on that one) and save gets it.
+function askName(title, value, label, save, what = 'Collection name', max = 60, side) {
   openSheet(title, body => {
-    const f = el('form', 'nameform'), input = el('input'), ok = el('button', 'pill primary block', label);
+    const f = el('form', 'nameform'), input = el('input'), ok = el('button', 'pill primary block', label), pick = el('div', 'seg');
     input.value = value; input.maxLength = max; input.placeholder = what; input.autocomplete = 'off';
     input.setAttribute('aria-label', what); input.enterKeyHint = 'done';
+    pick.setAttribute('role', 'group'); pick.setAttribute('aria-label', 'Category');
+    for (const [v, name] of Object.entries(SIDES)) {
+      const b = el('button', '', name); b.type = 'button'; b.dataset.v = v;
+      b.onclick = () => { side = v; for (const x of pick.children) x.setAttribute('aria-pressed', x === b); };
+      b.setAttribute('aria-pressed', v === side); pick.append(b);
+    }
     f.onsubmit = async e => {
       e.preventDefault();
       const name = input.value.trim();
       if (!name) return input.focus();
-      await save(name); sheet.close(); refresh();
+      await save(name, side); sheet.close(); refresh();
     };
-    f.append(input, ok); body.append(f);
+    f.append(input, ...(side !== undefined ? [pick] : []), ok); body.append(f);
     requestAnimationFrame(() => input.focus());
   });
   return false;
@@ -1764,7 +1767,7 @@ function askConfirm(title, text, label, fn) {
   return false;
 }
 // A new collection goes to the side being shown.
-const addShelf = async (name, side = prefs.side) => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now(), side }; await put('shelves', s.id, s); return s.id; };
+const addShelf = async (name, side = '') => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now(), side }; await put('shelves', s.id, s); return s.id; };
 // A book put in a collection goes to the end of its arranged order.
 const moveBook = (id, shelfId) => update(id, m => {
   if (shelfId) { if (m.shelf !== shelfId) m.rank = Date.now(); m.shelf = shelfId; }
@@ -1775,7 +1778,8 @@ function bookMenu(m) {
     const here = shelves.find(s => s.id === m.shelf), st = state(m);
     body.append(el('p', 'label lbl', 'Collection'));
     for (const s of shelves) body.append(act(s.name, 'folder', () => moveBook(m.id, s.id), { on: here?.id === s.id }));
-    body.append(act('New collection…', 'plus', () => askName('New collection', '', 'Create', async name => moveBook(m.id, await addShelf(name)))));
+    body.append(act('New collection…', 'plus', () => askName('New collection', '', 'Create', async (name, side) => moveBook(m.id, await addShelf(name, side)),
+      undefined, undefined, m.side || here?.side || 'fiction')));
     if (here) body.append(act('Take out of ' + here.name, 'folderOut', () => moveBook(m.id, null)));
     body.append(el('hr'));
     if (st === 'progress') body.append(act('Mark as finished', 'done', () => update(m.id, x => { x.pct = 100; x.page = x.pages; })));
@@ -1937,11 +1941,11 @@ function addToShelf(s) {
 function pickCollection(ids) {
   openSheet(ids.length === 1 ? 'Add to collection' : `Add ${plural(ids.length, 'book')} to a collection`, body => {
     for (const s of shelves) body.append(act(s.name, 'folder', async () => { for (const id of ids) await moveBook(id, s.id); status(''); }));
-    body.append(act('New collection…', 'plus', () => askName('New collection', '', 'Create', async name => {
-      const sid = await addShelf(name);
+    body.append(act('New collection…', 'plus', () => askName('New collection', '', 'Create', async (name, side) => {
+      const sid = await addShelf(name, side);
       for (const id of ids) await moveBook(id, sid);
       status('');
-    })));
+    }, undefined, undefined, 'fiction')));
   });
 }
 
