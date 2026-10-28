@@ -351,6 +351,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .panel .seg button{height:38px;font-size:14px}
 .panel .seg svg{width:22px;height:22px}
 .pfield{display:flex;flex-direction:column;gap:4px}
+.pfield>.range{flex:none}   /* a slider straight in the column keeps its 44px height */
 .sizerow{display:flex;align-items:center;gap:4px}
 .sizerow button{display:grid;place-items:center;flex:none;width:40px;height:44px;padding:0;border:0;border-radius:999px;background:none;color:var(--ink-2);font-family:var(--display)}
 @media (hover:hover){.sizerow button:hover{color:var(--ink)}}
@@ -586,7 +587,8 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   <p class="note pnote">Size, typeface, spacing and margins apply in Reflow. Page shows the PDF as printed.</p>
   </div>
   <div id="rsetPage" class="tpanel" role="tabpanel" aria-labelledby="tabPage" hidden>
-  <div class="seg" data-k="mode" role="group" aria-label="Show the book as"><button data-v="reflow">Reflow</button><button data-v="page">Page</button></div>
+  <div class="pfield"><span class="label" id="l-mode">Show the book as</span>
+    <div class="seg" data-k="mode" role="group" aria-labelledby="l-mode"><button data-v="reflow">Reflow</button><button data-v="page">Page</button></div></div>
   <div class="pfield"><span class="spread"><label for="s-dim" class="label">Dim</label><span id="dimVal" class="label num"></span></span>
     <input id="s-dim" class="range" type="range" min="0" max="60" step="5"></div>
   <div class="pfield"><span class="spread"><label for="s-warm" class="label">Warmth</label><span id="warmVal" class="label num"></span></span>
@@ -2025,10 +2027,12 @@ async function tocFor(b) {
   try { b.text.toc = await readToc(await getDoc(b)); put('text', b.id, b.text).catch(() => {}); return b.text.toc; }
   catch { return []; }
 }
-// The chapters: the PDF's own contents when it lists two or more, else the headings found by type size.
+// The chapters: the PDF's own contents when it lists two or more, else the headings found by type size. A contents
+// entry points at its page; when that page has a heading (a title under an epigraph or a picture), it opens there.
 function chaptersOf(b) {
   const bl = b.text.blocks, toc = b.text.toc || [];
-  return toc.length >= 2 ? toc.map(({ t, p }) => ({ t, p, i: b.first[p] ?? 0 })) : b.heads.map(i => ({ t: bl[i].text, p: bl[i].page, i }));
+  const at = p => b.heads.find(i => bl[i].page === p) ?? b.first[p] ?? 0;
+  return toc.length >= 2 ? toc.map(({ t, p }) => ({ t, p, i: at(p) })) : b.heads.map(i => ({ t: bl[i].text, p: bl[i].page, i }));
 }
 // A row of tabs on the segmented track (Contents; the Text sheet has the same look in its markup).
 function tabBar(items, cur, pick) {
