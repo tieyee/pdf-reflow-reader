@@ -142,9 +142,6 @@ input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;hei
 .vhead{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px}
 .vhead>div:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}
 .card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px}
-.vhead.home{align-items:flex-start;padding-top:2px}
-.vhead.home .screen-title{font-size:32px;line-height:38px}
-@media (max-width:380px){.vhead.home .screen-title{font-size:28px;line-height:34px}}
 body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border-radius:12px}
 
 /* Home */
@@ -174,15 +171,36 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .pbar i{display:block;height:100%;border-radius:inherit;background:var(--accent-ink);transform-origin:left}
 .resume .pbar i{animation:fill .8s .1s var(--ease) both}
 @keyframes fill{from{transform:scaleX(0)}}
-/* Also reading: the other books in progress, as small cards in a row you can swipe */
-.also{display:flex;gap:10px;margin:0 -16px;padding:2px 16px 6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding:0 16px;scrollbar-width:none}
-.also::-webkit-scrollbar{display:none}
-.strip{flex:none;display:flex;align-items:center;gap:10px;width:min(270px,76vw);min-height:48px;padding:6px 12px 6px 8px;text-align:left;scroll-snap-align:start;touch-action:manipulation;transition:transform .15s var(--ease)}
-.strip:active{transform:scale(.98)}
-.strip .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.strip .t{font:500 16px/19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.strip .meta{font-size:12px;line-height:16px}
-.cover.now{width:52px}.cover.hero{width:76px}
+.cover.hero{width:76px}
+/* Home: Folio and two round buttons, the book you're in as a big cover with one button back in, Up next,
+   and the Library drawer's top edge along the bottom of the screen */
+.htop{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.wordmark{font:500 26px/30px var(--display)}
+.htools{display:flex;gap:8px;margin-right:-2px}
+.icon-btn.ring{border:1px solid var(--line);background:var(--surface)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero .rhead{flex-direction:column;align-items:center;gap:0;width:auto;cursor:pointer;touch-action:manipulation}
+.heroart{position:relative;display:block;margin:6px 0 26px}
+.cover.big{width:min(168px,20dvh,40vw);border-radius:3px;box-shadow:0 2px 2px rgba(0,0,0,.2),0 28px 40px -18px rgba(0,0,0,.55)}
+.herorib{position:absolute;z-index:3;right:15%;top:96%;width:12px;height:18%;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.herotitle{max-width:20ch;font:500 28px/32px var(--display);letter-spacing:-.01em;text-wrap:balance}
+.hero .by{margin-top:4px;font:400 15px/20px var(--ui);color:var(--ink-2)}
+.where{align-self:stretch;margin:18px 16px 0}
+.where .wrow{display:flex;justify-content:space-between;gap:12px;font:400 13px/16px var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.where .wrow span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.where .pbar{margin-top:8px;height:3px}
+.where .pbar i{animation:fill .8s .1s var(--ease) both}
+.pill.big{align-self:stretch;height:52px;margin:16px 8px 0;font-size:17px}
+.upnext .shead{margin-bottom:10px}
+.link.pick{display:inline-flex;align-items:center;gap:6px;margin-right:-4px}
+.link.pick svg{width:18px;height:18px}
+.nexts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.nx{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:0;border:0;background:none;text-align:left;color:inherit;touch-action:manipulation}
+.nx:active .cover{transform:scale(.97)}
+.cover.mini{width:36px}
+.nx .info{min-width:0;display:flex;flex-direction:column;gap:2px}
+.nx .t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;-webkit-hyphens:auto;hyphens:auto;font:500 13px/16px var(--ui)}
+.nx .meta{font-size:12px;line-height:14px}
 .sidenote{padding:8px 4px 0;max-width:46ch}
 .more{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:-4px}
 .more .link{display:inline-flex;align-items:center;gap:6px;margin-left:-4px}
@@ -211,7 +229,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 2px),repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 2px)}
 .cover.ka{--cv:var(--cover-a)}.cover.kb{--cv:var(--cover-b)}.cover.kc{--cv:var(--cover-c);--on-cover:#2b1f0b}.cover.kd{--cv:var(--cover-d)}
 .cover .ct,.cover .ca{position:absolute;z-index:1;left:15%;right:9%;color:var(--on-cover);overflow-wrap:anywhere}
-.cover .ct{top:11%;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font:500 15.5cqw/1.04 var(--display)}
+.cover .ct{top:11%;-webkit-hyphens:auto;hyphens:auto;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font:500 15.5cqw/1.04 var(--display)}
 .cover .ca{bottom:9%;font:500 8.5cqw/1.2 var(--ui);opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cover .ct::after{content:"";display:block;width:28%;height:max(1px,1.6cqw);margin-top:9cqw;background:currentColor;opacity:.55}
 @container (max-width:40px){.cover .ct,.cover .ca{display:none}}
@@ -241,29 +259,68 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .brow .icon-btn{color:var(--ink-2)}
 .none{padding:4px}
 
-#collSec{display:flex;flex-direction:column;gap:10px}
-#collSec .shead{margin:0}
-/* Home's bottom bar: the reader's floating glass, on the app's own paper; Home only */
-.hbar{position:fixed;z-index:20;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:max(10px,calc(env(safe-area-inset-bottom) - 12px));max-width:520px;margin:0 auto;
-  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding:6px;border-radius:28px;border:.5px solid color-mix(in srgb,var(--ink) 12%,transparent);
-  background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
-  box-shadow:0 10px 30px -8px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.08)}
-.hbar .tool{color:var(--ink)}
-@media (hover:hover){.hbar .tool:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}}
-.hbar .tool[aria-expanded=true]{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-body.home #views{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
-/* Collection tiles: up to four real covers standing on an oak ledge, the name in Garamond, how many books */
-.tiles2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
-.tile{display:flex;flex-direction:column;min-width:0;padding:0;border:0;background:none;text-align:left;color:inherit;touch-action:manipulation;transition:transform .15s var(--ease)}
-.tile:active{transform:scale(.98)}
-.tile .tcov{display:flex;align-items:flex-end;gap:5px;height:66px;padding:0 8px;overflow:hidden}
-.cover.tc{width:40px}
-.tile .ledge{display:block;margin:0}
-.tile .tn{margin-top:9px;font:500 17px/20px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tile .meta{font-size:12px;line-height:16px}
-.newt .tcov{justify-content:center;align-items:center;margin:0 8px;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-bottom:0;border-radius:6px 6px 0 0;color:var(--ink-2)}
-.newt .tcov svg{width:22px;height:22px}
-@media (hover:hover){.tile:hover .tn{color:var(--accent-ink)}}
+/* The Library: a drawer over Home. Its top edge (the peek) sits along the bottom of Home; pulling it up, or tapping
+   it, opens the drawer; pulling its handle down, the arrow, the dimmed strip above it or Back closes it. */
+body.home #views{padding-bottom:calc(132px + env(safe-area-inset-bottom))}
+.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;padding:6px 16px calc(14px + env(safe-area-inset-bottom));
+  border-radius:22px 22px 0 0;border-top:1px solid var(--line);background:var(--surface);box-shadow:var(--sheet-lift);touch-action:none}
+.peekhead{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:4px 0 0;border:0;background:none;color:var(--ink);text-align:left}
+.peekhead .grab,.dhead .grab{position:absolute;top:7px;left:50%;margin:0;translate:-50% 0}
+.peekhead .meta{margin-left:6px}
+.peekhead svg,.dtitle .icon-btn svg{width:20px;height:20px;margin-left:auto;color:var(--ink-2)}
+.field.ask{width:100%;margin-top:6px;border-color:transparent;background:var(--sunk);font:500 16px/1 var(--ui);text-align:left;color:var(--ink-2)}
+#dscrim{position:fixed;inset:0;z-index:24;background:var(--scrim);animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.drawer{position:fixed;z-index:25;left:0;right:0;bottom:0;top:calc(44px + env(safe-area-inset-top));max-width:640px;margin:0 auto;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--surface);box-shadow:var(--sheet-lift);animation:rise .26s var(--ease)}
+html.lib{overflow:hidden}
+body.reading #peek,body.reading #drawer,body.reading #dscrim{display:none}
+.dhead{position:sticky;top:0;z-index:4;margin:0 -16px;padding:20px 16px 8px;background:var(--surface);touch-action:none}
+.dtitle{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#h-lib{font-size:28px;line-height:34px}
+#h-lib .meta{font:400 14px/1 var(--ui)}
+#libClose{margin-right:-10px}
+.dtitle .backbtn{margin-left:-8px}
+#shelfMore{margin-left:auto}
+.drawer:not(.inshelf) #shelfBack,.drawer:not(.inshelf) #shelfMore,.drawer.inshelf #h-lib{display:none}
+#dLib,#v-shelf{display:flex;flex-direction:column;gap:16px;padding-top:6px}
+#dLib .find .field{background:var(--sunk);border-color:transparent}
+.chips{display:flex;gap:8px;margin:-4px -16px 0;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--ink);font:600 14px/1 var(--ui);transition:background-color .15s,color .15s}
+.chips button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.sbtns{display:flex;gap:14px}
+.sbtns .link,.shead .link{min-height:36px}
+/* A collection is one oak shelf: its name, its covers standing on the ledge, the ledge running edge to edge */
+#shelfRows{display:flex;flex-direction:column;gap:12px}
+.sname{display:flex;align-items:center;gap:6px;width:100%;min-height:40px;padding:0;border:0;background:none;color:var(--ink);text-align:left;touch-action:manipulation}
+.sname .sn{min-width:0;font:500 18px/22px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sname .meta{flex:none}
+.sname svg{flex:none;width:16px;height:16px;margin-left:auto;color:var(--ink-2)}
+@media (hover:hover){.sname:hover .sn{color:var(--accent-ink)}}
+.scov{display:flex;align-items:flex-end;gap:10px;height:86px;margin:2px -16px 0;padding:0 16px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+.scov::-webkit-scrollbar{display:none}
+.cover.sh{width:52px}
+.addslot{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:52px;height:78px;padding:0;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-bottom:0;border-radius:4px 4px 0 0;background:none;color:var(--ink-2);font:500 10px/12px var(--ui)}
+.addslot svg{width:18px;height:18px}
+.srow .ledge,#v-shelf .ledge{margin:0 -16px;border-radius:0}
+.bgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 12px}
+.bgrid li{display:flex;flex-direction:column;gap:6px;min-width:0}
+.bgrid .book{width:100%}
+.bgrid .t{font:500 12px/15px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:560px){.bgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+#shelfName{font-size:32px;line-height:36px}
+#v-shelf .tbar{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;margin-top:-6px}
+/* Arrange: rows with a grip on the right. Drag a grip (or press the arrow keys on it) to move a row. */
+.arr{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.arow{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 0 6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);transition:transform .18s var(--ease),box-shadow .18s}
+.arr.nt .arow{transition:none}
+.arow.lifted{position:relative;z-index:2;transition:box-shadow .18s;background:var(--surface);box-shadow:0 14px 30px -8px rgba(0,0,0,.4)}
+.arow .an{flex:1;min-width:0;font:500 17px/21px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow .meta{flex:none}
+.grip{flex:none;display:grid;place-items:center;width:48px;height:44px;padding:0;border:0;background:none;color:var(--ink-2);touch-action:none;cursor:grab}
+.grip svg{width:20px;height:20px}
+.arow.lifted .grip{cursor:grabbing;color:var(--ink)}
 
 /* Book grid pages: covers stand on ledges, the label strip under each ledge */
 .backrow{display:flex;justify-content:space-between;align-items:center;margin:-6px -12px -10px -12px}
@@ -324,6 +381,21 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .nameform{display:flex;flex-direction:column;gap:12px;padding-top:4px}
 .nameform input{height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font:500 16px/1 var(--ui);outline:none}
 .nameform input:focus{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
+/* Edit title and cover: two fields, then covers to choose from in rows of four, the chosen one ringed; Save stays in reach */
+.editform{gap:0}
+.editform .lbl:first-child{margin-top:0}
+.editform .meta{margin:2px 0 6px}
+.covers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;padding:4px 0}
+.tile{display:flex;flex-direction:column;gap:6px;min-width:0;padding:0;border:0;background:none;color:var(--ink-2);font:500 12px/16px var(--ui)}
+.tile .cover{outline:2px solid transparent;outline-offset:3px;transition:outline-color .15s,transform .15s var(--ease)}
+.tile[aria-pressed=true]{color:var(--ink)}
+.tile[aria-pressed=true] .cover{outline-color:var(--accent-ink)}
+.tile:active .cover{transform:scale(.97)}
+.tile:disabled{opacity:.45}
+.cover.add{display:grid;place-items:center;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}
+.cover.add svg{width:22px;height:22px}
+.savebar{position:sticky;bottom:0;z-index:3;margin-top:14px;padding:10px 0 2px;background:var(--surface);
+  box-shadow:0 60px 0 var(--surface)}   /* also covers the sheet's bottom padding, which the covers would scroll through */
 .btns{display:flex;gap:10px}
 .btns .pill{flex:1}
 .status .btns .pill{flex:none}
@@ -446,19 +518,15 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 <main id="views">
 
   <section id="v-library" class="view" aria-labelledby="h-library">
-    <header class="vhead home">
-      <div><h1 id="h-library" class="screen-title">Folio</h1></div>
+    <header class="htop">
+      <h1 id="h-library" class="wordmark">Folio</h1>
+      <span class="htools">
+        <button class="icon-btn ring" data-add aria-label="Add a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+        <button id="goSettings" class="icon-btn ring" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
+      </span>
     </header>
-    <form id="libFind" class="find" role="search" hidden>
-      <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg>
-        <span class="sr">Find a book by title or author</span>
-        <input id="lq" type="search" placeholder="Title or author" autocomplete="off" spellcheck="false" enterkeyhint="search">
-        <button type="button" id="lqClear" class="icon-btn" aria-label="Clear" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></label>
-      <button type="button" id="lqCancel" class="link">Cancel</button>
-    </form>
     <div id="status" class="card status" role="status" aria-live="polite" hidden></div>
-    <div id="libMain" class="view" style="animation:none">
-      <section id="nowCard" class="card resume" hidden></section>
+    <section id="nowCard" class="hero" hidden></section>
       <div id="first" class="card first" hidden>
         <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
         <h2 class="card-title">Add your first book</h2>
@@ -466,43 +534,11 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <button class="pill primary" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Choose a PDF</button>
         <p class="note">Nothing is uploaded: your books stay on this device.<span class="drophint"> You can also drop PDFs onto this page.</span></p>
       </div>
-      <section id="alsoSec" aria-labelledby="h-also" hidden>
-        <h2 id="h-also" class="sr">Also reading</h2>
-        <div id="also" class="also"></div>
+      <section id="nextSec" class="upnext" aria-labelledby="h-next" hidden>
+        <div class="shead"><h2 id="h-next" class="shelf-title">Up next</h2>
+          <button id="pickBtn" class="link pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg>Pick for me</button></div>
+        <div id="next" class="nexts"></div>
       </section>
-      <section id="collSec" aria-labelledby="h-coll" hidden>
-        <div class="shead"><h2 id="h-coll" class="shelf-title">Collections</h2><button id="allColls" class="link">All</button></div>
-        <div class="seg" data-k="side" role="group" aria-label="Show"><button data-v="fiction">Fiction</button><button data-v="nonfiction">Non-fiction</button></div>
-        <div id="tiles" class="tiles2"></div>
-      </section>
-    </div>
-    <section id="libResults" aria-labelledby="lqSum" hidden>
-      <h2 id="lqSum" class="label glabel" aria-live="polite"></h2>
-      <ul id="lqList" class="group"></ul>
-      <p id="lqNone" class="note none" hidden></p>
-    </section>
-  </section>
-
-  <section id="v-colls" class="view" aria-labelledby="h-colls" hidden>
-    <div class="backrow"><button id="collsBack" class="backbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Home</button></div>
-    <header class="vhead"><h1 id="h-colls" class="screen-title" tabindex="-1">Collections</h1>
-      <button id="newColl" class="pill primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>New</button></header>
-    <div class="seg" data-k="side" role="group" aria-label="Show"><button data-v="fiction">Fiction</button><button data-v="nonfiction">Non-fiction</button></div>
-    <div id="collGrid" class="tiles2"></div>
-    <p id="collNone" class="note none" hidden>No collections on this side yet.</p>
-  </section>
-
-  <section id="v-shelf" class="view" aria-labelledby="shelfName" hidden>
-    <div class="backrow">
-      <button id="shelfBack" class="backbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Home</button>
-      <button id="shelfMore" class="icon-btn" aria-label="Options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01"/></svg></button>
-    </div>
-    <header class="vhead"><div><h1 id="shelfName" class="screen-title" tabindex="-1"></h1><p id="shelfCount" class="meta num"></p></div></header>
-    <div class="tools">
-      <div class="bar"><button id="sortBtn" class="link"></button><button id="shelfAdd" class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Add books</button></div>
-    </div>
-    <div id="grid" class="grid"></div>
-    <p id="gridNone" class="note none" hidden></p>
   </section>
 
   <section id="v-settings" class="view" aria-labelledby="h-settings" hidden>
@@ -538,12 +574,57 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   </section>
 
 </main>
-<nav id="homeBar" class="hbar" aria-label="Home">
-  <button id="libSearch" class="tool" aria-expanded="false" aria-controls="libFind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg><span>Search</span></button>
-  <button id="pickBtn" class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg><span>Pick</span></button>
-  <button class="tool" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span>Add</span></button>
-  <button id="goSettings" class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Settings</span></button>
-</nav>
+<div id="peek" class="peek" hidden>
+  <button id="libOpen" class="peekhead" aria-controls="drawer" aria-expanded="false"><span class="grab" aria-hidden="true"></span>
+    <span class="shelf-title">Library</span><span id="peekCount" class="meta num"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
+  <button id="libSearch" class="field ask" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg>Title or author</button>
+</div>
+<div id="dscrim" hidden></div>
+<section id="drawer" class="drawer" aria-labelledby="h-lib" hidden>
+  <div class="dhead"><span class="grab" aria-hidden="true"></span>
+    <div class="dtitle"><h2 id="h-lib" class="screen-title" tabindex="-1">Library <span id="libCount" class="meta num"></span></h2>
+      <button id="shelfBack" class="backbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Library</button>
+      <button id="shelfMore" class="icon-btn" aria-label="Options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01"/></svg></button>
+      <button id="libClose" class="icon-btn" aria-label="Close the library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
+  </div>
+  <div id="dLib">
+    <form id="libFind" class="find" role="search">
+      <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg>
+        <span class="sr">Find a book by title or author</span>
+        <input id="lq" type="search" placeholder="Title or author" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" id="lqClear" class="icon-btn" aria-label="Clear" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></label>
+      <button type="button" id="lqCancel" class="link" hidden>Cancel</button>
+    </form>
+    <div id="chips" class="chips" role="group" aria-label="Show">
+      <button data-f="">All</button><button data-f="fiction">Fiction</button><button data-f="nonfiction">Non-fiction</button><button data-f="progress">Reading</button><button data-f="unread">Unread</button><button data-f="finished">Finished</button>
+    </div>
+    <div id="libMain" class="view" style="animation:none">
+      <section id="collSec" aria-labelledby="h-coll">
+        <div class="shead"><h3 id="h-coll" class="shelf-title">Collections</h3>
+          <span class="sbtns"><button id="arrColls" class="link">Arrange</button><button id="newColl" class="link">New</button></span></div>
+        <div id="shelfRows"></div>
+        <p id="collHint" class="note" hidden>Group books into collections: hold a cover and choose one, or tap New.</p>
+      </section>
+      <section id="allSec" aria-labelledby="h-all">
+        <div class="shead"><h3 id="h-all" class="shelf-title">All books</h3><button id="sortBtn" class="link"></button></div>
+        <ul id="allGrid" class="bgrid"></ul>
+        <p id="allNone" class="note none" hidden></p>
+      </section>
+    </div>
+    <section id="libResults" aria-labelledby="lqSum" hidden>
+      <h3 id="lqSum" class="label glabel" aria-live="polite"></h3>
+      <ul id="lqList" class="group"></ul>
+      <p id="lqNone" class="note none" hidden></p>
+    </section>
+  </div>
+  <div id="v-shelf" hidden>
+    <div><h3 id="shelfName" class="screen-title" tabindex="-1"></h3><p id="shelfCount" class="meta num"></p></div>
+    <div class="tbar"><button id="arrBooks" class="link">Arrange</button><button id="shelfAdd" class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Add books</button></div>
+    <div id="grid" class="grid"></div>
+    <p id="gridNone" class="note none" hidden></p>
+  </div>
+</section>
 </div>
 <input id="file" type="file" accept="application/pdf,.pdf" multiple hidden>
 
@@ -990,6 +1071,9 @@ const ICON = {
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
   bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
   search: '<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/>',
+  image: '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+  chev: '<path d="m9 18 6-6-6-6"/>',
+  grip: '<path d="M4 9h16M4 15h16"/>',
 };
 const iconBtn = (name, label, fn) => { const b = el('button', 'icon-btn soft'); b.setAttribute('aria-label', label); b.append(svg(ICON[name])); b.onclick = fn; return b; };
 const bar = (pct, cls = '') => { const b = el('span', 'pbar ' + cls), i = el('i'); i.style.width = Math.max(0, Math.min(100, pct)) + '%'; b.append(i); return b; };
@@ -1043,14 +1127,18 @@ const all = s => tx(s, 'readonly', o => o.getAll());
 const keys = s => tx(s, 'readonly', o => o.getAllKeys());
 // Read-modify-write of one book's meta in a single transaction, so no writer overwrites another's fields.
 const update = (id, fn) => tx('meta', 'readwrite', o => { const r = o.get(id); r.onsuccess = () => { if (r.result) { fn(r.result); o.put(r.result, id); } }; return r; });
+// The same for several records at once (fn gets each and its index), in one transaction: a new order is saved whole.
+const updateMany = (store, ids, fn) => tx(store, 'readwrite', o => ids.map((id, i) => {
+  const r = o.get(id); r.onsuccess = () => { if (r.result) { fn(r.result, i); o.put(r.result, id); } }; return r;
+}).at(-1));
 
 // ---- Settings (shared by the Settings page and the Text and page sheet) ----
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
-const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a collection's side; the switch on Home and Collections
+const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a book's or a collection's side; prefs.side is the Library filter ('' = all)
 // autohide: the reader's bars slide away while scrolling down. dim (0–60) and warm (0–100) are percentages.
-const DEF = { v: 4, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, side: 'fiction', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
+const DEF = { v: 5, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, side: '', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1073,10 +1161,11 @@ function loadPrefs() {
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
   if (!['light', 'dark', 'system'].includes(p.theme)) p.theme = 'system';
   delete p.tint;
-  if (!SIDES[p.side]) p.side = DEF.side;
+  // Version 5: side was Home's Fiction | Non-fiction switch (always one of the two); it is the Library filter now, off at first.
+  if (!SIDES[p.side] || !(p.v >= 5)) p.side = DEF.side;
   const snap = (v, max, step) => Math.min(max, Math.max(0, Math.round((+v || 0) / step) * step));
   p.dim = snap(p.dim, 60, 5); p.warm = snap(p.warm, 100, 10);
-  p.v = 4;
+  p.v = 5;
   return p;
 }
 let prefs = loadPrefs();
@@ -1115,10 +1204,11 @@ function applyPrefs() {
 // A change while reading keeps the reader on the same paragraph; switching Reflow / Page keeps the same page.
 const QUIET = new Set(['dim', 'warm', 'side']);
 async function changePrefs(patch) {
+  if (!('size' in patch)) endSizing();
   const quiet = Object.keys(patch).every(k => QUIET.has(k)), at = !quiet && book && els.length ? where() : null, remode = 'mode' in patch && patch.mode !== prefs.mode;
   prefs = { ...prefs, ...patch }; applyPrefs();
   try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch {}
-  if ('side' in patch && loaded) { renderLibrary(); renderColls(); }
+  if ('side' in patch && loaded) renderLib();
   if (!at) return;
   if (remode) {
     const b = book;
@@ -1132,16 +1222,39 @@ applyPrefs();
 mq.addEventListener?.('change', () => { if (prefs.theme === 'system') applyPrefs(); });
 // A size change re-lays out the whole book, and a dragged slider fires one per step: apply at most one a frame,
 // latest value wins, so a fast drag can't stack up seconds of layout (iPhone Safari kills a page frozen that long).
-let sizeWant = 0, sizeRaf = 0;
+// While the size is changing, only the blocks around the reading place are shown (sizing), so each step lays out a
+// few screens instead of the whole book; letting go of the slider, or a pause after A-/A+, lays out the book once.
+let sizeWant = 0, sizeRaf = 0, sizeEnd = false, sizeT = 0, sizing = null;
 function setSize(v) {
   sizeWant = Math.min(28, Math.max(14, v));
-  sizeRaf ||= requestAnimationFrame(() => { sizeRaf = 0; const s = sizeWant; sizeWant = 0; changePrefs({ size: s }); });
+  startSizing();
+  sizeRaf ||= requestAnimationFrame(() => {
+    sizeRaf = 0; const s = sizeWant; sizeWant = 0; changePrefs({ size: s });
+    if (sizeEnd) { sizeEnd = false; endSizing(); }
+  });
 }
-for (const s of $$('.size-range')) s.oninput = e => setSize(+e.target.value);
+// Ends once the last size has been applied.
+const sizeDone = () => { clearTimeout(sizeT); if (sizeRaf) sizeEnd = true; else endSizing(); };
+function startSizing() {
+  if (sizing || !book || book.mode !== 'reflow' || !els.length) return;
+  const pos = anchor();
+  // Out of the page, not just hidden: Safari restyles hidden blocks on every size step too.
+  $('#text').replaceChildren(...els.slice(Math.max(0, pos.i - 60), pos.i + 120));
+  sizing = pos;   // anchor() answers with this until the book is whole again
+  restore(pos);
+}
+function endSizing() {
+  if (!sizing) return;
+  const pos = sizing; sizing = null;
+  if (!book) return;
+  $('#text').replaceChildren(...els);
+  restore(pos); showPos();
+}
+for (const s of $$('.size-range')) { s.oninput = e => setSize(+e.target.value); s.onchange = sizeDone; }
 $('#s-dim').oninput = e => changePrefs({ dim: +e.target.value });
 $('#s-warm').oninput = e => changePrefs({ warm: +e.target.value });
-$('#s-dn').onclick = () => setSize((sizeWant || prefs.size) - 1);
-$('#s-up').onclick = () => setSize((sizeWant || prefs.size) + 1);
+$('#s-dn').onclick = () => { setSize((sizeWant || prefs.size) - 1); clearTimeout(sizeT); sizeT = setTimeout(sizeDone, 500); };
+$('#s-up').onclick = () => { setSize((sizeWant || prefs.size) + 1); clearTimeout(sizeT); sizeT = setTimeout(sizeDone, 500); };
 for (const b of $$('.seg[data-k] button,.faces[data-k] button'))
   b.onclick = () => { const v = b.dataset.v; changePrefs({ [b.parentNode.dataset.k]: isNaN(v) ? v : +v }); };
 for (const s of $$('[role=switch][data-k]')) s.onclick = () => changePrefs({ [s.dataset.k]: prefs[s.dataset.k] === s.dataset.on ? s.dataset.off : s.dataset.on });
@@ -1175,33 +1288,70 @@ document.addEventListener('pointerdown', e => {
 }, true);
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#rset').hidden) showSettings(false); });
 
-// ---- Navigation: Home ('library'), a book grid page and Settings live in history.state ({tab, shelf?, book?}) ----
+// ---- Navigation: Home ('library'), the Library drawer over it (lib), one collection in the drawer (shelf) and
+// Settings live in history.state ({tab, lib?, shelf?, book?}). States saved by older versions ({shelf} for a grid
+// page, {colls} for the Collections page) open the drawer at the same place. ----
 const TABS = ['library', 'settings'];
 let popWait = null, loaded = false;
 function show(s = {}) {
-  const tab = TABS.includes(s.tab) ? s.tab : 'library', v = s.shelf ? 'shelf' : s.colls ? 'colls' : tab;
-  for (const x of [...TABS, 'shelf', 'colls']) $('#v-' + x).hidden = x !== v;
-  if (v !== 'library') closeFind();
-  if (v === 'shelf') { $('#shelfBack').lastChild.textContent = s.colls ? 'Collections' : 'Home'; renderShelf(s.shelf); }
-  if (v === 'colls') renderColls();
-  $('#homeBar').hidden = v !== 'library'; document.body.classList.toggle('home', v === 'library');
+  const tab = TABS.includes(s.tab) ? s.tab : 'library';
+  for (const x of TABS) $('#v-' + x).hidden = x !== tab;
+  showDrawer(tab === 'library' && !!(s.lib || s.shelf || s.colls), s.shelf);
+  $('#peek').hidden = tab !== 'library' || !books.length;
+  document.body.classList.toggle('home', tab === 'library');
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
 function goPage(state, focus) {
-  history.pushState(state, ''); show(history.state); scrollTo(0, 0);
+  history.pushState(state, ''); show(history.state);
+  if (state.lib) $('#drawer').scrollTop = 0; else scrollTo(0, 0);
   $(focus).focus({ preventScroll: true });
 }
-const goShelf = id => goPage({ tab: 'library', ...(history.state?.colls && { colls: true }), shelf: id }, '#shelfName');
-const goColls = () => goPage({ tab: 'library', colls: true }, '#h-colls');
-$('#allColls').onclick = goColls;
-$('#collsBack').onclick = () => history.state?.colls && !history.state.shelf ? history.back() : toHome();
+let arranging = null;   // 'colls' or 'books' while their Arrange list shows
+let pushed = 0;         // drawer pages pushed this session: closing goes Back only through those, never out of the app
+function showDrawer(open, shelf) {
+  const d = $('#drawer');
+  if (!open || (shelf ? arranging === 'colls' : arranging === 'books')) arranging = null;
+  d.hidden = $('#dscrim').hidden = !open;
+  document.documentElement.classList.toggle('lib', open);
+  $('#libOpen').setAttribute('aria-expanded', open);
+  if (!open) { closeFind(); return; }
+  $('#dLib').hidden = !!shelf; $('#v-shelf').hidden = !shelf; d.classList.toggle('inshelf', !!shelf);
+  if (shelf) renderShelf(shelf); else renderLib();
+}
+const openLib = () => { if ($('#drawer').hidden) { pushed = 1; goPage({ tab: 'library', lib: true }, '#h-lib'); } };
+const closeLib = () => {
+  if (pushed && !history.state?.shelf) { pushed = 0; history.back(); }
+  else { pushed = 0; toHome(); }
+};
+const goShelf = id => { pushed++; goPage({ tab: 'library', lib: true, shelf: id }, '#shelfName'); };
+$('#libOpen').onclick = openLib;
+$('#libSearch').onclick = () => { openLib(); $('#lq').focus(); };
+$('#libClose').onclick = $('#dscrim').onclick = closeLib;
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidden && !sheet.open) closeLib(); });
+// Pulling the peek up opens the drawer; pulling the drawer's top edge down closes it (it follows the finger).
+{
+  let y0 = null;
+  $('#peek').addEventListener('pointerdown', e => { y0 = e.clientY; });
+  $('#peek').addEventListener('pointerup', e => { if (y0 != null && y0 - e.clientY > 24) openLib(); y0 = null; });
+  const head = $('#drawer .dhead'), d = $('#drawer');
+  let h0 = null;
+  head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; h0 = e.clientY; head.setPointerCapture(e.pointerId); d.style.animation = 'none'; });
+  head.addEventListener('pointermove', e => { if (h0 != null) d.style.transform = `translateY(${Math.max(0, e.clientY - h0)}px)`; });
+  const end = e => { if (h0 == null) return; const dy = e.clientY - h0; h0 = null; d.style.transform = ''; if (dy > 90) closeLib(); };
+  head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+}
 $('#goSettings').onclick = () => goPage({ tab: 'settings' }, '#h-settings');
-$('#shelfBack').onclick = () => history.state?.shelf ? history.back() : toHome();
+$('#shelfBack').onclick = () => {
+  arranging = null;
+  if (pushed > 1) { pushed--; history.back(); }
+  else { pushed = 1; history.replaceState({ tab: 'library', lib: true }, ''); show(history.state); $('#h-lib').focus({ preventScroll: true }); }
+};
 $('#setBack').onclick = () => history.state?.tab === 'settings' ? history.back() : toHome();
 addEventListener('popstate', () => {
   if (popWait) { const r = popWait; popWait = null; return r(); }
   const s = history.state || {};
+  if (!s.lib && !s.shelf) pushed = 0; else if (!s.shelf) pushed = Math.min(pushed, 1);
   if (sheet.open) sheet.close();
   if (book && !s.book) closeBook(true);
   else if (!book && s.book) openBook(s.book, false);
@@ -1210,14 +1360,13 @@ addEventListener('popstate', () => {
 // Back to the Library from anywhere, used when the app returns after 15 minutes away.
 async function goHome() {
   if (sheet.open) sheet.close();
-  showSettings(false); closeFind();
+  showSettings(false);
   if (book) await closeBook();
   history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0);
 }
 
 // ---- Library data ----
 let books = [], shelves = [], covers = new Map(), coverUrls = new Map(), nowId = null;
-const unsorted = () => books.filter(m => !shelves.some(s => s.id === m.shelf));
 const state = m => !m.pct ? 'unread' : m.pct >= 100 ? 'finished' : 'progress';
 const touched = m => m.opened || m.added;
 const stateShort = m => { const s = state(m); return s === 'unread' ? 'New' : s === 'finished' ? 'Finished' : 100 - m.pct + '% left'; };
@@ -1229,6 +1378,8 @@ const SORT = {
 };
 const sorted = list => list.sort((SORT[prefs.sort] || SORT.opened)[1]);
 const leftLine = m => m.pct >= 100 ? 'Finished' : `${100 - m.pct}% left`;
+// A heading set in capitals in the PDF reads in sentence case: "PREFACE AND …" → "Preface and …".
+const calm = h => /^[^a-z]*[A-Z]{3}[^a-z]*$/.test(h) ? h[0] + h.slice(1).toLowerCase() : h;
 
 // Page 1 of the PDF when it is cover art (a picture page in a book with real text), else a bookcloth cover with
 // the title set in type: a page of small text, or a scanned page, is unreadable at cover size. Cloth colours go
@@ -1284,106 +1435,179 @@ async function refresh() {
   const [bs, ss, ck, cv] = await Promise.all([all('meta'), all('shelves'), keys('covers'), all('covers')]);
   books = bs; shelves = ss.sort((a, b) => a.order - b.order); loaded = true;
   covers = new Map(ck.map((k, i) => [k, cv[i]]));
-  // A book's cover bytes never change once drawn, so its object URL is kept until the book or its cover goes.
+  // A book's object URL is kept until the book or its cover goes; editBook drops it when it saves a new cover.
   for (const [id, u] of coverUrls) if (!covers.get(id)) { URL.revokeObjectURL(u); coverUrls.delete(id); }
   tones = new Map(books.slice().sort((a, b) => a.added - b.added).map((m, i) => [m.id, i % 4]));
   renderLibrary();
-  const s = history.state || {};
-  if (s.shelf && !book) renderShelf(s.shelf);
-  renderColls();
   backfill(books.filter(m => !covers.has(m.id) || m.author === undefined || m.art === undefined));
 }
 
-// ---- Collections on the side being shown (Fiction or Non-fiction), as tiles ----
-// A collection made before sides existed has none and shows on both, as does Unsorted.
-const onSide = s => !s.side || s.side === prefs.side;
-// The side's collections plus Unsorted (when it has books), most recently used first: a collection counts as used when
-// one of its books was opened or added, an empty one when it was made.
-function sideShelves() {
-  const used = list => Math.max(0, ...list.map(touched));
-  const out = shelves.filter(onSide).map(s => {
-    const list = sorted(books.filter(m => m.shelf === s.id));
-    return { id: s.id, name: s.name, coll: s, list, at: list.length ? used(list) : s.order };
-  });
-  const loose = sorted(unsorted());
-  if (loose.length) out.push({ id: 'unsorted', name: 'Unsorted', list: loose, at: used(loose) });
-  return out.sort((a, b) => b.at - a.at);
-}
-// Tap opens the collection; holding it (or a right click) opens its options.
-function tileEl(sh) {
-  const b = el('button', 'tile'), row = el('span', 'tcov'), n = plural(sh.list.length, 'book');
-  row.append(...sh.list.slice(0, 4).map(m => coverEl(m, 'tc')));
-  b.append(row, el('span', 'ledge'), el('span', 'tn', sh.name), el('span', 'meta num', n));
-  b.setAttribute('aria-label', `${sh.name}, ${n}`);
-  pressable(b, () => goShelf(sh.id), () => { if (sh.coll) shelfMenu(sh.coll); });
-  return b;
-}
-function renderColls() {
-  if (!loaded) return;
-  const list = sideShelves();
-  $('#collGrid').replaceChildren(...list.map(tileEl));
-  $('#collNone').hidden = list.length > 0;
-}
-
-// ---- Home: the book you're in, the other books in progress, then this side's collections ----
-const greeting = h => h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 18 ? 'Good afternoon' : 'Good evening';
+// ---- Home: the book you're in, as a big cover with one button back in, then Up next ----
 function renderLibrary() {
   const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
-  $('#h-library').textContent = n ? greeting(new Date().getHours()) : 'Folio';
   $('#first').hidden = n > 0;
-  const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0], also = reading.filter(m => m !== now);
+  const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0];
   renderNow(now);
-  $('#alsoSec').hidden = !also.length;
-  const x0 = $('#also').scrollLeft;
-  $('#also').replaceChildren(...also.map(miniEl));
-  $('#also').scrollLeft = x0;
-  // The four collections used most recently on this side; a side with none offers to make one.
-  $('#collSec').hidden = !n;
-  const list = sideShelves(), tiles = list.slice(0, 4).map(tileEl);
-  if (!shelves.some(onSide)) tiles.splice(0, 0, newTile()), tiles.length = Math.min(tiles.length, 4);
-  $('#tiles').replaceChildren(...tiles);
-  if (!$('#libFind').hidden) runLib();
+  // Up next: the other books in progress, then the newest unread ones; three at most.
+  const next = [...reading.filter(m => m !== now), ...books.filter(m => !m.pct && m !== now).sort(SORT.added[1])].slice(0, 3);
+  $('#nextSec').hidden = !next.length;
+  $('#next').replaceChildren(...next.map(nextEl));
+  $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
+  $('#peek').hidden = !n || $('#v-library').hidden;
+  const s = history.state || {};
+  if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
 }
-$('#newColl').onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
-function newTile() {
-  const b = el('button', 'tile newt'), slot = el('span', 'tcov');
-  slot.append(svg(ICON.plus));
-  b.append(slot, el('span', 'ledge'), el('span', 'tn', 'New collection'), el('span', 'meta', SIDES[prefs.side]));
-  b.onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
-  return b;
-}
-// Another book in progress: a thin strip with its cover, title and chapter. Tap reads, hold for options.
-function miniEl(m) {
-  const b = el('button', 'card strip'), info = el('span', 'info');
-  info.append(el('span', 't', m.title), el('span', 'meta num', m.chap || leftLine(m)));
-  b.append(coverEl(m, 'tiny'), info);
+function nextEl(m) {
+  const b = el('button', 'nx'), info = el('span', 'info');
+  info.append(el('span', 't', m.title), el('span', 'meta num', stateShort(m)));
+  b.append(coverEl(m, 'mini'), info);
+  b.setAttribute('aria-label', `${m.title}, ${stateLong(m)}`);
   pressable(b, () => openBook(m.id), () => bookMenu(m));
   return b;
 }
-// The one next step: the book in progress opened last, else the newest unread one.
+// The one next step: the book in progress opened last, else the newest unread one. Tap the cover or the button to
+// read; hold the cover for its options. A book you've started wears the ribbon.
 function renderNow(m) {
   const card = $('#nowCard');
   card.hidden = !m; nowId = m?.id;
   if (!m) return card.replaceChildren();
-  const started = m.pct > 0, head = el('div', 'rhead'), info = el('span', 'rinfo'), t = el('h2', 'card-title clamp2', m.title);
-  const go = el('button', 'pill primary block', started ? 'Resume reading' : 'Start reading');
-  t.id = 'nowT'; go.id = 'nowGo'; head.style.cursor = 'pointer';
-  const where = started ? [m.author, m.chap].filter(Boolean).join(' · ') || leftLine(m) : [m.author, `Not started · ${plural(m.pages, 'page')}`].filter(Boolean).join(' · ');
-  info.append(t, el('span', 'meta num', where));
-  if (started) info.append(bar(m.pct));
-  head.append(coverEl(m, 'now'), info);
+  const started = m.pct > 0, head = el('div', 'rhead'), art = el('span', 'heroart'), t = el('h2', 'herotitle clamp2', m.title);
+  art.append(coverEl(m, 'big'));
+  if (started) { const r = el('span', 'herorib'); r.setAttribute('aria-hidden', 'true'); art.append(r); }
+  head.append(art, t);
+  if (m.author) head.append(el('p', 'by', m.author));
   pressable(head, () => openBook(m.id), () => bookMenu(m));
+  const where = el('div', 'where'), row = el('div', 'wrow');
+  if (started) { row.append(el('span', '', calm(m.chap || '')), el('span', '', leftLine(m))); where.append(row, bar(m.pct)); }
+  else row.append(el('span', '', `Not started · ${plural(m.pages, 'page')}`)), where.append(row);
+  const go = el('button', 'pill primary big', started ? 'Resume reading' : 'Start reading');
+  t.id = 'nowT'; go.id = 'nowGo';
   go.onclick = () => openBook(m.id);
   card.setAttribute('aria-labelledby', 'nowT');
-  card.replaceChildren(head, go);
+  card.replaceChildren(head, where, go);
 }
-// ---- Pick: a random book you haven't started, from the side being shown ----
-// A book's side is its collection's; books in no collection, or in one made before sides, count for both.
-// When this side has nothing unread, any unread book will do. Never the same book twice in a row.
+
+// ---- The Library drawer: search, filters, collections as shelves, all books ----
+// A book is Fiction or Non-fiction when you set it (Edit title and cover), else it takes its collection's side.
+// The chips filter by that and by reading state; a book with neither set shows only under All.
+const sideOf = m => m.side || shelves.find(s => s.id === m.shelf)?.side || '';
+let libSt = '';   // '', 'progress', 'unread' or 'finished'
+const passes = m => (!prefs.side || sideOf(m) === prefs.side) && (!libSt || state(m) === libSt);
+// A collection's books in the order you arranged them; books never arranged follow, oldest added first.
+const inOrder = list => list.sort((a, b) => (a.rank ?? a.added) - (b.rank ?? b.added));
+function renderLib() {
+  if (!loaded) return;
+  for (const c of $$('#chips button')) { const f = c.dataset.f; c.setAttribute('aria-pressed', f ? f === prefs.side || f === libSt : !prefs.side && !libSt); }
+  const filtering = !!(prefs.side || libSt);
+  const rows = shelves.map(s => ({ s, list: inOrder(books.filter(m => m.shelf === s.id)).filter(passes) })).filter(r => !filtering || r.list.length);
+  $('#collSec').hidden = filtering && !rows.length;
+  $('#collHint').hidden = shelves.length > 0;
+  $('#arrColls').hidden = shelves.length < 2 || filtering;
+  $('#arrColls').textContent = arranging === 'colls' ? 'Done' : 'Arrange';
+  $('#newColl').hidden = arranging === 'colls';
+  $('#shelfRows').replaceChildren(...(arranging === 'colls'
+    ? [arrangeList(shelves.map(s => ({ id: s.id, name: s.name, meta: plural(books.filter(m => m.shelf === s.id).length, 'book') })), saveCollOrder)]
+    : rows.map(shelfRow)));
+  const all = sorted(books.filter(passes));
+  $('#allGrid').replaceChildren(...all.map(m => { const li = el('li'); li.append(bookBtn(m, 'grid'), el('span', 't', m.title)); return li; }));
+  $('#allNone').hidden = all.length > 0;
+  const what = [prefs.side && SIDES[prefs.side], libSt && { progress: 'in progress', unread: 'unread', finished: 'finished' }[libSt]].filter(Boolean).join(', ').toLowerCase();
+  $('#allNone').textContent = !books.length ? 'No books yet. Add a PDF with the + button on Home.'
+    : prefs.side && !books.some(m => sideOf(m) === prefs.side) ? `No books are marked ${SIDES[prefs.side]} yet. Hold a cover and choose Edit title and cover to set one, or give a collection a side from its ⋯ menu.`
+    : `No ${what} books.`;
+  $('#sortBtn').textContent = SORTN[prefs.sort];
+}
+// One collection as a shelf: its name (tap opens it, hold for its options), its covers on an oak ledge.
+function shelfRow({ s, list }) {
+  const sec = el('section', 'srow'), name = el('button', 'sname'), cov = el('div', 'scov');
+  name.append(el('span', 'sn', s.name), el('span', 'meta num', String(list.length)), svg(ICON.chev));
+  name.setAttribute('aria-label', `${s.name}, ${plural(list.length, 'book')}`);
+  pressable(name, () => goShelf(s.id), () => shelfMenu(s));
+  if (list.length) cov.append(...list.map(m => bookBtn(m, 'sh')));
+  else { const add = el('button', 'addslot'); add.append(svg(ICON.plus), el('span', '', 'Add books')); add.onclick = () => addToShelf(s); cov.append(add); }
+  sec.append(name, cov, el('div', 'ledge'));
+  return sec;
+}
+for (const c of $$('#chips button')) c.onclick = () => {
+  const f = c.dataset.f;
+  if (!f) { libSt = ''; changePrefs({ side: '' }); }
+  else if (SIDES[f]) changePrefs({ side: prefs.side === f ? '' : f });
+  else { libSt = libSt === f ? '' : f; renderLib(); }
+};
+$('#newColl').onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
+$('#arrColls').onclick = () => { arranging = arranging === 'colls' ? null : 'colls'; renderLib(); };
+const saveCollOrder = ids => {
+  shelves.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+  shelves.forEach((s, i) => { s.order = i; });
+  updateMany('shelves', ids, (s, i) => { s.order = i; }).catch(() => {});
+};
+
+// ---- Arrange: a list of rows with grips. Drag a grip and the rows it passes make room; let go to drop it there.
+// The arrow keys on a grip move its row one place. The drawer scrolls by itself while a row is held near its edges.
+// changed(ids) gets the new order after every move.
+function arrangeList(items, changed) {
+  const ul = el('ul', 'arr');
+  for (const it of items) {
+    const li = el('li', 'arow'), g = el('button', 'grip');
+    li.dataset.id = it.id;
+    if (it.m) li.append(coverEl(it.m, 'row'));
+    li.append(el('span', 'an', it.name));
+    if (it.meta) li.append(el('span', 'meta num', it.meta));
+    g.setAttribute('aria-label', `Move ${it.name}`); g.append(svg(ICON.grip));
+    li.append(g); ul.append(li);
+  }
+  const box = $('#drawer'), ids = () => [...ul.children].map(li => li.dataset.id);
+  let d = null;
+  const place = () => {
+    const dy = d.y - d.y0 + box.scrollTop - d.s0;
+    d.li.style.transform = `translateY(${dy}px)`;
+    d.to = Math.max(0, Math.min(d.items.length - 1, d.from + Math.round(dy / d.h)));
+    d.items.forEach((x, i) => { if (x !== d.li) x.style.transform = i > d.from && i <= d.to ? `translateY(${-d.h}px)` : i < d.from && i >= d.to ? `translateY(${d.h}px)` : ''; });
+  };
+  const tick = () => {
+    if (!d) return;
+    const r = box.getBoundingClientRect();
+    if (d.y < r.top + 80) box.scrollTop -= 8; else if (d.y > r.bottom - 60) box.scrollTop += 8;
+    place(); d.raf = requestAnimationFrame(tick);
+  };
+  ul.addEventListener('pointerdown', e => {
+    const g = e.target.closest('.grip');
+    if (!g || d) return;
+    e.preventDefault();
+    const li = g.closest('li'), items = [...ul.children], from = items.indexOf(li);
+    const h = items.length > 1 ? Math.abs(items[1].getBoundingClientRect().top - items[0].getBoundingClientRect().top) : li.offsetHeight;
+    d = { li, items, from, to: from, h, y0: e.clientY, y: e.clientY, s0: box.scrollTop, raf: 0 };
+    g.setPointerCapture(e.pointerId); li.classList.add('lifted');
+    tick();
+  });
+  ul.addEventListener('pointermove', e => { if (d) d.y = e.clientY; });
+  const drop = () => {
+    if (!d) return;
+    const x = d; d = null; cancelAnimationFrame(x.raf);
+    ul.classList.add('nt');
+    x.items.forEach(i => { i.style.transform = ''; }); x.li.classList.remove('lifted');
+    if (x.to !== x.from) { ul.insertBefore(x.li, x.items[x.to + (x.to > x.from ? 1 : 0)] || null); changed(ids()); }
+    requestAnimationFrame(() => ul.classList.remove('nt'));
+  };
+  ul.addEventListener('pointerup', drop); ul.addEventListener('pointercancel', drop);
+  ul.addEventListener('keydown', e => {
+    const g = e.target.closest('.grip');
+    if (!g || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    const li = g.closest('li'), up = e.key === 'ArrowUp', sib = up ? li.previousElementSibling : li.nextElementSibling;
+    if (!sib) return;
+    if (up) ul.insertBefore(li, sib); else ul.insertBefore(sib, li);
+    g.focus(); changed(ids());
+  });
+  return ul;
+}
+
+// ---- Pick: a random book you haven't started, Fiction or Non-fiction when the Library is filtered to one ----
+// When that side has nothing unread, any unread book will do. Never the same book twice in a row.
 let lastPick = null;
 function pickPool() {
   const unread = books.filter(m => !m.pct);
-  const here = unread.filter(m => { const s = shelves.find(x => x.id === m.shelf); return !s || onSide(s); });
+  const here = unread.filter(m => !prefs.side || sideOf(m) === prefs.side);
   return here.length ? here : unread;
 }
 async function pickBook() {
@@ -1423,47 +1647,49 @@ function quoteFrom(blocks, pos, n = 240) {
 
 // ---- Library search: titles and authors only (words inside a book are found from the reader) ----
 const norm = s => (s || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-function libFind(open) {
-  $('#libFind').hidden = !open; $('#libMain').hidden = open; $('#libResults').hidden = !open;
-  $('#libSearch').setAttribute('aria-expanded', open);
-  if (open) { runLib(); requestAnimationFrame(() => $('#lq').focus()); }
-  else { $('#lq').value = ''; $('#lqClear').hidden = true; }
-}
-const closeFind = () => { if (!$('#libFind').hidden) libFind(false); };
+// Typing in the Library's search field swaps its shelves for the books whose title or author match.
 function runLib() {
-  const raw = $('#lq').value, q = norm(raw.trim());
+  const raw = $('#lq').value, q = norm(raw.trim()), on = !!q;
   $('#lqClear').hidden = !raw;
-  const list = books.filter(m => !q || norm(m.title).includes(q) || norm(m.author).includes(q)).sort(q ? SORT.title[1] : SORT.opened[1]);
-  $('#lqSum').textContent = !list.length ? '' : q ? plural(list.length, 'book') + ' found' : 'All books, last opened first';
+  $('#lqCancel').hidden = !on && document.activeElement !== $('#lq');
+  $('#libMain').hidden = $('#chips').hidden = on; $('#libResults').hidden = !on;
+  if (!on) return;
+  const list = books.filter(m => norm(m.title).includes(q) || norm(m.author).includes(q)).sort(SORT.title[1]);
+  $('#lqSum').textContent = list.length ? plural(list.length, 'book') + ' found' : '';
   $('#lqList').replaceChildren(...list.map(row));
   $('#lqList').hidden = !list.length;
   $('#lqNone').hidden = list.length > 0;
-  $('#lqNone').textContent = !books.length ? 'No books yet. Add a PDF with the + button.'
-    : `No title or author matches “${raw.trim()}”. To find words inside a book, open it and use its search.`;
+  $('#lqNone').textContent = `No title or author matches “${raw.trim()}”. To find words inside a book, open it and use its search.`;
 }
-$('#libSearch').onclick = () => libFind($('#libFind').hidden);
+const closeFind = () => { $('#lq').value = ''; $('#lq').blur(); runLib(); };
 $('#lq').oninput = runLib;
+$('#lq').onfocus = $('#lq').onblur = () => setTimeout(runLib);   // Cancel shows while the field is in use
 $('#libFind').onsubmit = e => { e.preventDefault(); $('#lq').blur(); };
 $('#lqClear').onclick = () => { $('#lq').value = ''; runLib(); $('#lq').focus(); };
-$('#lqCancel').onclick = () => libFind(false);
+$('#lqCancel').onclick = closeFind;
 
-// ---- Book grid page: one collection, or Unsorted. Covers stand on ledges, titles below. ----
+// ---- One collection, in the drawer: its books standing on ledges in the order you arranged, titles below ----
 let gridCols = 0;
 const colsFor = () => innerWidth >= 560 ? 4 : 3;
 function renderShelf(id) {
   if (!loaded) return;
-  const coll = shelves.find(x => x.id === id), loose = id === 'unsorted';
-  if (!coll && !loose) return toHome();   // deleted, or an old page (All books, Reading now) that no longer exists
-  const name = loose ? 'Unsorted' : coll.name;
-  const list = sorted(loose ? unsorted() : books.filter(m => m.shelf === id));
-  $('#shelfName').textContent = name;
-  $('#shelfCount').textContent = plural(list.length, 'book');
-  $('#sortBtn').textContent = 'Sort: ' + SORTN[prefs.sort].toLowerCase();
-  $('#shelfAdd').hidden = loose;
-  $('#shelfMore').hidden = loose;
-  $('#shelfMore').setAttribute('aria-label', 'Options for ' + name);
+  const coll = shelves.find(x => x.id === id);
+  if (!coll) { history.replaceState({ tab: 'library', lib: true }, ''); return show(history.state); }   // deleted, or an old Unsorted page
+  const list = inOrder(books.filter(m => m.shelf === id)), going = list.filter(m => state(m) === 'progress').length;
+  $('#shelfName').textContent = coll.name;
+  $('#shelfCount').textContent = [plural(list.length, 'book'), SIDES[coll.side], going && going + ' in progress'].filter(Boolean).join(' · ');
+  $('#shelfMore').setAttribute('aria-label', 'Options for ' + coll.name);
   $('#shelfMore').onclick = () => shelfMenu(coll);
-  if (coll) $('#shelfAdd').onclick = () => addToShelf(coll);
+  $('#shelfAdd').onclick = () => addToShelf(coll);
+  $('#arrBooks').hidden = list.length < 2;
+  $('#arrBooks').textContent = arranging === 'books' ? 'Done' : 'Arrange';
+  $('#arrBooks').onclick = () => { arranging = arranging === 'books' ? null : 'books'; renderShelf(id); };
+  $('#gridNone').hidden = list.length > 0;
+  $('#gridNone').textContent = 'No books here yet. Add books puts some in.';
+  if (arranging === 'books') return $('#grid').replaceChildren(arrangeList(list.map(m => ({ id: m.id, name: m.title, m })), ids => {
+    ids.forEach((bid, i) => { const m = books.find(x => x.id === bid); if (m) m.rank = i; });
+    updateMany('meta', ids, (x, i) => { x.rank = i; }).catch(() => {});
+  }));
   gridCols = colsFor();
   const rows = [];
   for (let i = 0; i < list.length; i += gridCols) {
@@ -1479,14 +1705,12 @@ function renderShelf(id) {
     rows.push(r);
   }
   $('#grid').replaceChildren(...rows);
-  $('#gridNone').hidden = list.length > 0;
-  $('#gridNone').textContent = loose ? 'Every book is in a collection.' : 'No books here yet. Add books puts some in.';
 }
-// One order for every shelf and grid; set from a grid page or from Settings.
+// The order of All books in the Library; set there or from Settings. Collections keep the order you arranged.
 $('#sortBtn').onclick = $('#sortRow').onclick = () => openSheet('Order books by', body => body.append(...Object.entries(SORT).map(([k, [name]]) =>
   act(name, null, () => changePrefs({ sort: k }), { on: prefs.sort === k }))));
 let resizeT = 0;
-addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { const s = history.state || {}; if (s.shelf && !book && colsFor() !== gridCols) renderShelf(s.shelf); }, 150); });
+addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { const s = history.state || {}; if (s.shelf && !book && colsFor() !== gridCols && arranging !== 'books') renderShelf(s.shelf); }, 150); });
 
 // ---- Sheets: book and collection options, names, confirmations, search in a book, go to ----
 const sheet = $('#sheet');
@@ -1541,7 +1765,11 @@ function askConfirm(title, text, label, fn) {
 }
 // A new collection goes to the side being shown.
 const addShelf = async (name, side = prefs.side) => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now(), side }; await put('shelves', s.id, s); return s.id; };
-const moveBook = (id, shelfId) => update(id, m => { if (shelfId) m.shelf = shelfId; else delete m.shelf; });
+// A book put in a collection goes to the end of its arranged order.
+const moveBook = (id, shelfId) => update(id, m => {
+  if (shelfId) { if (m.shelf !== shelfId) m.rank = Date.now(); m.shelf = shelfId; }
+  else { delete m.shelf; delete m.rank; }
+});
 function bookMenu(m) {
   openSheet(m.title, body => {
     const here = shelves.find(s => s.id === m.shelf), st = state(m);
@@ -1553,12 +1781,129 @@ function bookMenu(m) {
     if (st === 'progress') body.append(act('Mark as finished', 'done', () => update(m.id, x => { x.pct = 100; x.page = x.pages; })));
     if (st === 'finished') body.append(act('Mark as unread', 'undo', () => update(m.id, x => { x.pct = 0; x.page = 1; delete x.pos; delete x.ppos; delete x.quote; delete x.chap; })));
     body.append(
-      act('Rename book', 'pencil', () => askName('Rename book', m.title, 'Save', title => update(m.id, x => { x.title = title; }), 'Book title', 200)),
+      act('Edit title and cover', 'pencil', () => editBook(m)),
       act('Delete from this device', 'trash', () => askConfirm(`Delete “${m.title}”?`,
         'The PDF, its text, your bookmarks and your reading position are removed from this device. This can’t be undone.', 'Delete', async () => {
           await Promise.all(BOOK_STORES.map(s => del(s, m.id)));
         })));
   });
+}
+// Title, author and cover. Covers: Now (keep), Page 1 of the PDF, Plain (cloth with the title), a photo from the
+// phone, then covers found online for the title. Whatever is chosen is saved on the device, so it shows offline.
+function editBook(m) {
+  let pick = null, gen = 0;   // pick: null keeps the cover, {plain}, {bytes} or {url, thumb}
+  const urls = [], local = b => { const u = URL.createObjectURL(new Blob([b], { type: 'image/jpeg' })); urls.push(u); return u; };
+  sheet.addEventListener('close', () => urls.forEach(u => URL.revokeObjectURL(u)), { once: true });
+  openSheet('Edit title and cover', body => {
+    const f = el('form', 'nameform editform'), title = el('input'), author = el('input');
+    const mine = el('div', 'covers'), web = el('div', 'covers web'), note = el('p', 'meta'), bar = el('div', 'savebar'), save = el('button', 'pill primary block', 'Save');
+    for (const [i, v, what, max] of [[title, m.title, 'Title', 200], [author, m.author || '', 'Author', 60]]) {
+      i.value = v; i.maxLength = max; i.placeholder = what; i.autocomplete = 'off'; i.setAttribute('aria-label', what); i.enterKeyHint = 'search';
+      i.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); i.blur(); } };   // the key searches again; only Save saves
+    }
+    // Category: Fiction or Non-fiction for the Library's filters. Choosing an Apple Books cover fills it in from that
+    // book's genres, unless it was already set.
+    const cat = el('div', 'seg'), sideSet = !!m.side;
+    let side = m.side || '', sideTouched = false;
+    cat.setAttribute('role', 'group'); cat.setAttribute('aria-label', 'Category');
+    const setSide = v => { side = v; for (const b of cat.children) b.setAttribute('aria-pressed', b.dataset.v === v); };
+    for (const [v, label] of [['', 'Not set'], ['fiction', 'Fiction'], ['nonfiction', 'Non-fiction']]) {
+      const b = el('button', '', label); b.type = 'button'; b.dataset.v = v;
+      b.onclick = () => { sideTouched = true; setSide(v); };
+      cat.append(b);
+    }
+    setSide(side);
+    const choose = (b, c) => {
+      pick = c; for (const t of f.querySelectorAll('.tile')) t.setAttribute('aria-pressed', t === b);
+      if (c?.fic != null && !sideSet && !sideTouched) setSide(c.fic ? 'fiction' : 'nonfiction');
+    };
+    const tile = (label, cover, choice, cap = '') => {
+      const b = el('button', 'tile'); b.type = 'button'; b.setAttribute('aria-label', label); b.setAttribute('aria-pressed', !choice);
+      b.append(cover); if (cap) b.append(el('span', '', cap));
+      b.onclick = () => choose(b, choice);
+      return b;
+    };
+    const imgCover = src => { const c = el('span', 'cover grid'), i = el('img'); i.alt = ''; i.src = src; c.append(i); return c; };
+    const plainCover = () => coverEl({ ...m, title: title.value.trim() || m.title, author: author.value.trim(), art: false, pct: 0 }, 'grid');
+    // Page 1 and Photo get their bytes later; their choice objects are filled in then.
+    const pg = {}, ph = {}, file = el('input');
+    const p1 = tile('Page 1 of the PDF', el('span', 'cover grid'), pg, 'Page 1'), plain = tile('Plain cover with the title', plainCover(), { plain: true }, 'Plain');
+    const photo = tile('Your own photo', el('span', 'cover grid add'), ph, 'Photo');
+    photo.firstChild.append(svg(ICON.image));
+    file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+    photo.onclick = () => file.click();
+    file.onchange = async () => {
+      const img = file.files[0]; file.value = '';
+      if (!img) return;
+      try { ph.bytes = await coverBytes(img); } catch { note.textContent = 'That picture couldn’t be used. Try another.'; return; }
+      photo.firstChild.replaceWith(imgCover(local(ph.bytes))); choose(photo, ph);
+    };
+    // Page 1 is drawn again, since a chosen cover replaces it on the device.
+    p1.disabled = true;
+    get('files', m.id).then(openPdf).then(async doc => { try { return await makeCover(doc); } finally { doc.destroy(); } }).then(bytes => {
+      if (!bytes) throw 0;
+      pg.bytes = bytes; p1.firstChild.replaceWith(imgCover(local(bytes))); p1.disabled = false;
+    }).catch(() => p1.remove());
+    mine.append(tile('Keep the cover it has now', coverEl({ ...m, pct: 0 }, 'grid'), null, 'Now'), p1, plain, photo);
+    async function search() {
+      const g = ++gen, t = title.value.trim() || m.title, a = author.value.trim();
+      note.textContent = 'Searching…'; web.replaceChildren();
+      let found;
+      try { found = await findCovers(t, a); } catch { found = null; }
+      if (g !== gen) return;
+      note.textContent = !found ? 'Covers from the internet need a connection.' : found.length ? '' : 'No covers found. Check the title and author above.';
+      for (const c of found || []) {
+        const b = tile(`Cover from ${c.from}: ${c.name}${c.by ? ', ' + c.by : ''}`, imgCover(c.thumb), c);
+        b.querySelector('img').onerror = () => b.remove();
+        web.append(b);
+      }
+    }
+    title.oninput = author.oninput = () => plain.firstChild.replaceWith(plainCover());
+    title.onchange = author.onchange = search;
+    f.onsubmit = async e => {
+      e.preventDefault();
+      save.disabled = true; save.textContent = 'Saving…';
+      try {
+        const grab = u => fetch(u).then(r => { if (!r.ok) throw Error(r.status); return r.blob(); }).then(coverBytes);
+        const bytes = pick?.url ? await grab(pick.url).catch(() => grab(pick.thumb)) : pick?.bytes;
+        if (bytes) { await put('covers', m.id, bytes); URL.revokeObjectURL(coverUrls.get(m.id)); coverUrls.delete(m.id); }
+        await update(m.id, x => {
+          x.title = title.value.trim() || x.title; x.author = author.value.trim(); if (pick) x.art = !pick.plain;
+          if (side) x.side = side; else delete x.side;
+        });
+      } catch {
+        save.disabled = false; save.textContent = 'Save';
+        note.textContent = 'That cover couldn’t be downloaded. Pick another.';
+        return;
+      }
+      sheet.close(); refresh();
+    };
+    bar.append(save);
+    f.append(el('p', 'label lbl', 'Title'), title, el('p', 'label lbl', 'Author'), author, el('p', 'label lbl', 'Category'), cat, el('p', 'label lbl', 'Cover'), mine, file,
+      el('p', 'label lbl', 'From Apple Books and Open Library'), note, web, bar);
+    body.append(f);
+    search();
+  });
+  return false;
+}
+// Up to 12 covers for a title: Apple Books first (the publishers' own art), then Open Library. Both let a web page
+// download the picture. Throws only when neither could be reached.
+async function findCovers(title, author) {
+  const q = encodeURIComponent(`${title} ${author}`.trim()), json = u => fetch(u).then(r => r.json());
+  const [apple, ol] = await Promise.allSettled([
+    json(`https://itunes.apple.com/search?media=ebook&limit=8&term=${q}`),
+    json(`https://openlibrary.org/search.json?fields=title,author_name,cover_i&limit=12&q=${q}`)]);
+  if (apple.status === 'rejected' && ol.status === 'rejected') throw apple.reason;
+  const size = (u, s) => u.replace(/\/\d+x\d+bb\.\w+$/, `/${s}bb.jpg`), seen = new Set();
+  // Fiction or not, from Apple's genres ("Sci-Fi & Fantasy", "Business & Personal Finance"); unknown when it only says "Books".
+  const fic = g => /non-?fiction/i.test(g) ? false : /fiction|fantasy|sci-fi|myster|thriller|romance|horror|comics|graphic novel/i.test(g) ? true
+    : g.some(x => x !== 'Books') ? false : undefined;
+  return [
+    ...(apple.value?.results || []).filter(r => r.artworkUrl100).map(r =>
+      ({ from: 'Apple Books', name: r.trackName, by: r.artistName, thumb: size(r.artworkUrl100, '200x300'), url: size(r.artworkUrl100, '600x900'), fic: fic(r.genres || []) })),
+    ...(ol.value?.docs || []).filter(d => d.cover_i && !seen.has(d.cover_i) && seen.add(d.cover_i)).map(d =>
+      ({ from: 'Open Library', name: d.title, by: d.author_name?.[0], thumb: `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`, url: `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg` })),
+  ].slice(0, 12);
 }
 function shelfMenu(s) {
   openSheet(s.name, body => body.append(
@@ -1658,8 +2003,17 @@ async function makeCover(doc) {
   const c = document.createElement('canvas');
   c.width = Math.round(vp.width); c.height = Math.round(vp.height);
   await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
-  return blob ? blob.arrayBuffer() : null;
+  return jpeg(c);
+}
+const jpeg = c => new Promise(r => c.toBlob(r, 'image/jpeg', 0.82)).then(b => b ? b.arrayBuffer() : null);
+// Any picture (a photo, a cover from the internet) as cover bytes the same size as page 1: 360 px wide at most.
+async function coverBytes(blob) {
+  const im = await createImageBitmap(blob), w = Math.min(360, im.width), c = document.createElement('canvas');
+  c.width = w; c.height = Math.round(im.height * w / im.width);
+  c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); im.close?.();
+  const bytes = await jpeg(c);
+  if (!bytes) throw Error('no picture');
+  return bytes;
 }
 
 // Books added before covers, authors and the cover-art flag existed get them in the background, one at a time, never while reading.
@@ -1887,6 +2241,7 @@ function renderEnd() {
 // place you resume, starts just under the bar instead of behind it. In Reflow that is a block, in Page view a page.
 const lineY = () => $('.rtop').offsetHeight;
 function anchor() {
+  if (sizing) return sizing;   // most blocks are hidden while the size changes, so measuring would be wrong
   if (!els.length) return { i: 0, f: 0 };
   const y0 = lineY();
   let lo = 0, hi = els.length - 1;
@@ -1907,7 +2262,7 @@ function restoreBlock(pos, ppos) {
   restore({ i: p, f: ppos?.f || 0 });
 }
 function where() {
-  const a = anchor(), N = book.text.numPages, atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+  const a = anchor(), N = book.text.numPages, atEnd = !sizing && innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
   const pg = book.mode === 'page' ? a.i : +els[a.i]?.dataset.p || 0, page = atEnd ? N : Math.min(N, pg + 1);
   return { pos: book.mode === 'page' ? { i: book.first[pg] ?? 0, f: 0 } : a, ppos: book.mode === 'page' ? a : null, pg, page, pct: Math.round(page / N * 100) };
 }
@@ -1917,6 +2272,7 @@ const NUMW = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eig
 function chapLabel(h) {
   const m = h.match(/^chapter\s+([0-9]+|[ivxlc]+\b|[a-z]+(?:-[a-z]+)?)/i);
   if (m) { const w = m[1].toLowerCase(); return 'Ch. ' + (NUMW[w] || (/^[ivxlc]+$/.test(w) ? w.toUpperCase() : /^\d/.test(w) ? w : cap(w))); }
+  h = calm(h);
   return h.length > 28 ? h.slice(0, 26).trimEnd() + '…' : h;
 }
 function headAt(i) {
@@ -2193,7 +2549,7 @@ addEventListener('pageshow', e => { if (e.persisted && hiddenAt && Date.now() - 
 function teardown() {
   stopPages();
   book.doc?.then(d => d.destroy()).catch(() => {});
-  book = null; els = []; scrubbing = false; ribbonOn = false;
+  book = null; els = []; scrubbing = false; ribbonOn = false; sizing = null;
   $('#text').replaceChildren(); $('#endCard').replaceChildren(); $('#endCard').hidden = true; showSettings(false);
   $('#retBtn').hidden = true; $('#ribbon').hidden = true;
 }
@@ -2223,11 +2579,12 @@ if (reload) history.replaceState(s0, '');
 else {   // a fresh launch: rebuild the steps so Back still works
   history.replaceState({ tab: 'library' }, '');
   if (s0.tab === 'settings') history.pushState({ tab: 'settings' }, '');
-  else {
-    if (s0.colls) history.pushState({ tab: 'library', colls: true }, '');
-    if (s0.shelf) history.pushState({ tab: 'library', ...(s0.colls && { colls: true }), shelf: s0.shelf }, '');
+  else if (s0.lib || s0.colls || s0.shelf) {
+    history.pushState({ tab: 'library', lib: true }, '');
+    if (s0.shelf) history.pushState({ tab: 'library', lib: true, shelf: s0.shelf }, '');
   }
 }
+if (s0.tab !== 'settings') pushed = s0.shelf ? 2 : s0.lib || s0.colls ? 1 : 0;
 show(history.state);
 await refresh();
 if (s0.book) openBook(s0.book, !reload);
