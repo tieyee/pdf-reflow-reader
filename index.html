@@ -88,7 +88,6 @@ img{-webkit-touch-callout:none}
 .card-title{font:500 20px/24px var(--display);overflow-wrap:anywhere}
 .meta{font:400 13px/18px var(--ui);color:var(--ink-2)}
 .label{font:500 13px/1.2 var(--ui);color:var(--ink-2)}
-.count{margin-left:7px;font:400 14px/1 var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums}
 .note{font:400 13px/18px var(--ui);color:var(--ink-2);text-wrap:pretty}
 
 /* Buttons: oxblood pill for the one next step, 34px circles for icon actions, text links in oxblood */
@@ -141,12 +140,10 @@ input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;hei
 @keyframes viewin{from{opacity:0;transform:translateY(6px)}}
 .vhead{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px}
 .vhead>div:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}
-.hbtns{display:flex;gap:12px;flex:none;padding-right:2px}
 .card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px}
 .vhead.home{align-items:flex-start;padding-top:2px}
-.vhead.home .hbtns{gap:10px;padding-top:4px}
 .vhead.home .screen-title{font-size:32px;line-height:38px}
-@media (max-width:380px){.vhead.home .screen-title{font-size:28px;line-height:34px}.vhead.home .hbtns{gap:8px}}
+@media (max-width:380px){.vhead.home .screen-title{font-size:28px;line-height:34px}}
 body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border-radius:12px}
 
 /* Home */
@@ -164,18 +161,14 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .field input::placeholder{color:var(--ink-2);opacity:1}
 .field input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 .field .icon-btn{width:36px;height:36px;color:var(--ink-2)}
-/* The book you're in: a big cover, where you stopped, the line you stopped at, one button back in */
-.resume{display:flex;flex-direction:column;gap:14px;padding:16px}
+/* The book you're in: its cover, where you are, one button back in */
+.resume{display:flex;flex-direction:column;gap:12px;padding:12px}
 .rhead{display:flex;align-items:flex-start;gap:14px;width:100%;padding:0;border:0;background:none;text-align:left;color:inherit}
 .rinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:2px}
-.resume .rinfo .card-title{font-size:23px;line-height:27px}
+.resume .rinfo .card-title{font-size:19px;line-height:23px}
+.resume .rinfo .pbar{margin-top:8px}
 .rinfo .by{font:400 14px/19px var(--ui);color:var(--ink-2)}
-.rinfo .meta{margin-top:6px;color:var(--ink)}
-.quote{position:relative;padding-left:14px;font:400 16px/1.42 var(--display);color:var(--ink-2);text-wrap:pretty}
-.quote::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--line)}
-.pline{display:flex;align-items:center;gap:12px}
-.pline .pbar{flex:1}
-.pline .meta{flex:none;font-size:12px}
+.rinfo .meta{margin-top:2px}
 .pbar{display:block;height:4px;border-radius:999px;background:var(--sunk);overflow:hidden}
 .pbar i{display:block;height:100%;border-radius:inherit;background:var(--accent-ink);transform-origin:left}
 .resume .pbar i{animation:fill .8s .1s var(--ease) both}
@@ -183,18 +176,12 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 /* Also reading: the other books in progress, as small cards in a row you can swipe */
 .also{display:flex;gap:10px;margin:0 -16px;padding:2px 16px 6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding:0 16px;scrollbar-width:none}
 .also::-webkit-scrollbar{display:none}
-.mini{flex:none;display:flex;align-items:center;gap:12px;width:min(244px,72vw);padding:10px 14px 10px 10px;text-align:left;scroll-snap-align:start;touch-action:manipulation;transition:transform .15s var(--ease)}
-.mini:active{transform:scale(.98)}
-.mini .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.mini .t{font:500 17px/20px var(--display);overflow-wrap:anywhere}
-.mini .meta{font-size:12px;line-height:16px}
-.mini .pbar{height:3px;margin-top:4px}
-.cover.mid{width:40px}.cover.hero{width:76px}
-/* A collection with no books yet: an empty slot on its shelf that adds some */
-.addtile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:none;width:56px;aspect-ratio:2/3;padding:0;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-radius:2px;background:none;color:var(--ink-2);font:600 11px/1.15 var(--ui);text-align:center;transition:transform .15s var(--ease),color .15s}
-.addtile svg{width:18px;height:18px}
-.addtile:active{transform:scale(.97)}
-@media (hover:hover){.addtile:hover{color:var(--accent-ink)}}
+.strip{flex:none;display:flex;align-items:center;gap:10px;width:min(270px,76vw);min-height:48px;padding:6px 12px 6px 8px;text-align:left;scroll-snap-align:start;touch-action:manipulation;transition:transform .15s var(--ease)}
+.strip:active{transform:scale(.98)}
+.strip .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.strip .t{font:500 16px/19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .meta{font-size:12px;line-height:16px}
+.cover.now{width:52px}.cover.hero{width:76px}
 .sidenote{padding:8px 4px 0;max-width:46ch}
 .more{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:-4px}
 .more .link{display:inline-flex;align-items:center;gap:6px;margin-left:-4px}
@@ -205,16 +192,9 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .first .lead{max-width:36ch;text-wrap:pretty}
 .drophint{display:none}
 @media (hover:hover) and (pointer:fine){.drophint{display:inline}}
-#shelves{display:flex;flex-direction:column;gap:24px}
-#shelves:empty{display:none}
 .shead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .shead h2{display:flex;align-items:baseline;min-width:0}
 .shead h2 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sacts{display:flex;align-items:center;flex:none;margin-right:-12px}
-.sacts>.link:last-child{margin-right:8px}   /* Unsorted has See all but no options button */
-.srow{display:flex;align-items:flex-end;gap:10px;height:90px;margin:0 -16px;padding:0 16px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none}
-.srow::-webkit-scrollbar{display:none}
-.srow .book{flex:none}
 /* The ledge is an oak shelf: a lighter top edge, faint grain along its length, darker toward the bottom */
 .ledge{position:relative;height:11px;margin:0 -8px;border-top:2px solid var(--shelf-edge);border-radius:0 0 3px 3px;
   background:repeating-linear-gradient(0deg,rgba(60,35,10,.07) 0 1px,transparent 1px 3px),linear-gradient(var(--shelf),color-mix(in srgb,var(--shelf),#000 14%))}
@@ -260,6 +240,17 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .brow .icon-btn{color:var(--ink-2)}
 .none{padding:4px}
 
+#collSec{display:flex;flex-direction:column;gap:10px}
+#collSec .shead{margin:0}
+/* Home's bottom bar: the reader's floating glass, on the app's own paper; Home only */
+.hbar{position:fixed;z-index:20;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:max(10px,calc(env(safe-area-inset-bottom) - 12px));max-width:520px;margin:0 auto;
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding:6px;border-radius:28px;border:.5px solid color-mix(in srgb,var(--ink) 12%,transparent);
+  background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.08)}
+.hbar .tool{color:var(--ink)}
+@media (hover:hover){.hbar .tool:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}}
+.hbar .tool[aria-expanded=true]{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+body.home #views{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 /* Collection tiles: up to four real covers standing on an oak ledge, the name in Garamond, how many books */
 .tiles2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
 .tile{display:flex;flex-direction:column;min-width:0;padding:0;border:0;background:none;text-align:left;color:inherit;touch-action:manipulation;transition:transform .15s var(--ease)}
@@ -269,6 +260,8 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .tile .ledge{display:block;margin:0}
 .tile .tn{margin-top:9px;font:500 17px/20px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile .meta{font-size:12px;line-height:16px}
+.newt .tcov{justify-content:center;align-items:center;margin:0 8px;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-bottom:0;border-radius:6px 6px 0 0;color:var(--ink-2)}
+.newt .tcov svg{width:22px;height:22px}
 @media (hover:hover){.tile:hover .tn{color:var(--accent-ink)}}
 
 /* Book grid pages: covers stand on ledges, the label strip under each ledge */
@@ -452,11 +445,6 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   <section id="v-library" class="view" aria-labelledby="h-library">
     <header class="vhead home">
       <div><h1 id="h-library" class="screen-title">Folio</h1></div>
-      <div class="hbtns">
-        <button id="libSearch" class="circle" aria-label="Find a book" aria-expanded="false" aria-controls="libFind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg></button>
-        <button id="goSettings" class="circle" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
-        <button class="circle solid" data-add aria-label="Add a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
-      </div>
     </header>
     <form id="libFind" class="find" role="search" hidden>
       <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg>
@@ -476,14 +464,14 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <p class="note">Nothing is uploaded: your books stay on this device.<span class="drophint"> You can also drop PDFs onto this page.</span></p>
       </div>
       <section id="alsoSec" aria-labelledby="h-also" hidden>
-        <div class="shead"><h2 id="h-also" class="shelf-title"><span>Also reading</span><span id="alsoN" class="count"></span></h2></div>
+        <h2 id="h-also" class="sr">Also reading</h2>
         <div id="also" class="also"></div>
       </section>
-      <div id="shelves"></div>
-      <div id="moreSec" class="more" hidden>
-        <button id="allColls" class="link">Collections</button>
-        <p id="collNote" class="note" hidden>A collection gives a group of books its own shelf on this page.</p>
-      </div>
+      <section id="collSec" aria-labelledby="h-coll" hidden>
+        <div class="shead"><h2 id="h-coll" class="shelf-title">Collections</h2><button id="allColls" class="link">All</button></div>
+        <div class="seg" data-k="side" role="group" aria-label="Show"><button data-v="fiction">Fiction</button><button data-v="nonfiction">Non-fiction</button></div>
+        <div id="tiles" class="tiles2"></div>
+      </section>
     </div>
     <section id="libResults" aria-labelledby="lqSum" hidden>
       <h2 id="lqSum" class="label glabel" aria-live="polite"></h2>
@@ -547,6 +535,11 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   </section>
 
 </main>
+<nav id="homeBar" class="hbar" aria-label="Home">
+  <button id="libSearch" class="tool" aria-expanded="false" aria-controls="libFind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg><span>Search</span></button>
+  <button class="tool" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span>Add</span></button>
+  <button id="goSettings" class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Settings</span></button>
+</nav>
 </div>
 <input id="file" type="file" accept="application/pdf,.pdf" multiple hidden>
 
@@ -1186,6 +1179,7 @@ function show(s = {}) {
   if (v !== 'library') closeFind();
   if (v === 'shelf') { $('#shelfBack').lastChild.textContent = s.colls ? 'Collections' : 'Home'; renderShelf(s.shelf); }
   if (v === 'colls') renderColls();
+  $('#homeBar').hidden = v !== 'library'; document.body.classList.toggle('home', v === 'library');
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
@@ -1326,7 +1320,7 @@ function renderColls() {
   $('#collNone').hidden = list.length > 0;
 }
 
-// ---- Home: the book you're in, the other books in progress, then one shelf per collection ----
+// ---- Home: the book you're in, the other books in progress, then this side's collections ----
 const greeting = h => h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 18 ? 'Good afternoon' : 'Good evening';
 function renderLibrary() {
   const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
@@ -1335,54 +1329,33 @@ function renderLibrary() {
   const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0], also = reading.filter(m => m !== now);
   renderNow(now);
   $('#alsoSec').hidden = !also.length;
-  $('#alsoN').textContent = also.length;
   const x0 = $('#also').scrollLeft;
   $('#also').replaceChildren(...also.map(miniEl));
   $('#also').scrollLeft = x0;
-  const list = shelves.map(s => ({ id: s.id, name: s.name, coll: s, list: sorted(books.filter(m => m.shelf === s.id)) }));
-  const loose = sorted(unsorted());
-  if (loose.length) list.push({ id: 'unsorted', name: 'Unsorted', list: loose });   // books in no collection, last
-  const kept = new Map($$('#shelves .shelf').map(x => [x.dataset.id, x.querySelector('.srow').scrollLeft]));
-  $('#shelves').replaceChildren(...(n ? list.map(shelfEl) : []));
-  for (const x of $$('#shelves .shelf')) x.querySelector('.srow').scrollLeft = kept.get(x.dataset.id) || 0;
-  $('#moreSec').hidden = !n;
-  $('#collNote').hidden = shelves.length > 0;
+  // The four collections used most recently on this side; a side with none offers to make one.
+  $('#collSec').hidden = !n;
+  const list = sideShelves(), tiles = list.slice(0, 4).map(tileEl);
+  if (!shelves.some(onSide)) tiles.splice(0, 0, newTile()), tiles.length = Math.min(tiles.length, 4);
+  $('#tiles').replaceChildren(...tiles);
   if (!$('#libFind').hidden) runLib();
 }
 $('#newColl').onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
-// A collection's shelf, or the Unsorted one (no coll: no options, never empty).
-function shelfEl(sh) {
-  const sec = el('section', 'shelf'), head = el('div', 'shead'), h = el('h2', 'shelf-title'), acts = el('div', 'sacts'), row = el('div', 'srow');
-  sec.dataset.id = sh.id; h.id = 'sh-' + sh.id; sec.setAttribute('aria-labelledby', h.id);
-  h.append(el('span', '', sh.name), el('span', 'count', String(sh.list.length)));
-  if (sh.list.length) {
-    const see = el('button', 'link', 'See all');
-    see.setAttribute('aria-label', 'See all in ' + sh.name);
-    see.onclick = () => goShelf(sh.id);
-    acts.append(see);
-  }
-  if (sh.coll) acts.append(iconBtn('more', 'Options for ' + sh.name, () => shelfMenu(sh.coll)));
-  head.append(h, acts);
-  row.append(...sh.list.map(m => bookBtn(m)));
-  if (!sh.list.length && sh.coll) {
-    const add = el('button', 'addtile');
-    add.append(svg(ICON.plus), el('span', '', 'Add books'));
-    add.setAttribute('aria-label', 'Add books to ' + sh.name);
-    add.onclick = () => addToShelf(sh.coll);
-    row.append(add);
-  }
-  sec.append(head, row, el('div', 'ledge'));
-  return sec;
+function newTile() {
+  const b = el('button', 'tile newt'), slot = el('span', 'tcov');
+  slot.append(svg(ICON.plus));
+  b.append(slot, el('span', 'ledge'), el('span', 'tn', 'New collection'), el('span', 'meta', SIDES[prefs.side]));
+  b.onclick = () => askName('New collection', '', 'Create', name => addShelf(name));
+  return b;
 }
-// A book in progress that isn't the big card: cover, title, where you are. Tap reads, hold for options.
+// Another book in progress: a thin strip with its cover, title and chapter. Tap reads, hold for options.
 function miniEl(m) {
-  const b = el('button', 'card mini'), info = el('span', 'info');
-  info.append(el('span', 't clamp2', m.title), el('span', 'meta num', [m.chap, leftLine(m)].filter(Boolean).join(' · ')), bar(m.pct));
-  b.append(coverEl(m, 'mid'), info);
+  const b = el('button', 'card strip'), info = el('span', 'info');
+  info.append(el('span', 't', m.title), el('span', 'meta num', m.chap || leftLine(m)));
+  b.append(coverEl(m, 'tiny'), info);
   pressable(b, () => openBook(m.id), () => bookMenu(m));
   return b;
 }
-// The one next step: the book in progress opened last, else the newest unread one. It drops you back mid-sentence.
+// The one next step: the book in progress opened last, else the newest unread one.
 function renderNow(m) {
   const card = $('#nowCard');
   card.hidden = !m; nowId = m?.id;
@@ -1390,30 +1363,14 @@ function renderNow(m) {
   const started = m.pct > 0, head = el('div', 'rhead'), info = el('span', 'rinfo'), t = el('h2', 'card-title clamp2', m.title);
   const go = el('button', 'pill primary block', started ? 'Resume reading' : 'Start reading');
   t.id = 'nowT'; go.id = 'nowGo'; head.style.cursor = 'pointer';
-  info.append(t);
-  if (m.author) info.append(el('span', 'by', m.author));
-  info.append(el('span', 'meta num', started ? [m.chap, leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`));
-  head.append(coverEl(m, 'hero'), info);
-  const kids = [head];
-  if (started) {
-    const q = el('p', 'quote clamp3'), pl = el('div', 'pline');
-    if (m.quote) q.textContent = m.quote; else { q.hidden = true; fillQuote(m, q); }
-    pl.append(bar(m.pct), el('span', 'meta num', `p. ${m.page} of ${m.pages}`));
-    kids.push(q, pl);
-  }
+  const where = started ? [m.author, m.chap].filter(Boolean).join(' · ') || leftLine(m) : [m.author, `Not started · ${plural(m.pages, 'page')}`].filter(Boolean).join(' · ');
+  info.append(t, el('span', 'meta num', where));
+  if (started) info.append(bar(m.pct));
+  head.append(coverEl(m, 'now'), info);
   pressable(head, () => openBook(m.id), () => bookMenu(m));
   go.onclick = () => openBook(m.id);
-  kids.push(go);
   card.setAttribute('aria-labelledby', 'nowT');
-  card.replaceChildren(...kids);
-}
-// Books last read before the stopped-at line was saved get it from their text, once.
-async function fillQuote(m, q) {
-  const t = await get('text', m.id).catch(() => null);
-  const s = t?.blocks && m.pos ? quoteFrom(t.blocks, m.pos) : '';
-  if (!s) return;
-  q.textContent = s; q.hidden = false;
-  update(m.id, x => { x.quote = s; }).catch(() => {});
+  card.replaceChildren(head, go);
 }
 // The words at a reading position: from about where the reader is in the block, cut at word boundaries.
 function quoteFrom(blocks, pos, n = 240) {
@@ -1952,7 +1909,7 @@ function showPos() {
 async function savePos() {
   if (!book || !els.length) return;
   const w = where(), k = headAt(w.pos.i);
-  const v = { pos: w.pos, ppos: w.ppos, page: w.page, pct: w.pct, quote: quoteFrom(book.text.blocks, w.pos),
+  const v = { pos: w.pos, ppos: w.ppos, page: w.page, pct: w.pct,
     chap: k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '' };
   Object.assign(book.meta, v);
   await update(book.id, x => { Object.assign(x, v); }).catch(() => {});
