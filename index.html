@@ -260,6 +260,17 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .brow .icon-btn{color:var(--ink-2)}
 .none{padding:4px}
 
+/* Collection tiles: up to four real covers standing on an oak ledge, the name in Garamond, how many books */
+.tiles2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
+.tile{display:flex;flex-direction:column;min-width:0;padding:0;border:0;background:none;text-align:left;color:inherit;touch-action:manipulation;transition:transform .15s var(--ease)}
+.tile:active{transform:scale(.98)}
+.tile .tcov{display:flex;align-items:flex-end;gap:5px;height:66px;padding:0 8px;overflow:hidden}
+.cover.tc{width:40px}
+.tile .ledge{display:block;margin:0}
+.tile .tn{margin-top:9px;font:500 17px/20px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .meta{font-size:12px;line-height:16px}
+@media (hover:hover){.tile:hover .tn{color:var(--accent-ink)}}
+
 /* Book grid pages: covers stand on ledges, the label strip under each ledge */
 .backrow{display:flex;justify-content:space-between;align-items:center;margin:-6px -12px -10px -12px}
 .backbtn{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 10px 0 4px;border:0;background:none;color:var(--accent-ink);font:400 17px/1 var(--ui)}
@@ -470,7 +481,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
       </section>
       <div id="shelves"></div>
       <div id="moreSec" class="more" hidden>
-        <button id="newColl" class="link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>New collection</button>
+        <button id="allColls" class="link">Collections</button>
         <p id="collNote" class="note" hidden>A collection gives a group of books its own shelf on this page.</p>
       </div>
     </div>
@@ -479,6 +490,15 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
       <ul id="lqList" class="group"></ul>
       <p id="lqNone" class="note none" hidden></p>
     </section>
+  </section>
+
+  <section id="v-colls" class="view" aria-labelledby="h-colls" hidden>
+    <div class="backrow"><button id="collsBack" class="backbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Home</button></div>
+    <header class="vhead"><h1 id="h-colls" class="screen-title" tabindex="-1">Collections</h1>
+      <button id="newColl" class="pill primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>New</button></header>
+    <div class="seg" data-k="side" role="group" aria-label="Show"><button data-v="fiction">Fiction</button><button data-v="nonfiction">Non-fiction</button></div>
+    <div id="collGrid" class="tiles2"></div>
+    <p id="collNone" class="note none" hidden>No collections on this side yet.</p>
   </section>
 
   <section id="v-shelf" class="view" aria-labelledby="shelfName" hidden>
@@ -1030,8 +1050,9 @@ const update = (id, fn) => tx('meta', 'readwrite', o => { const r = o.get(id); r
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
+const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a collection's side; the switch on Home and Collections
 // autohide: the reader's bars slide away while scrolling down. dim (0–60) and warm (0–100) are percentages.
-const DEF = { v: 4, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
+const DEF = { v: 4, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, side: 'fiction', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1054,6 +1075,7 @@ function loadPrefs() {
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
   if (!['light', 'dark', 'system'].includes(p.theme)) p.theme = 'system';
   delete p.tint;
+  if (!SIDES[p.side]) p.side = DEF.side;
   const snap = (v, max, step) => Math.min(max, Math.max(0, Math.round((+v || 0) / step) * step));
   p.dim = snap(p.dim, 60, 5); p.warm = snap(p.warm, 100, 10);
   p.v = 4;
@@ -1098,6 +1120,7 @@ async function changePrefs(patch) {
   const quiet = Object.keys(patch).every(k => QUIET.has(k)), at = !quiet && book && els.length ? where() : null, remode = 'mode' in patch && patch.mode !== prefs.mode;
   prefs = { ...prefs, ...patch }; applyPrefs();
   try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch {}
+  if ('side' in patch && loaded) { renderLibrary(); renderColls(); }
   if (!at) return;
   if (remode) {
     const b = book;
@@ -1158,10 +1181,11 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#rset').hidden)
 const TABS = ['library', 'settings'];
 let popWait = null, loaded = false;
 function show(s = {}) {
-  const tab = TABS.includes(s.tab) ? s.tab : 'library', v = s.shelf ? 'shelf' : tab;
-  for (const x of [...TABS, 'shelf']) $('#v-' + x).hidden = x !== v;
+  const tab = TABS.includes(s.tab) ? s.tab : 'library', v = s.shelf ? 'shelf' : s.colls ? 'colls' : tab;
+  for (const x of [...TABS, 'shelf', 'colls']) $('#v-' + x).hidden = x !== v;
   if (v !== 'library') closeFind();
-  if (v === 'shelf') renderShelf(s.shelf);
+  if (v === 'shelf') { $('#shelfBack').lastChild.textContent = s.colls ? 'Collections' : 'Home'; renderShelf(s.shelf); }
+  if (v === 'colls') renderColls();
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
@@ -1169,7 +1193,10 @@ function goPage(state, focus) {
   history.pushState(state, ''); show(history.state); scrollTo(0, 0);
   $(focus).focus({ preventScroll: true });
 }
-const goShelf = id => goPage({ tab: 'library', shelf: id }, '#shelfName');
+const goShelf = id => goPage({ tab: 'library', ...(history.state?.colls && { colls: true }), shelf: id }, '#shelfName');
+const goColls = () => goPage({ tab: 'library', colls: true }, '#h-colls');
+$('#allColls').onclick = goColls;
+$('#collsBack').onclick = () => history.state?.colls && !history.state.shelf ? history.back() : toHome();
 $('#goSettings').onclick = () => goPage({ tab: 'settings' }, '#h-settings');
 $('#shelfBack').onclick = () => history.state?.shelf ? history.back() : toHome();
 $('#setBack').onclick = () => history.state?.tab === 'settings' ? history.back() : toHome();
@@ -1264,7 +1291,39 @@ async function refresh() {
   renderLibrary();
   const s = history.state || {};
   if (s.shelf && !book) renderShelf(s.shelf);
+  renderColls();
   backfill(books.filter(m => !covers.has(m.id) || m.author === undefined || m.art === undefined));
+}
+
+// ---- Collections on the side being shown (Fiction or Non-fiction), as tiles ----
+// A collection made before sides existed has none and shows on both, as does Unsorted.
+const onSide = s => !s.side || s.side === prefs.side;
+// The side's collections plus Unsorted (when it has books), most recently used first: a collection counts as used when
+// one of its books was opened or added, an empty one when it was made.
+function sideShelves() {
+  const used = list => Math.max(0, ...list.map(touched));
+  const out = shelves.filter(onSide).map(s => {
+    const list = sorted(books.filter(m => m.shelf === s.id));
+    return { id: s.id, name: s.name, coll: s, list, at: list.length ? used(list) : s.order };
+  });
+  const loose = sorted(unsorted());
+  if (loose.length) out.push({ id: 'unsorted', name: 'Unsorted', list: loose, at: used(loose) });
+  return out.sort((a, b) => b.at - a.at);
+}
+// Tap opens the collection; holding it (or a right click) opens its options.
+function tileEl(sh) {
+  const b = el('button', 'tile'), row = el('span', 'tcov'), n = plural(sh.list.length, 'book');
+  row.append(...sh.list.slice(0, 4).map(m => coverEl(m, 'tc')));
+  b.append(row, el('span', 'ledge'), el('span', 'tn', sh.name), el('span', 'meta num', n));
+  b.setAttribute('aria-label', `${sh.name}, ${n}`);
+  pressable(b, () => goShelf(sh.id), () => { if (sh.coll) shelfMenu(sh.coll); });
+  return b;
+}
+function renderColls() {
+  if (!loaded) return;
+  const list = sideShelves();
+  $('#collGrid').replaceChildren(...list.map(tileEl));
+  $('#collNone').hidden = list.length > 0;
 }
 
 // ---- Home: the book you're in, the other books in progress, then one shelf per collection ----
@@ -1489,7 +1548,8 @@ function askConfirm(title, text, label, fn) {
   });
   return false;
 }
-const addShelf = async name => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now() }; await put('shelves', s.id, s); return s.id; };
+// A new collection goes to the side being shown.
+const addShelf = async (name, side = prefs.side) => { const s = { id: 's' + Date.now().toString(36), name, order: Date.now(), side }; await put('shelves', s.id, s); return s.id; };
 const moveBook = (id, shelfId) => update(id, m => { if (shelfId) m.shelf = shelfId; else delete m.shelf; });
 function bookMenu(m) {
   openSheet(m.title, body => {
@@ -1513,6 +1573,9 @@ function shelfMenu(s) {
   openSheet(s.name, body => body.append(
     act('Add books', 'plus', () => { addToShelf(s); return false; }),
     act('Rename collection', 'pencil', () => askName('Rename collection', s.name, 'Save', name => put('shelves', s.id, { ...s, name }))),
+    el('p', 'label lbl', 'Side'),
+    ...Object.entries(SIDES).map(([k, label]) => act(label, null, () => put('shelves', s.id, { ...s, side: k }), { on: s.side === k })),
+    el('hr'),
     act('Delete collection', 'trash', () => askConfirm(`Delete “${s.name}”?`, 'The collection goes; its books stay, under Unsorted.', 'Delete collection', async () => {
       for (const m of books) if (m.shelf === s.id) await moveBook(m.id, null);
       await del('shelves', s.id);
@@ -2162,12 +2225,15 @@ history.scrollRestoration = 'manual';
 const reload = fresh && !!history.state;   // this same page reloaded: its history stack is still there
 let s0 = fresh ? history.state || last.s || {} : {};
 s0 = { ...s0, tab: TABS.includes(s0.tab) ? s0.tab : 'library' };   // the old Collections tab opens Home
-if (s0.tab === 'settings') delete s0.shelf;
+if (s0.tab === 'settings') { delete s0.shelf; delete s0.colls; }
 if (reload) history.replaceState(s0, '');
 else {   // a fresh launch: rebuild the steps so Back still works
   history.replaceState({ tab: 'library' }, '');
   if (s0.tab === 'settings') history.pushState({ tab: 'settings' }, '');
-  else if (s0.shelf) history.pushState({ tab: 'library', shelf: s0.shelf }, '');
+  else {
+    if (s0.colls) history.pushState({ tab: 'library', colls: true }, '');
+    if (s0.shelf) history.pushState({ tab: 'library', ...(s0.colls && { colls: true }), shelf: s0.shelf }, '');
+  }
 }
 show(history.state);
 await refresh();
