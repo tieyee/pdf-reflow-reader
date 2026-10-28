@@ -68,6 +68,7 @@ html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrol
 body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
 body.reading{background:var(--page)}
 body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:#000;opacity:var(--dim,0);pointer-events:none}
+body.reading dialog.sheet{filter:var(--dim-sheet,none)}   /* sheets sit above that layer; brightness(1 - dim) matches it */
 ::selection{background:var(--highlight);color:inherit}
 h1,h2,h3,p,blockquote,figure{margin:0}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -1093,7 +1094,7 @@ function applyPrefs() {
   r.dataset.theme = prefs.theme === 'system' ? (mq.matches ? 'dark' : 'light') : prefs.theme;
   r.dataset.align = prefs.align; r.dataset.font = prefs.font;
   for (const [k, [a, b]] of Object.entries(TONE[r.dataset.theme])) r.style.setProperty(k, mixHex(a, b, prefs.warm / 100));
-  r.style.setProperty('--dim', prefs.dim / 100);
+  r.style.setProperty('--dim', prefs.dim / 100); r.style.setProperty('--dim-sheet', prefs.dim ? `brightness(${1 - prefs.dim / 100})` : 'none');
   for (const [id, v, max] of [['dim', prefs.dim, 60], ['warm', prefs.warm, 100]]) {
     const s = $('#s-' + id); s.value = v; s.style.setProperty('--fill', v / max * 100 + '%'); $(`#${id}Val`).textContent = pct(v);
   }
