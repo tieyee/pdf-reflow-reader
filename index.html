@@ -65,9 +65,10 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrollbar-color:var(--line) transparent;background:var(--bg)}
+/* No rubber-band bounce past the top or bottom: on iPhone it pulls the page away and shows a bare strip behind it */
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrollbar-color:var(--line) transparent;background:var(--bg);overscroll-behavior-y:none}
 /* Paper grain on Home, book grids and Settings, never under book text */
-body{margin:0;min-height:100dvh;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
+body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
 body.reading{background:var(--page)}
 ::selection{background:var(--highlight);color:inherit}
 h1,h2,h3,p,blockquote,figure{margin:0}
