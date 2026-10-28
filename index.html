@@ -319,6 +319,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .sheet hr{margin:6px 0;border:0;border-top:1px solid var(--line)}
 .sheet .lbl{margin:10px 0 4px}
 .sheet .msg{margin:2px 0 18px;text-wrap:pretty}
+.rhead.pick{margin:2px 0 18px}
 .nameform{display:flex;flex-direction:column;gap:12px;padding-top:4px}
 .nameform input{height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font:500 16px/1 var(--ui);outline:none}
 .nameform input:focus{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
@@ -537,6 +538,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 </main>
 <nav id="homeBar" class="hbar" aria-label="Home">
   <button id="libSearch" class="tool" aria-expanded="false" aria-controls="libFind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg><span>Search</span></button>
+  <button id="pickBtn" class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg><span>Pick</span></button>
   <button class="tool" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span>Add</span></button>
   <button id="goSettings" class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Settings</span></button>
 </nav>
@@ -1372,6 +1374,35 @@ function renderNow(m) {
   card.setAttribute('aria-labelledby', 'nowT');
   card.replaceChildren(head, go);
 }
+// ---- Pick: a random book you haven't started, from the side being shown ----
+// A book's side is its collection's; books in no collection, or in one made before sides, count for both.
+// When this side has nothing unread, any unread book will do. Never the same book twice in a row.
+let lastPick = null;
+function pickPool() {
+  const unread = books.filter(m => !m.pct);
+  const here = unread.filter(m => { const s = shelves.find(x => x.id === m.shelf); return !s || onSide(s); });
+  return here.length ? here : unread;
+}
+async function pickBook() {
+  if (!loaded) await refresh();   // tapped the moment the app opened: read the library first
+  let pool = pickPool();
+  if (pool.length > 1) pool = pool.filter(m => m.id !== lastPick);
+  const m = pool[Math.floor(Math.random() * pool.length)];
+  lastPick = m?.id ?? null;
+  openSheet('Read next', body => {
+    if (!m) return body.append(el('p', 'msg', 'Every book has been started.'));
+    const head = el('div', 'rhead pick'), info = el('span', 'rinfo'), btns = el('div', 'btns');
+    const again = el('button', 'pill', 'Pick another'), go = el('button', 'pill primary', 'Start reading');
+    info.append(el('h3', 'card-title clamp3', m.title));
+    if (m.author) info.append(el('span', 'by', m.author));
+    head.append(coverEl(m, 'hero'), info);
+    again.onclick = pickBook; go.onclick = () => openBook(m.id);
+    btns.append(again, go);
+    body.append(head, btns);
+  });
+}
+$('#pickBtn').onclick = pickBook;
+
 // The words at a reading position: from about where the reader is in the block, cut at word boundaries.
 function quoteFrom(blocks, pos, n = 240) {
   for (let i = pos.i; i < Math.min(blocks.length, pos.i + 6); i++) {
