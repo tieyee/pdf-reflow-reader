@@ -18,7 +18,6 @@
 // Theme and book face before first paint, so dark mode never flashes light. Same rules as loadPrefs() in the app script.
 try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = document.documentElement, t = p.v >= 2 ? p.theme : 'system';
   r.dataset.theme = t === 'dark' || t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  r.dataset.tint = (p.v >= 2 ? p.tint : p.theme === 'sepia' && 'sepia') || 'none';
   r.dataset.font = p.font || 'literata'; } catch {}
 </script>
 <style>
@@ -58,8 +57,6 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   --scrim:rgba(0,0,0,.55);
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .88 .16 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --lift:0 1px 1px rgba(0,0,0,.4),0 6px 12px -4px rgba(0,0,0,.6);--sheet-lift:0 -8px 30px rgba(0,0,0,.5);--knob:0 1px 3px rgba(0,0,0,.5);color-scheme:dark}
-[data-tint=sepia]{--page:#f3ead6;--page-ink:#3a2f22;--page-ink-2:#6e5f4c;--highlight:#e6cb9c}
-[data-theme=dark][data-tint=sepia]{--page:#1e1a14;--page-ink:#e6dccb;--page-ink-2:#a89a86;--highlight:#5a4426}
 [data-font=garamond]{--book:"EB Garamond",Garamond,Georgia,serif}
 [data-font=atkinson]{--book:"Atkinson Hyperlegible Next",system-ui,sans-serif}
 
@@ -70,6 +67,7 @@ html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrol
 /* Paper grain on Home, book grids and Settings, never under book text */
 body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
 body.reading{background:var(--page)}
+body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:#000;opacity:var(--dim,0);pointer-events:none}
 ::selection{background:var(--highlight);color:inherit}
 h1,h2,h3,p,blockquote,figure{margin:0}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -127,14 +125,15 @@ img{-webkit-touch-callout:none}
 [aria-checked=true]>.tg{background:var(--accent);border-color:var(--accent)}
 [aria-checked=true]>.tg::after{transform:translateX(18px);background:var(--on-accent)}
 input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:44px;margin:0;background:none;cursor:pointer}
-.size-range::-webkit-slider-runnable-track{height:6px;border-radius:999px;
+.range::-webkit-slider-runnable-track{height:6px;border-radius:999px;
   background:linear-gradient(var(--accent-ink) 0 0) 0 50%/var(--fill,50%) 4px no-repeat,
-    radial-gradient(circle,var(--line) 0 2.5px,transparent 3px) 8px 50%/calc((100% - 16px) / 7) 6px repeat-x,
+    radial-gradient(circle,var(--line) 0 2.5px,transparent 3px) 8px 50%/calc((100% - 16px) / var(--ticks,7)) 6px repeat-x,
     linear-gradient(var(--sunk) 0 0) 0 50%/100% 4px no-repeat}
-.size-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#fff;border:2px solid var(--accent-ink);box-shadow:var(--knob)}
-.size-range::-moz-range-track{height:4px;border-radius:999px;background:var(--sunk)}
-.size-range::-moz-range-progress{height:4px;border-radius:999px;background:var(--accent-ink)}
-.size-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--accent-ink)}
+#s-dim{--ticks:12}#s-warm{--ticks:10}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#fff;border:2px solid var(--accent-ink);box-shadow:var(--knob)}
+.range::-moz-range-track{height:4px;border-radius:999px;background:var(--sunk)}
+.range::-moz-range-progress{height:4px;border-radius:999px;background:var(--accent-ink)}
+.range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--accent-ink)}
 
 /* Shell: Home, a book grid page and Settings scroll with the page; no tab bar */
 #views{max-width:640px;margin:0 auto;padding:max(20px,calc(env(safe-area-inset-top) + 12px)) max(16px,env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
@@ -547,7 +546,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
     <button id="rsetClose" class="icon-btn" aria-label="Close text and page settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
   <div id="rsetText" class="tpanel" role="tabpanel" aria-labelledby="tabText">
   <div class="pfield textonly"><span class="spread"><label for="s-size" class="label">Size</label><span class="size-val label num" data-unit=" px"></span></span>
-    <span class="sizerow"><button id="s-dn" aria-label="Smaller text">A</button><input id="s-size" class="size-range" type="range" min="14" max="28" step="1"><button id="s-up" aria-label="Larger text">A</button></span></div>
+    <span class="sizerow"><button id="s-dn" aria-label="Smaller text">A</button><input id="s-size" class="size-range range" type="range" min="14" max="28" step="1"><button id="s-up" aria-label="Larger text">A</button></span></div>
   <div class="pfield textonly"><span class="label" id="l-font">Typeface</span>
     <div class="faces" data-k="font" role="group" aria-labelledby="l-font">
       <button class="face" data-v="literata"><span class="aa" style="font-family:Literata,Georgia,serif" aria-hidden="true">Aa</span><span class="fn">Literata</span></button>
@@ -573,7 +572,10 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
   </div>
   <div id="rsetPage" class="tpanel" role="tabpanel" aria-labelledby="tabPage" hidden>
   <div class="seg" data-k="mode" role="group" aria-label="Show the book as"><button data-v="reflow">Reflow</button><button data-v="page">Page</button></div>
-  <button role="switch" class="swrow" data-k="tint" data-on="sepia" data-off="none" aria-checked="false"><span>Sepia page</span><span class="tg" aria-hidden="true"></span></button>
+  <div class="pfield"><span class="spread"><label for="s-dim" class="label">Dim</label><span id="dimVal" class="label num"></span></span>
+    <input id="s-dim" class="range" type="range" min="0" max="60" step="5"></div>
+  <div class="pfield"><span class="spread"><label for="s-warm" class="label">Warmth</label><span id="warmVal" class="label num"></span></span>
+    <input id="s-warm" class="range" type="range" min="0" max="100" step="10"></div>
   </div>
 </div>
 
@@ -1028,8 +1030,8 @@ const update = (id, fn) => tx('meta', 'readwrite', o => { const r = o.get(id); r
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
 const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
-// autohide: the reader's bars slide away while scrolling down.
-const DEF = { v: 3, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', tint: 'none', sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
+// autohide: the reader's bars slide away while scrolling down. dim (0–60) and warm (0–100) are percentages.
+const DEF = { v: 4, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1038,6 +1040,8 @@ function loadPrefs() {
   if (!p) return { ...DEF };
   // Version 1 kept sepia as a theme; it is a page tint now. Older saves keep their alignment (left was the default then).
   if (!(p.v >= 2)) { p.tint = p.theme === 'sepia' ? 'sepia' : 'none'; p.theme = 'system'; }
+  // Version 4: the Sepia page switch became the Warmth slider; sepia on is Warmth 100%.
+  if (p.tint === 'sepia' && p.warm == null) p.warm = 100;
   p = { ...DEF, align: 'start', ...p };
   // Version 3 (Linen) has fewer steps: sizes 14–28, three line spacings, three margins.
   p.size = Math.min(28, Math.max(14, Math.round(+p.size) || DEF.size));
@@ -1049,16 +1053,31 @@ function loadPrefs() {
   if (!SORTN[p.sort]) p.sort = DEF.sort;
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
   if (!['light', 'dark', 'system'].includes(p.theme)) p.theme = 'system';
-  p.v = 3;
+  delete p.tint;
+  const snap = (v, max, step) => Math.min(max, Math.max(0, Math.round((+v || 0) / step) * step));
+  p.dim = snap(p.dim, 60, 5); p.warm = snap(p.warm, 100, 10);
+  p.v = 4;
   return p;
 }
 let prefs = loadPrefs();
+// The reading page's colours at Warmth 0 and 100 (100 is the old sepia page); Warmth blends between them.
+const TONE = {
+  light: { '--page': ['#f8f9f8', '#f3ead6'], '--page-ink': ['#1c1c1e', '#3a2f22'], '--page-ink-2': ['#6a6a6e', '#6e5f4c'], '--highlight': ['#f1dcc2', '#e6cb9c'] },
+  dark: { '--page': ['#121514', '#1e1a14'], '--page-ink': ['#dfe2e0', '#e6dccb'], '--page-ink-2': ['#9ea3a1', '#a89a86'], '--highlight': ['#5c4430', '#5a4426'] },
+};
+const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+const pct = v => v ? v + '%' : 'Off';
 const chrome = () => { $('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue(book ? '--page' : '--bg').trim(); };
 function applyPrefs() {
   const r = document.documentElement;
   r.style.setProperty('--size', prefs.size + 'px'); r.style.setProperty('--lh', prefs.lh); r.style.setProperty('--margin', prefs.margin + 'px');
   r.dataset.theme = prefs.theme === 'system' ? (mq.matches ? 'dark' : 'light') : prefs.theme;
-  r.dataset.tint = prefs.tint; r.dataset.align = prefs.align; r.dataset.font = prefs.font;
+  r.dataset.align = prefs.align; r.dataset.font = prefs.font;
+  for (const [k, [a, b]] of Object.entries(TONE[r.dataset.theme])) r.style.setProperty(k, mixHex(a, b, prefs.warm / 100));
+  r.style.setProperty('--dim', prefs.dim / 100);
+  for (const [id, v, max] of [['dim', prefs.dim, 60], ['warm', prefs.warm, 100]]) {
+    const s = $('#s-' + id); s.value = v; s.style.setProperty('--fill', v / max * 100 + '%'); $(`#${id}Val`).textContent = pct(v);
+  }
   chrome();
   for (const s of $$('.size-range')) { s.value = prefs.size; s.style.setProperty('--fill', (prefs.size - 14) / 14 * 100 + '%'); }
   for (const s of $$('.size-val')) s.textContent = prefs.size + (s.dataset.unit || '');
@@ -1070,12 +1089,13 @@ function applyPrefs() {
   $('#rset').dataset.mode = prefs.mode;
   const face = `${FONTS[prefs.font]} · ${prefs.size} px`;
   $('#textVal').textContent = prefs.mode === 'page' ? 'Page view' : face;
-  $('#prevVal').textContent = face + (prefs.tint === 'sepia' ? ' · sepia' : '');
+  $('#prevVal').textContent = face + (prefs.warm ? ` · warmth ${prefs.warm}%` : '');
   $('#sortVal').textContent = SORTN[prefs.sort];
 }
 // A change while reading keeps the reader on the same paragraph; switching Reflow / Page keeps the same page.
+const QUIET = new Set(['dim', 'warm', 'side']);
 async function changePrefs(patch) {
-  const at = book && els.length ? where() : null, remode = 'mode' in patch && patch.mode !== prefs.mode;
+  const quiet = Object.keys(patch).every(k => QUIET.has(k)), at = !quiet && book && els.length ? where() : null, remode = 'mode' in patch && patch.mode !== prefs.mode;
   prefs = { ...prefs, ...patch }; applyPrefs();
   try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch {}
   if (!at) return;
@@ -1097,6 +1117,8 @@ function setSize(v) {
   sizeRaf ||= requestAnimationFrame(() => { sizeRaf = 0; const s = sizeWant; sizeWant = 0; changePrefs({ size: s }); });
 }
 for (const s of $$('.size-range')) s.oninput = e => setSize(+e.target.value);
+$('#s-dim').oninput = e => changePrefs({ dim: +e.target.value });
+$('#s-warm').oninput = e => changePrefs({ warm: +e.target.value });
 $('#s-dn').onclick = () => setSize((sizeWant || prefs.size) - 1);
 $('#s-up').onclick = () => setSize((sizeWant || prefs.size) + 1);
 for (const b of $$('.seg[data-k] button,.faces[data-k] button'))
