@@ -1664,7 +1664,7 @@ async function processPdf(buf, progress) {
     }
     const r = Reflow.reflow(pages), info = (await doc.getMetadata().catch(() => null))?.info, scan = pages.filter(p => p.image).length >= N / 2;
     return { title: cleanTitle(info?.Title), author: cleanAuthor(info?.Author), art: !!pages[0]?.image && !scan, cover: await makeCover(doc).catch(() => null),
-      text: { v: V, numPages: N, scan, blocks: r.blocks, removed: r.removed.length, sizes: pages.map(p => [Math.round(p.w), Math.round(p.h)]) } };
+      text: { v: V, numPages: N, scan, blocks: r.blocks, removed: r.removed.length, sizes: pages.map(p => [Math.round(p.w), Math.round(p.h)]), toc: await readToc(doc).catch(() => []) } };
   } finally { doc.destroy(); }
 }
 
@@ -1955,14 +1955,67 @@ function jump(pos, ppos) {
   showBack(back); showPos();
 }
 
-// ---- Contents: bookmarks and chapters ----
-function openGoto() {
+// ---- Contents: chapters and bookmarks ----
+// The PDF's own contents list, top-level entries only, as [{t: title, p: page index}]. Entries that can't be placed are dropped.
+async function readToc(doc) {
+  const out = [];
+  for (const o of await doc.getOutline() || []) {
+    try {
+      const d = typeof o.dest === 'string' ? await doc.getDestination(o.dest) : o.dest, r = d?.[0];
+      const p = Number.isInteger(r) ? r : r && typeof r === 'object' ? await doc.getPageIndex(r) : null;
+      if (p != null && o.title?.trim()) out.push({ t: o.title.trim(), p });
+    } catch {}
+  }
+  return out;
+}
+// Books added before contents lists were read get theirs the first time Contents opens, then keep it.
+async function tocFor(b) {
+  if (Array.isArray(b.text.toc)) return b.text.toc;
+  try { b.text.toc = await readToc(await getDoc(b)); put('text', b.id, b.text).catch(() => {}); return b.text.toc; }
+  catch { return []; }
+}
+// The chapters: the PDF's own contents when it lists two or more, else the headings found by type size.
+function chaptersOf(b) {
+  const bl = b.text.blocks, toc = b.text.toc || [];
+  return toc.length >= 2 ? toc.map(({ t, p }) => ({ t, p, i: b.first[p] ?? 0 })) : b.heads.map(i => ({ t: bl[i].text, p: bl[i].page, i }));
+}
+// A row of tabs on the segmented track (Contents; the Text sheet has the same look in its markup).
+function tabBar(items, cur, pick) {
+  const bar = el('div', 'seg tabs');
+  bar.setAttribute('role', 'tablist');
+  for (const [k, label] of items) {
+    const t = el('button', '', label);
+    t.setAttribute('role', 'tab'); t.setAttribute('aria-selected', k === cur); t.tabIndex = k === cur ? 0 : -1;
+    t.onclick = () => pick(k);
+    bar.append(t);
+  }
+  return bar;
+}
+let gotoTab = 'chapters';
+async function openGoto() {
   if (!book) return;
-  const b = book, bl = b.text.blocks, k = headAt(where().pos.i);
+  const b = book;
+  await tocFor(b);
+  if (book !== b) return;
+  const ch = chaptersOf(b), here = where().pos.i, tab = ch.length ? gotoTab : 'bookmarks';
+  let k = -1;
+  ch.forEach((c, j) => { if (c.i <= here) k = j; });
   openSheet('Contents', body => {
     const sc = el('div', 'scroll'), ms = marks();
-    sc.append(el('h3', 'label lbl', 'Bookmarks'));
-    if (!ms.length) sc.append(el('p', 'note', 'No bookmarks yet. The Bookmark button keeps the page you’re on.'));
+    if (ch.length) body.append(tabBar([['chapters', 'Chapters'], ['bookmarks', 'Bookmarks']], tab, t => { gotoTab = t; openGoto(); }));
+    else sc.append(el('h3', 'label lbl', 'Bookmarks'));
+    if (tab === 'chapters') {
+      const ul = el('ul', 'hits');
+      ul.append(...ch.map((c, j) => {
+        const li = el('li'), go = el('button', 'hit');
+        go.append(el('span', 'snip ui', c.t), el('span', 'pg', 'p. ' + (c.p + 1)));
+        if (j === k) go.setAttribute('aria-current', 'true');
+        go.onclick = () => jump({ i: c.i, f: 0 });
+        li.append(go);
+        return li;
+      }));
+      sc.append(ul);
+    } else if (!ms.length) sc.append(el('p', 'note', 'No bookmarks yet. The Bookmark button keeps the page you’re on.'));
     else {
       const ul = el('ul', 'hits');
       ul.append(...ms.map(m => {
@@ -1975,19 +2028,6 @@ function openGoto() {
           await update(b.id, x => { x.marks = list; }).catch(() => {});
           if (list.length) li.remove(); else openGoto();
         }));
-        return li;
-      }));
-      sc.append(ul);
-    }
-    if (b.heads.length) {
-      sc.append(el('h3', 'label lbl', 'Chapters'));
-      const ul = el('ul', 'hits');
-      ul.append(...b.heads.map((hi, j) => {
-        const li = el('li'), go = el('button', 'hit');
-        go.append(el('span', 'snip ui', bl[hi].text), el('span', 'pg', 'p. ' + (bl[hi].page + 1)));
-        if (j === k) go.setAttribute('aria-current', 'true');
-        go.onclick = () => jump({ i: hi, f: 0 });
-        li.append(go);
         return li;
       }));
       sc.append(ul);
