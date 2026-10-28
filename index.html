@@ -28,6 +28,14 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"EB Garamond";font-style:normal;font-weight:400 800;font-display:swap;src:url(vendor/fonts/garamond-latin.woff2) format("woff2");
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:300 600;font-display:swap;src:url(vendor/fonts/newsreader-latin-ext.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:300 600;font-display:swap;src:url(vendor/fonts/newsreader-latin.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:400 500;font-display:swap;src:url(vendor/fonts/newsreader-italic-latin-ext.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:400 500;font-display:swap;src:url(vendor/fonts/newsreader-italic-latin.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Literata";font-style:normal;font-weight:400 600;font-display:swap;src:url(vendor/fonts/literata-latin-ext.woff2) format("woff2");
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"Literata";font-style:normal;font-weight:400 600;font-display:swap;src:url(vendor/fonts/literata-latin.woff2) format("woff2");
@@ -48,7 +56,10 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .24 0 0 0 0 .18 0 0 0 0 .1 .34 0 0 0 -.12'/%3E%3C/filter%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .12 .2 0 0 0 -.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --lift:0 1px 1px rgba(27,26,23,.12),0 6px 12px -4px rgba(27,26,23,.24);--sheet-lift:0 -8px 30px rgba(27,26,23,.14);--knob:0 1px 3px rgba(27,26,23,.22);
   --ui:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
-  --display:"EB Garamond",Garamond,"Iowan Old Style",Georgia,serif;--serif:"Literata",Georgia,serif;--book:var(--serif);
+  --display:"Newsreader","EB Garamond","Iowan Old Style",Georgia,serif;--serif:"Literata",Georgia,serif;--book:var(--serif);
+  /* Home's glass (the Resume button, the round buttons, the Library tray) over the colour of the book you're reading;
+     --fov is what the cover's light is washed with so text stays readable: the paper here, near-black in dark */
+  --glass:rgba(255,255,255,.42);--glass-btn:rgba(255,255,255,.38);--glass-hi:rgba(255,255,255,.7);--glass-edge:rgba(27,26,23,.08);--fov:241 238 232;
   --ease:cubic-bezier(.2,.8,.2,1);--size:18px;--lh:1.62;--margin:24px;color-scheme:light}
 [data-theme=dark]{--accent:#a33449;--on-accent:#fff;--accent-ink:#e8909e;
   --bg:#151412;--surface:#1e1c19;--sunk:#2a2723;--line:#35312b;--ink:#eeebe5;--ink-2:#aaa59c;
@@ -56,7 +67,8 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
   --shelf:#4b3a29;--shelf-edge:#5f4b36;--cover-c:#9a722f;
   --scrim:rgba(0,0,0,.55);--bar-dim:#090908;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .88 .16 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-  --lift:0 1px 1px rgba(0,0,0,.4),0 6px 12px -4px rgba(0,0,0,.6);--sheet-lift:0 -8px 30px rgba(0,0,0,.5);--knob:0 1px 3px rgba(0,0,0,.5);color-scheme:dark}
+  --lift:0 1px 1px rgba(0,0,0,.4),0 6px 12px -4px rgba(0,0,0,.6);--sheet-lift:0 -8px 30px rgba(0,0,0,.5);--knob:0 1px 3px rgba(0,0,0,.5);
+  --glass:rgba(255,255,255,.05);--glass-btn:rgba(255,255,255,.1);--glass-hi:rgba(255,255,255,.18);--glass-edge:rgba(255,255,255,.12);--fov:12 11 10;color-scheme:dark}
 [data-font=garamond]{--book:"EB Garamond",Garamond,Georgia,serif}
 [data-font=atkinson]{--book:"Atkinson Hyperlegible Next",system-ui,sans-serif}
 
@@ -177,36 +189,62 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 .resume .pbar i{animation:fill .8s .1s var(--ease) both}
 @keyframes fill{from{transform:scaleX(0)}}
 .cover.hero{width:76px}
-/* Home: Folio and two round buttons, the book you're in as a big cover with one button back in, Up next,
-   and the Library drawer's top edge along the bottom of the screen */
+/* Home takes its light from the book you're reading: a blurred copy of its cover fills the screen behind everything,
+   washed with the paper (or near-black) so text stays readable, and Resume wears the cover's strongest colour.
+   The books you're reading are covers you swipe between; the light follows the one in front. */
+#views{position:relative;z-index:1}
+#field{position:fixed;inset:0;z-index:0;display:none;overflow:hidden;background:var(--bg);pointer-events:none}
+body.home.tinted #field{display:block}
+body.home.tinted::before{display:none}   /* the field paints its own flat band under the status bar */
+#field{will-change:transform}
+#field .fl{position:absolute;inset:0;opacity:0;transition:opacity .6s var(--ease);--a:var(--la);--b:var(--lb);--c3:var(--lc);--ft:var(--ftl)}
+[data-theme=dark] #field .fl{--a:var(--da);--b:var(--db);--c3:var(--dc);--ft:var(--ftd)}
+#field .fl.on{opacity:1}
+#field img{position:absolute;left:-90px;top:-90px;width:calc(100% + 180px);height:calc(100% + 180px);object-fit:cover;filter:blur(70px) saturate(1.7)}
+#field .fl::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(var(--ft) env(safe-area-inset-top),rgb(var(--fov) / 0) calc(env(safe-area-inset-top) + 70px)),
+    linear-gradient(rgb(var(--fov) / var(--a)),rgb(var(--fov) / var(--b)) 45%,rgb(var(--fov) / var(--c3)) 85%)}
 .htop{display:flex;justify-content:space-between;align-items:center;min-height:52px}
-.wordmark{font:500 34px/38px var(--display);letter-spacing:-.01em}
+/* Folio: its F is the ribbon from the app icon, cream (or ink) arms on an oxblood bookmark */
+.wordmark{display:flex;align-items:flex-start;font:500 34px/1 var(--display);letter-spacing:-.02em}
+.wordmark .mk{width:auto;height:38px;margin:2px 1px 0 0}
 .htools{display:flex;gap:10px;margin-right:-2px}
-.icon-btn.ring{width:52px;height:52px;border:1px solid var(--line);background:var(--surface)}
-.icon-btn.ring svg{width:25px;height:25px}
-.hero{display:flex;flex-direction:column;align-items:center;text-align:center}
-.hero .rhead{flex-direction:column;align-items:center;gap:0;width:auto;cursor:pointer;touch-action:manipulation}
-.heroart{position:relative;display:block;margin:6px 0 26px}
-.cover.big{width:min(168px,20dvh,40vw);border-radius:3px;box-shadow:0 2px 2px rgba(0,0,0,.2),0 28px 40px -18px rgba(0,0,0,.55)}
-.herorib{position:absolute;z-index:3;right:15%;top:96%;width:12px;height:18%;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
-.herotitle{max-width:20ch;font:500 28px/32px var(--display);letter-spacing:-.01em;text-wrap:balance}
-.hero .by{margin-top:4px;font:400 15px/20px var(--ui);color:var(--ink-2)}
-.where{align-self:stretch;margin:18px 16px 0}
-.where .wrow{display:flex;justify-content:space-between;gap:12px;font:400 13px/16px var(--ui);color:var(--ink-2);font-variant-numeric:tabular-nums}
-.where .wrow span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.where .pbar{margin-top:8px;height:3px}
-.where .pbar i{animation:fill .8s .1s var(--ease) both}
-.pill.big{align-self:stretch;height:52px;margin:16px 8px 0;font-size:17px}
-.upnext .shead{margin-bottom:10px}
-.link.pick{display:inline-flex;align-items:center;gap:6px;margin-right:-4px}
-.link.pick svg{width:18px;height:18px}
-.nexts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.nx{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:0;border:0;background:none;text-align:left;color:inherit;touch-action:manipulation}
-.nx:active .cover{transform:scale(.97)}
-.cover.mini{width:36px}
-.nx .info{min-width:0;display:flex;flex-direction:column;gap:2px}
-.nx .t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;-webkit-hyphens:auto;hyphens:auto;font:500 13px/16px var(--ui)}
-.nx .meta{font-size:12px;line-height:14px}
+.icon-btn.glass{width:46px;height:46px;border:1px solid var(--glass-edge);background:var(--glass-btn);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 var(--glass-hi)}
+.icon-btn.glass svg{width:24px;height:24px}
+/* Resume's colour is a registered colour, so swiping to another book blends it rather than swapping it */
+@property --c{syntax:"<color>";inherits:true;initial-value:#000}
+@property --cf{syntax:"<color>";inherits:true;initial-value:#fff}
+.now{display:flex;flex-direction:column;--c:var(--ink);--cf:var(--bg);transition:--c .45s var(--ease),--cf .45s var(--ease)}
+/* The books you're reading, the one in front full size, the next peeking in from the right. The cover shrinks on
+   short screens so Resume stays above the Library tray. The spacer lets the last book come to the front too. */
+/* Room under the covers for their shadows, which a scrolling row would otherwise cut off in a hard line */
+.pager{--sw:clamp(150px,min(58vw,calc((100dvh - 470px) * .667)),232px);display:flex;align-items:center;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
+.pager::-webkit-scrollbar{display:none}
+.pager::after{content:"";flex:none;width:calc(100% - var(--sw));height:1px}
+.pager.one::after{display:none}
+/* --d is how far a cover is from the front (0 to 1), set as the row scrolls: covers shrink and darken with the finger,
+   not in a jump. Only transform and opacity change, so the phone's compositor does the work. */
+.slide{position:relative;flex:none;width:var(--sw);padding:0;border:0;background:none;scroll-snap-align:start;touch-action:pan-x pan-y;
+  transform-origin:0 50%;transform:scale(calc(1 - .12 * var(--d,0)));will-change:transform}
+.slide::after{content:"";position:absolute;inset:0;border-radius:2px 4px 4px 2px;background:#000;opacity:calc(var(--d,0) * .42);pointer-events:none}
+.cover.pg{width:100%;border-radius:2px 4px 4px 2px;box-shadow:0 2px 3px rgba(0,0,0,.3),0 30px 44px -20px rgba(0,0,0,.6)}
+.ninfo{margin:18px 4px 0}
+.ntitle{font:500 36px/40px var(--display);letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:balance}
+.ninfo .by{margin-top:4px;font:400 16px/21px var(--ui);color:color-mix(in srgb,var(--ink) 68%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Resume: glass tinted with the cover's colour, where you are under it, the progress along its bottom edge */
+.slab{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:70px;margin-top:18px;padding:0 13px 0 20px;border:0;border-radius:20px;overflow:hidden;text-align:left;color:var(--ink);
+  background:color-mix(in srgb,var(--c,var(--ink)) 24%,var(--glass));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-edge);transition:transform .15s var(--ease)}
+.slab:active{transform:scale(.98)}
+.slab .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.slab b{font:600 17px/21px var(--ui)}
+.slab small{font:400 13px/16px var(--ui);color:color-mix(in srgb,var(--ink) 72%,transparent);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slab .arr{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--c,var(--ink));color:var(--cf,var(--bg))}
+.slab .arr svg{width:20px;height:20px}
+.slab .sbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:color-mix(in srgb,var(--ink) 12%,transparent)}
+.slab .sbar i{display:block;height:100%;background:var(--c,var(--ink));transition:width .4s var(--ease)}
+.cover.pg .sliver,.cover.st .sliver,.cover.pk .sliver{display:none}   /* progress shows once: on Resume, or as "% left" */
 .sidenote{padding:8px 4px 0;max-width:46ch}
 .more{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:-4px}
 .more .link{display:inline-flex;align-items:center;gap:6px;margin-left:-4px}
@@ -267,24 +305,42 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 
 /* The Library: a drawer over Home. Its top edge (the peek) sits along the bottom of Home; pulling it up, or tapping
    it, opens the drawer; pulling its handle down, the arrow, the dimmed strip above it or Back closes it. */
-body.home #views{padding-bottom:calc(132px + env(safe-area-inset-bottom))}
-.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;padding:6px 16px calc(14px + env(safe-area-inset-bottom));
-  border-radius:22px 22px 0 0;border-top:1px solid var(--line);background:var(--surface);box-shadow:var(--sheet-lift);touch-action:none}
-.peekhead{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:4px 0 0;border:0;background:none;color:var(--ink);text-align:left}
+/* The tray: Library, Pick and Search, and the tops of a few covers, so the bottom of Home is never empty */
+body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
+.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px 0 16px;overflow:hidden;
+  border-radius:22px 22px 0 0;background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
+  box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift);touch-action:none}
+.ptop{display:flex;align-items:center}
+.peekhead{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;min-height:60px;padding:16px 0 0;border:0;background:none;color:var(--ink);text-align:left}
 .peekhead .grab,.dhead .grab{position:absolute;top:7px;left:50%;margin:0;translate:-50% 0}
-.peekhead .meta{margin-left:6px}
-.peekhead svg,.dtitle .icon-btn svg{width:20px;height:20px;margin-left:auto;color:var(--ink-2)}
-.field.ask{width:100%;margin-top:6px;border-color:transparent;background:var(--sunk);font:500 16px/1 var(--ui);text-align:left;color:var(--ink-2)}
+.peekhead .ptitle{font:500 24px/1 var(--display);letter-spacing:-.01em}
+.ptop .icon-btn{margin-top:14px;color:color-mix(in srgb,var(--ink) 80%,transparent)}
+.ptop .icon-btn svg{width:22px;height:22px}
+.dtitle .icon-btn svg{width:20px;height:20px;margin-left:auto;color:var(--ink-2)}
+.pkrow{display:flex;gap:12px;margin-top:6px;cursor:pointer}
+.cover.pk{width:84px}
 #dscrim{position:fixed;inset:0;z-index:24;background:var(--scrim);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.drawer{position:fixed;z-index:25;left:0;right:0;bottom:0;top:calc(44px + env(safe-area-inset-top));max-width:640px;margin:0 auto;overflow-y:auto;overscroll-behavior:contain;
-  padding:0 16px calc(28px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--surface);box-shadow:var(--sheet-lift);animation:rise .26s var(--ease)}
+/* The Library opens as a card: Home shrinks back behind it, its top edge still showing, instead of being cut off */
+.drawer{position:fixed;z-index:25;left:0;right:0;bottom:0;top:calc(10px + env(safe-area-inset-top));max-width:640px;margin:0 auto;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));border-radius:14px 14px 0 0;background:var(--surface);box-shadow:var(--sheet-lift);animation:sheetin .42s var(--sheet-ease)}
+/* iOS sheets: quick to start, long soft settle. Closing slides it back down (script) while Home grows back. */
+:root{--sheet-ease:cubic-bezier(.32,.72,0,1)}
+@keyframes sheetin{from{transform:translateY(100%)}}
+.drawer.leaving[hidden],#dscrim.leaving[hidden]{display:block!important;pointer-events:none}
+#dscrim{animation-duration:.35s}
 html.lib{overflow:hidden}
-body.reading #peek,body.reading #drawer,body.reading #dscrim{display:none}
+html.lib,html.lib body{background:var(--bar-dim)}
+html.lib body::before{display:none}
+#views,#field{transition:transform .42s var(--sheet-ease),border-radius .42s var(--sheet-ease)}
+html.lib #views,html.lib #field{transform:translateY(env(safe-area-inset-top)) scale(.93);transform-origin:50% 0}
+html.lib #field{border-radius:12px}
+html.lib body:not(.tinted) #views{background:var(--bg)}
+body.reading #peek,body.reading #drawer,body.reading #dscrim,body.reading #field{display:none}
 .dhead{position:sticky;top:0;z-index:4;margin:0 -16px;padding:20px 16px 8px;background:var(--surface);touch-action:none}
 .dtitle{display:flex;align-items:center;justify-content:space-between;gap:8px}
-#h-lib{font-size:28px;line-height:34px}
-#h-lib .meta{font:400 14px/1 var(--ui)}
+#h-lib{font:500 34px/40px var(--display);letter-spacing:-.02em}
+#h-lib .meta{margin-left:6px;font:400 14px/1 var(--ui);letter-spacing:0}
 #libClose{margin-right:-10px}
 .dtitle .backbtn{margin-left:-8px}
 #shelfMore{margin-left:auto}
@@ -295,24 +351,36 @@ body.reading #peek,body.reading #drawer,body.reading #dscrim{display:none}
 .sbtns .link,.shead .link{min-height:36px}
 .link.add{display:inline-flex;align-items:center;gap:4px}
 .link.add svg{width:16px;height:16px}
-/* Fiction, then Non-fiction: a heading with Arrange and Add, then each collection as one oak shelf (its name, its
-   covers standing on the ledge, the ledge running edge to edge) */
-#shelfRows{display:flex;flex-direction:column;gap:28px}
-.lsec{display:flex;flex-direction:column;gap:12px}
-.lsec .shead{margin:0}
-.lsec>.note{margin:-4px 0 0}
-.sname{display:flex;align-items:center;gap:6px;width:100%;min-height:40px;padding:0;border:0;background:none;color:var(--ink);text-align:left;touch-action:manipulation}
-.sname .sn{min-width:0;font:500 18px/22px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sname .meta{flex:none}
-.sname svg{flex:none;width:16px;height:16px;margin-left:auto;color:var(--ink-2)}
+/* Fiction, then Non-fiction, set like chapters of a book (I, II): an italic heading over a rule, with Arrange and Add.
+   Each collection is its name with See all, then a row of big covers you swipe along, titles under them. */
+#shelfRows{display:flex;flex-direction:column;gap:30px}
+.lsec{display:flex;flex-direction:column;gap:6px}
+.lsec>.shead{align-items:baseline;justify-content:flex-start;gap:0;margin:0 0 4px;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+.lsec>.shead .rn{flex:none;margin-right:12px;font:400 17px/1 var(--display);color:var(--ink-2);font-variant-numeric:lining-nums}
+.lsec>.shead h3{min-width:0;font:italic 400 30px/34px var(--display);letter-spacing:-.01em}
+.lsec>.shead .n{flex:none;margin-left:10px;font:400 17px/1 var(--display);color:var(--ink-2);font-variant-numeric:lining-nums tabular-nums}
+.lsec>.shead .sbtns{margin-left:auto;align-self:center;gap:10px}
+.lsec .sbtns .link{color:var(--ink-2)}
+.lsec>.note{margin:4px 0 0}
+.srow{margin-top:10px}
+.sname{display:flex;align-items:baseline;gap:8px;width:100%;min-height:44px;padding:8px 0 0;border:0;background:none;color:var(--ink);text-align:left;touch-action:manipulation}
+.sname .sn{min-width:0;font:500 22px/26px var(--display);letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sname .meta{flex:none;font-size:14px}
+.sname .see{flex:none;display:flex;align-items:center;gap:2px;margin-left:auto;font:400 15px/1 var(--ui);color:var(--ink-2)}
+.sname svg{flex:none;width:16px;height:16px}
 @media (hover:hover){.sname:hover .sn{color:var(--accent-ink)}}
-.scov{display:flex;align-items:flex-end;gap:10px;height:86px;margin:2px -16px 0;padding:0 16px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+.scov{display:flex;align-items:flex-start;gap:14px;margin:8px -16px 0;padding:0 16px 4px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
 .scov::-webkit-scrollbar{display:none}
-.cover.sh{width:52px}
-.addslot{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:52px;height:78px;padding:0;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-bottom:0;border-radius:4px 4px 0 0;background:none;color:var(--ink-2);font:500 10px/12px var(--ui)}
-.addslot svg{width:18px;height:18px}
-.srow .ledge,#v-shelf .ledge{margin:0 -16px;border-radius:0}
-#shelfName{font-size:32px;line-height:36px}
+.sitem{flex:none;display:flex;flex-direction:column;width:100px}
+.cover.st{width:100px;border-radius:2px 4px 4px 2px;box-shadow:0 12px 20px -12px rgba(0,0,0,.7),var(--lift)}
+.sitem .t{margin-top:8px;font:500 15px/18px var(--display);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.sitem .meta{margin-top:2px;font-size:12px;line-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sitem .meta.go{color:var(--ink)}
+.addslot{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100px;height:150px;padding:0;border:1.5px dashed color-mix(in srgb,var(--ink-2) 45%,transparent);border-radius:4px;background:none;color:var(--ink-2);font:500 12px/14px var(--ui)}
+.addslot svg{width:20px;height:20px}
+#v-shelf .ledge{display:none}
+#v-shelf .grid{gap:26px}
+#shelfName{font:500 34px/38px var(--display);letter-spacing:-.02em}
 #v-shelf .tbar{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;margin-top:-6px}
 /* Arrange: rows with a grip on the right. Drag a grip (or press the arrow keys on it) to move a row. */
 .arr{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -518,18 +586,28 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 </head>
 <body>
 <div id="app">
+<div id="field" aria-hidden="true"></div>
 <main id="views">
 
   <section id="v-library" class="view" aria-labelledby="h-library">
     <header class="htop">
-      <h1 id="h-library" class="wordmark">Folio</h1>
+      <h1 id="h-library" class="wordmark"><span class="sr">Folio</span><svg class="mk" viewBox="166 92 182 330" aria-hidden="true"><defs><linearGradient id="silk" x1="0" x2="1"><stop offset="0" stop-color="#7d2236"/><stop offset=".45" stop-color="#b43c53"/><stop offset="1" stop-color="#7d2236"/></linearGradient></defs><rect x="226" y="92" width="122" height="44" fill="currentColor"/><rect x="226" y="222" width="86" height="40" fill="currentColor"/><path d="M166 92h60v330l-30-26-30 26z" fill="url(#silk)"/></svg><span aria-hidden="true">olio</span></h1>
       <span class="htools">
-        <button class="icon-btn ring" data-add aria-label="Add a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
-        <button id="goSettings" class="icon-btn ring" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
+        <button class="icon-btn glass" data-add aria-label="Add a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+        <button id="goSettings" class="icon-btn glass" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
       </span>
     </header>
     <div id="status" class="card status" role="status" aria-live="polite" hidden></div>
-    <section id="nowCard" class="hero" hidden></section>
+    <section id="nowCard" class="now" aria-labelledby="nowT" hidden>
+      <div id="pager" class="pager" aria-label="Books you're reading"></div>
+      <div class="ninfo">
+        <h2 id="nowT" class="ntitle clamp2"></h2>
+        <p id="nowBy" class="by"></p>
+        <button id="nowGo" class="slab"><span class="tx"><b></b><small id="nowWhere"></small></span>
+          <span class="arr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          <span class="sbar" aria-hidden="true"><i id="nowBar"></i></span></button>
+      </div>
+    </section>
       <div id="first" class="card first" hidden>
         <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
         <h2 class="card-title">Add your first book</h2>
@@ -537,12 +615,6 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
         <button class="pill primary" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Choose a PDF</button>
         <p class="note">Nothing is uploaded: your books stay on this device.<span class="drophint"> You can also drop PDFs onto this page.</span></p>
       </div>
-      <section id="nextSec" class="upnext" aria-labelledby="h-next" hidden>
-        <div class="shead"><h2 id="h-next" class="shelf-title">Also reading</h2>
-          <button id="pickBtn" class="link pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg>Pick for me</button></div>
-        <div id="next" class="nexts"></div>
-        <p id="nextNone" class="note" hidden>No other books on the go.</p>
-      </section>
   </section>
 
   <section id="v-settings" class="view" aria-labelledby="h-settings" hidden>
@@ -579,10 +651,13 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 
 </main>
 <div id="peek" class="peek" hidden>
-  <button id="libOpen" class="peekhead" aria-controls="drawer" aria-expanded="false"><span class="grab" aria-hidden="true"></span>
-    <span class="shelf-title">Library</span><span id="peekCount" class="meta num"></span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
-  <button id="libSearch" class="field ask" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg>Title or author</button>
+  <div class="ptop">
+    <button id="libOpen" class="peekhead" aria-controls="drawer" aria-expanded="false"><span class="grab" aria-hidden="true"></span>
+      <span class="ptitle">Library</span><span id="peekCount" class="meta num"></span></button>
+    <button id="pickBtn" class="icon-btn" aria-label="Pick a book for me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="9" r="1.1" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/></svg></button>
+    <button id="libSearch" class="icon-btn" aria-controls="drawer" aria-label="Find a book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg></button>
+  </div>
+  <div id="peekRow" class="pkrow" aria-hidden="true"></div>
 </div>
 <div id="dscrim" hidden></div>
 <section id="drawer" class="drawer" aria-labelledby="h-lib" hidden>
@@ -1164,8 +1239,15 @@ const TONE = {
 };
 const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
 const pct = v => v ? v + '%' : 'Off';
-// The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, else the ground.
-const chrome = () => { $('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue(book ? '--page' : !$('#drawer').hidden ? '--bar-dim' : '--bg').trim(); };
+// The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, on Home the
+// top of the light from the book you're reading, else the ground.
+let fieldTone = null;   // [light, dark] colour of the top of Home's light, set by setField
+let slides = [], cur = 0;   // Home's books you're reading, and which one is in front
+const chrome = () => {
+  const r = document.documentElement, lib = !$('#drawer').hidden;
+  $('meta[name=theme-color]').content = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
+    : getComputedStyle(r).getPropertyValue(book ? '--page' : lib ? '--bar-dim' : '--bg').trim();
+};
 function applyPrefs() {
   const r = document.documentElement;
   r.style.setProperty('--size', prefs.size + 'px'); r.style.setProperty('--lh', prefs.lh); r.style.setProperty('--margin', prefs.margin + 'px');
@@ -1287,6 +1369,7 @@ function show(s = {}) {
   showDrawer(tab === 'library' && !!(s.lib || s.shelf || s.colls), s.shelf);
   $('#peek').hidden = tab !== 'library' || !books.length;
   document.body.classList.toggle('home', tab === 'library');
+  if (tab === 'library' && slides.length) { $('#pager').scrollLeft = cur * slideStep(); syncPager(); }   // laid out again now it shows
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
@@ -1297,10 +1380,25 @@ function goPage(state, focus) {
 }
 let arranging = null;   // 'colls' or 'books' while their Arrange list shows
 let pushed = 0;         // drawer pages pushed this session: closing goes Back only through those, never out of the app
+const calmMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let leaving = null;   // the Library sliding back down
 function showDrawer(open, shelf) {
-  const d = $('#drawer');
+  const d = $('#drawer'), sc = $('#dscrim'), was = !d.hidden;
   if (!open || (shelf ? arranging?.startsWith('colls') : arranging === 'books')) arranging = null;
-  d.hidden = $('#dscrim').hidden = !open;
+  if (open) leaving?.cancel();   // opened again while it was still sliding away
+  if (open && !was) d.style.animation = '';   // a drag turns the opening slide off; this turns it back on
+  d.hidden = sc.hidden = !open;
+  // Closed at once for everything else; on screen it slides down from where it is (or from where a finger let go).
+  if (!open && was && !calmMotion()) {
+    d.classList.add('leaving'); sc.classList.add('leaving');
+    const a = leaving = d.animate([{ transform: d.style.transform || 'translateY(0)' }, { transform: 'translateY(100%)' }], { duration: 320, easing: 'cubic-bezier(.32,.72,0,1)' });
+    sc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: 'ease-out' });
+    // Ends when the slide does, or on a timer if the browser never says so (a busy WebKit can drop the event), so
+    // a closed Library is never left on screen.
+    const done = () => { clearTimeout(t); d.classList.remove('leaving'); sc.classList.remove('leaving'); d.style.transform = ''; if (leaving === a) leaving = null; };
+    const t = setTimeout(() => { a.cancel(); done(); }, 420);
+    a.onfinish = a.oncancel = done;
+  } else if (!open) d.style.transform = '';
   document.documentElement.classList.toggle('lib', open);
   chrome();
   $('#libOpen').setAttribute('aria-expanded', open);
@@ -1314,7 +1412,7 @@ const closeLib = () => {
   else { pushed = 0; toHome(); }
 };
 const goShelf = id => { pushed++; goPage({ tab: 'library', lib: true, shelf: id }, '#shelfName'); };
-$('#libOpen').onclick = openLib;
+$('#libOpen').onclick = $('#peekRow').onclick = openLib;
 $('#libSearch').onclick = () => { openLib(); $('#lq').focus(); };
 $('#libClose').onclick = $('#dscrim').onclick = closeLib;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidden && !sheet.open) closeLib(); });
@@ -1327,7 +1425,14 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidde
   let h0 = null;
   head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; h0 = e.clientY; head.setPointerCapture(e.pointerId); d.style.animation = 'none'; });
   head.addEventListener('pointermove', e => { if (h0 != null) d.style.transform = `translateY(${Math.max(0, e.clientY - h0)}px)`; });
-  const end = e => { if (h0 == null) return; const dy = e.clientY - h0; h0 = null; d.style.transform = ''; if (dy > 90) closeLib(); };
+  // Let go far enough and it carries on down; not far enough and it springs back up.
+  const end = e => {
+    if (h0 == null) return;
+    const dy = e.clientY - h0, from = d.style.transform; h0 = null;
+    if (dy > 90) return closeLib();
+    d.style.transform = '';
+    if (from && !calmMotion()) d.animate([{ transform: from }, { transform: 'translateY(0)' }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
+  };
   head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
 }
 $('#goSettings').onclick = () => goPage({ tab: 'settings' }, '#h-settings');
@@ -1375,12 +1480,18 @@ const calm = h => /^[^a-z]*[A-Z]{3}[^a-z]*$/.test(h) ? h[0] + h.slice(1).toLower
 // round in the order books were added, so books added one after another never share one.
 const TONES = ['ka', 'kb', 'kc', 'kd'];
 let tones = new Map();
+// The picture's address for a book whose cover is a picture, else null.
+function coverUrl(m) {
+  const bytes = m.art && covers.get(m.id);
+  if (!bytes) return null;
+  let u = coverUrls.get(m.id);
+  if (!u) coverUrls.set(m.id, u = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })));
+  return u;
+}
 function coverEl(m, size = '') {
-  const c = el('span', 'cover' + (size ? ' ' + size : '')), bytes = m.art && covers.get(m.id);
+  const c = el('span', 'cover' + (size ? ' ' + size : '')), u = coverUrl(m);
   c.setAttribute('aria-hidden', 'true');
-  if (bytes) {
-    let u = coverUrls.get(m.id);
-    if (!u) coverUrls.set(m.id, u = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })));
+  if (u) {
     const img = el('img'); img.src = u; img.alt = ''; img.decoding = 'async'; img.draggable = false; c.append(img);
   } else {
     c.classList.add('gen', TONES[(tones.get(m.id) || 0) % 4]);
@@ -1431,51 +1542,152 @@ async function refresh() {
   backfill(books.filter(m => !covers.has(m.id) || m.author === undefined || m.art === undefined));
 }
 
-// ---- Home: the book you're in, as a big cover with one button back in, then Also reading ----
+// ---- Home: the books you're reading as covers you swipe between, the one in front with Resume under it, and the
+// Library tray along the bottom. The page and Resume take their colour from the cover in front. ----
 function renderLibrary() {
   const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
   $('#first').hidden = n > 0;
-  const now = reading[0] || books.filter(m => !m.pct).sort(SORT.added[1])[0];
+  // Every book in progress, opened last first; with none, the newest unread book, else the one opened last.
+  const now = reading.length ? reading.slice(0, 8) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
-  // Also reading: the other books in progress, opened last first, three at most. Pick for me sits in its heading,
-  // so the section stays while there is an unread book to pick.
-  const also = reading.filter(m => m !== now).slice(0, 3);
-  $('#nextSec').hidden = !also.length && !books.some(m => !m.pct && m !== now);
-  $('#next').replaceChildren(...also.map(nextEl));
-  $('#nextNone').hidden = also.length > 0;
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
+  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).slice(0, 6).map(m => coverEl(m, 'pk')));
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
 }
-function nextEl(m) {
-  const b = el('button', 'nx'), info = el('span', 'info');
-  info.append(el('span', 't', m.title), el('span', 'meta num', stateShort(m)));
-  b.append(coverEl(m, 'mini'), info);
-  b.setAttribute('aria-label', `${m.title}, ${stateLong(m)}`);
-  pressable(b, () => openBook(m.id), () => bookMenu(m));
-  return b;
+// Tap the cover in front (or Resume) to read, tap one behind to bring it forward; hold any cover for its options.
+function renderNow(list) {
+  const card = $('#nowCard'), pager = $('#pager'), keep = slides[cur]?.id;
+  card.hidden = !list.length;
+  document.body.classList.toggle('tinted', list.length > 0);
+  slides = list;
+  if (!list.length) { nowId = null; return setField(null); }
+  pager.classList.toggle('one', list.length < 2);
+  pager.replaceChildren(...list.map((m, i) => {
+    const b = el('button', 'slide');
+    b.append(coverEl(m, 'pg'));
+    b.setAttribute('aria-label', `${m.title}${m.author ? ', ' + m.author : ''}, ${stateLong(m)}${list.length > 1 ? `, ${i + 1} of ${list.length}` : ''}`);
+    pressable(b, () => i === cur ? openBook(m.id) : toSlide(i), () => bookMenu(m));
+    b.onfocus = () => { if (i !== cur) toSlide(i); };
+    return b;
+  }));
+  const i = Math.max(0, list.findIndex(m => m.id === keep));
+  setCur(i);
+  pager.scrollLeft = i * slideStep();
+  syncPager();
 }
-// The one next step: the book in progress opened last, else the newest unread one. Tap the cover or the button to
-// read; hold the cover for its options. A book you've started wears the ribbon.
-function renderNow(m) {
-  const card = $('#nowCard');
-  card.hidden = !m; nowId = m?.id;
-  if (!m) return card.replaceChildren();
-  const started = m.pct > 0, head = el('div', 'rhead'), art = el('span', 'heroart'), t = el('h2', 'herotitle clamp2', m.title);
-  art.append(coverEl(m, 'big'));
-  if (started) { const r = el('span', 'herorib'); r.setAttribute('aria-hidden', 'true'); art.append(r); }
-  head.append(art, t);
-  if (m.author) head.append(el('p', 'by', m.author));
-  pressable(head, () => openBook(m.id), () => bookMenu(m));
-  const where = el('div', 'where'), row = el('div', 'wrow');
-  if (started) { row.append(el('span', '', calm(m.chap || '')), el('span', '', leftLine(m))); where.append(row, bar(m.pct)); }
-  else row.append(el('span', '', `Not started · ${plural(m.pages, 'page')}`)), where.append(row);
-  const go = el('button', 'pill primary big', started ? 'Resume reading' : 'Start reading');
-  t.id = 'nowT'; go.id = 'nowGo';
-  go.onclick = () => openBook(m.id);
-  card.setAttribute('aria-labelledby', 'nowT');
-  card.replaceChildren(head, where, go);
+const slideStep = () => { const c = $('#pager').children; return c.length > 1 ? c[1].offsetLeft - c[0].offsetLeft : 0; };
+const toSlide = i => $('#pager').scrollTo({ left: i * slideStep(), behavior: calmMotion() ? 'auto' : 'smooth' });
+// Each cover's distance from the front, from the row's scroll position; returns the one nearest the front.
+function syncPager() {
+  const p = $('#pager'), step = slideStep();
+  if (!step) return 0;
+  const x = p.scrollLeft / step;
+  for (let k = 0; k < p.children.length; k++) p.children[k].style.setProperty('--d', Math.min(1, Math.abs(k - x)).toFixed(3));
+  return Math.max(0, Math.min(slides.length - 1, Math.round(x)));
+}
+function setCur(i, swiped = false) {
+  const m = slides[i], started = m.pct > 0, dir = i > cur ? 1 : -1;
+  cur = i; nowId = m.id;
+  // The new title and where you are slide in from the side you swiped from.
+  if (swiped && !calmMotion()) for (const e of [$('#nowT'), $('#nowBy'), $('#nowWhere')])
+    e.animate([{ opacity: 0, transform: `translateX(${dir * 14}px)` }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  [...$('#pager').children].forEach((b, k) => b.classList.toggle('cur', k === i));
+  $('#nowT').textContent = m.title;
+  $('#nowBy').textContent = m.author || '';
+  $('#nowGo b').textContent = started ? 'Resume reading' : 'Start reading';
+  $('#nowWhere').textContent = started ? [calm(m.chap || ''), leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`;
+  $('#nowBar').style.width = (started ? Math.min(100, m.pct) : 0) + '%';
+  tintFor(m).then(t => { if (slides[cur] === m) { paintNow(t); setField(m, t); } });
+}
+$('#nowGo').onclick = () => { if (slides[cur]) openBook(slides[cur].id); };
+{
+  let raf = 0;
+  $('#pager').addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const i = syncPager();
+      if (i !== cur && slides[i]) setCur(i, true);
+    });
+  }, { passive: true });
+}
+
+// ---- A cover's colours, worked out once from a 24 × 36 copy of it: the strongest colour on it (by hue, weighted by
+// how vivid each pixel is) for Resume, with dark or light text, whichever reads better on it; and the average colour
+// of its top third, which is what the top of Home's light looks like. Black-and-white covers have no strong colour,
+// so Resume stays in ink. How much the light is washed depends on how bright the cover is: a white cover in dark
+// mode, or a black one in light mode, needs more to keep text readable. ----
+const CLOTH = ['#7a1f30', '#2f4a5e', '#b9893a', '#3e5a3a'];
+const hex = a => '#' + a.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+const rgbOf = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const lum = h => rgbOf(h).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [.2126, .7152, .0722][i], 0);
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+const tints = new Map();
+function tintFor(m) {
+  const key = m.id + ':' + (m.art ? covers.get(m.id)?.byteLength : 'cloth' + (tones.get(m.id) || 0) % 4);
+  if (!tints.has(key)) tints.set(key, readTint(m));
+  return tints.get(key);
+}
+async function readTint(m) {
+  const url = coverUrl(m);
+  let px = null;
+  if (url) try {
+    const img = new Image(); img.src = url; await img.decode();
+    const c = document.createElement('canvas'); c.width = 24; c.height = 36;
+    const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 24, 36);
+    px = x.getImageData(0, 0, 24, 36).data;
+  } catch {}
+  let top, vivid;
+  if (!px) top = vivid = CLOTH[(tones.get(m.id) || 0) % 4];   // a bookcloth cover is its cloth colour
+  else {
+    const t = [0, 0, 0], hues = Array.from({ length: 12 }, () => [0, 0, 0, 0]);
+    for (let p = 0; p < px.length; p += 4) {
+      const r = px[p], g = px[p + 1], b = px[p + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 510;
+      if (p < px.length / 3) { t[0] += r; t[1] += g; t[2] += b; }
+      const s = d ? d / (255 - Math.abs(mx + mn - 255)) : 0;
+      if (s < .3 || l < .12 || l > .9) continue;
+      const h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4, k = Math.floor(h * 2) % 12;
+      const w = s * s * (1 - Math.abs(l - .5));
+      hues[k][0] += w; hues[k][1] += r * w; hues[k][2] += g * w; hues[k][3] += b * w;
+    }
+    const n = px.length / 12;
+    top = hex(t.map(v => v / n));
+    const best = hues.reduce((a, b) => b[0] > a[0] ? b : a);
+    vivid = best[0] > 6 ? hex(best.slice(1).map(v => v / best[0])) : null;
+  }
+  // Resume's colour: lift a dark colour and calm a pale one so it reads as a button on both grounds.
+  let c = null, cf = null;
+  if (vivid) {
+    const L = lum(vivid);
+    c = L < .12 ? mixHex(vivid, '#ffffff', .25) : L > .7 ? mixHex(vivid, '#000000', .12) : vivid;
+    cf = contrast(c, '#1a1712') >= contrast(c, '#ffffff') ? '#1a1712' : '#ffffff';
+  }
+  const L = lum(top);
+  const da = Math.max(.3, Math.min(.86, 1 - .1 / Math.max(L, .01))), la = Math.max(.38, Math.min(.82, (.55 - L) / (.86 - L)));
+  return { url, top, c, cf, da, la, ftd: mixHex(top, '#0c0b0a', da), ftl: mixHex(top, '#f1eee8', la) };
+}
+function paintNow(t) {
+  const s = $('#nowCard').style;
+  s.setProperty('--c', t.c || 'var(--ink)'); s.setProperty('--cf', t.cf || 'var(--bg)');   // no strong colour: ink
+}
+// Home's light: a new layer fades in over the old one, which then goes.
+function setField(m, t) {
+  const f = $('#field');
+  if (!m) { f.replaceChildren(); fieldTone = null; return chrome(); }
+  fieldTone = [t.ftl, t.ftd];
+  chrome();
+  const key = m.id + ' ' + (t.url || t.top);   // a new cover for the same book is new light too
+  if (f.lastElementChild?.dataset.key === key) return;
+  const layer = el('div', 'fl'), num = v => v.toFixed(2);
+  layer.dataset.id = m.id; layer.dataset.key = key;
+  layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
+    `--da:${num(t.da)};--db:${num(Math.min(.9, t.da + .15))};--dc:${num(Math.max(.72, Math.min(.94, t.da + .4)))};--ftl:${t.ftl};--ftd:${t.ftd}`;
+  if (t.url) { const img = el('img'); img.src = t.url; img.alt = ''; layer.append(img); }
+  f.append(layer);
+  requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('on')));
+  setTimeout(() => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); }, 650);
 }
 
 // ---- The Library drawer: Fiction, then Non-fiction, each with its collections as shelves and an Add button.
@@ -1483,7 +1695,8 @@ function renderNow(m) {
 // Not in a collection when it has no category either. Collections made before sides existed get their own heading. ----
 const SECTIONS = [['fiction', 'Fiction'], ['nonfiction', 'Non-fiction'], ['', 'Other collections']];
 const loose = side => books.filter(m => !shelves.some(s => s.id === m.shelf) && (m.side || '') === side);
-const looseName = side => side ? 'Other ' + SIDES[side].toLowerCase() : 'Not in a collection';
+// "Other fiction" next to fiction collections; "All fiction" while there are none.
+const looseName = side => !side ? 'Not in a collection' : (shelves.some(s => (s.side || '') === side) ? 'Other ' : 'All ') + SIDES[side].toLowerCase();
 // A collection's books in the order you arranged them; books never arranged follow, oldest added first.
 const inOrder = list => list.sort((a, b) => (a.rank ?? a.added) - (b.rank ?? b.added));
 function renderLib() {
@@ -1492,6 +1705,7 @@ function renderLib() {
   for (const [side, label] of SECTIONS) {
     const colls = shelves.filter(s => (s.side || '') === side), free = side ? sorted(loose(side)) : [];
     if (!side && !colls.length) continue;
+    const count = books.filter(m => colls.some(s => s.id === m.shelf) || (side && free.includes(m))).length;
     const sec = el('section', 'lsec'), head = el('div', 'shead'), btns = el('span', 'sbtns'), arr = arranging === 'colls:' + side;
     if (colls.length > 1) {
       const a = el('button', 'link', arr ? 'Done' : 'Arrange');
@@ -1505,7 +1719,9 @@ function renderLib() {
       add.onclick = () => askName(`New ${label} collection`, '', 'Create', name => addShelf(name, side));
       btns.append(add);
     }
-    head.append(el('h3', 'shelf-title', label), btns);
+    const rn = el('span', 'rn', ['I', 'II', 'III'][out.length]), n = el('span', 'n', String(count));
+    rn.setAttribute('aria-hidden', 'true'); n.setAttribute('aria-label', plural(count, 'book'));
+    head.append(rn, el('h3', '', label), n, btns);
     sec.append(head);
     if (arr) sec.append(arrangeList(colls.map(s => ({ id: s.id, name: s.name, meta: plural(books.filter(m => m.shelf === s.id).length, 'book') })), saveCollOrder));
     else {
@@ -1519,16 +1735,24 @@ function renderLib() {
   if (none.length) out.push(shelfRow({ s: { id: 'loose:', name: looseName('') }, list: none }));
   $('#shelfRows').replaceChildren(...out);
 }
-// One shelf: its name (tap opens it; on a collection, hold for its options), its covers on an oak ledge.
+// One collection: its name with See all (tap opens it; on a collection, hold for its options), then a row of its
+// covers with their titles and how far you are.
 function shelfRow({ s, list }) {
-  const sec = el('section', 'srow'), name = el('button', 'sname'), cov = el('div', 'scov');
-  name.append(el('span', 'sn', s.name), el('span', 'meta num', String(list.length)), svg(ICON.chev));
+  const sec = el('section', 'srow'), name = el('button', 'sname'), cov = el('div', 'scov'), see = el('span', 'see', 'See all');
+  see.append(svg(ICON.chev));
+  name.append(el('span', 'sn', s.name), el('span', 'meta num', String(list.length)), see);
   name.setAttribute('aria-label', `${s.name}, ${plural(list.length, 'book')}`);
   pressable(name, () => goShelf(s.id), () => { if (!s.id.startsWith('loose:')) shelfMenu(s); });
-  if (list.length) cov.append(...list.map(m => bookBtn(m, 'sh')));
+  if (list.length) cov.append(...list.map(stripItem));
   else { const add = el('button', 'addslot'); add.append(svg(ICON.plus), el('span', '', 'Add books')); add.onclick = () => addToShelf(s); cov.append(add); }
-  sec.append(name, cov, el('div', 'ledge'));
+  sec.append(name, cov);
   return sec;
+}
+function stripItem(m) {
+  const b = bookBtn(m, 'st'), going = state(m) === 'progress';
+  b.classList.add('sitem');
+  b.append(el('span', 't', m.title), el('span', 'meta num' + (going ? ' go' : ''), going ? leftLine(m) : m.author || stateShort(m)));
+  return b;
 }
 // A section's collections in their new order take that section's places in the one order of all collections.
 const saveCollOrder = ids => {
