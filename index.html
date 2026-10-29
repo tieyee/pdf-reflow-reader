@@ -220,6 +220,10 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 #field .fl.on{opacity:1}
 :root:not([data-theme=dark]) #field{--clock:.16}
 #field img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* already blurred (readTint) */
+/* The bloom: the cover's strongest colour glowing behind the book, over the wash so dark mode can't bury it */
+#field .fl::before{content:"";position:absolute;z-index:1;inset:0;opacity:var(--go,.5);
+  background:radial-gradient(75% 42% at 42% 36%,var(--g,transparent),transparent 72%)}
+[data-theme=dark] #field .fl::before{--go:.42}
 #field .fl::after{content:"";position:absolute;inset:0;
   background:linear-gradient(rgb(0 0 0 / var(--clock,0)),transparent calc(env(safe-area-inset-top) + 36px)),   /* the light runs up under the time; a little shade keeps the white time readable on a light page */
     linear-gradient(rgb(var(--fov) / var(--a)),rgb(var(--fov) / var(--b)) 45%,rgb(var(--fov) / var(--c3)) 85%)}
@@ -1624,6 +1628,13 @@ function coverEl(m, size = '') {
   c.setAttribute('aria-hidden', 'true');
   if (u) {
     const img = el('img'); img.src = u; img.alt = ''; img.decoding = 'async'; img.draggable = false; c.append(img);
+    // The big cover on Home takes the picture's own shape, so none of it is cut off: a wider picture makes a
+    // shorter book, a narrower one a narrower book of the same height.
+    if (size === 'pg') img.onload = () => {
+      const r = Math.max(.45, Math.min(1.2, img.naturalWidth / img.naturalHeight || 2 / 3));
+      c.style.aspectRatio = r;
+      c.style.width = r < 2 / 3 ? r * 150 + '%' : '';
+    };
   } else {
     c.classList.add('gen', TONES[(tones.get(m.id) || 0) % 4]);
     c.append(el('span', 'ct', m.title));
@@ -1811,7 +1822,7 @@ async function readTint(m) {
       const r = px[p], g = px[p + 1], b = px[p + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 510;
       if (p < px.length / 3) { t[0] += r; t[1] += g; t[2] += b; }
       const s = d ? d / (255 - Math.abs(mx + mn - 255)) : 0;
-      if (s < .3 || l < .12 || l > .9) continue;
+      if (s < .3 || d < 60 || l < .12 || l > .9) continue;   // d: how coloured it is, so cream paper never beats the red on it
       const h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4, k = Math.floor(h * 2) % 12;
       const w = s * s * (1 - Math.abs(l - .5));
       hues[k][0] += w; hues[k][1] += r * w; hues[k][2] += g * w; hues[k][3] += b * w;
@@ -1829,7 +1840,7 @@ async function readTint(m) {
     cf = contrast(c, '#1a1712') >= contrast(c, '#ffffff') ? '#1a1712' : '#ffffff';
   }
   const L = lum(top);
-  const da = Math.max(.3, Math.min(.86, 1 - .1 / Math.max(L, .01))), la = Math.max(.38, Math.min(.82, (.55 - L) / (.86 - L)));
+  const da = Math.max(.3, Math.min(.66, 1 - .1 / Math.max(L, .01))), la = Math.max(.38, Math.min(.82, (.55 - L) / (.86 - L)));
   return { url, glow, top, c, cf, da, la, ftd: mixHex(top, '#0c0b0a', da), ftl: mixHex(top, '#f1eee8', la) };
 }
 function paintNow(t) {
@@ -1847,7 +1858,8 @@ function setField(m, t) {
   const layer = el('div', 'fl'), num = v => v.toFixed(2);
   layer.dataset.id = m.id; layer.dataset.key = key;
   layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
-    `--da:${num(t.da)};--db:${num(Math.min(.9, t.da + .15))};--dc:${num(Math.max(.72, Math.min(.94, t.da + .4)))};--ftl:${t.ftl};--ftd:${t.ftd}`;
+    `--da:${num(t.da)};--db:${num(Math.min(.76, t.da + .1))};--dc:${num(Math.max(.72, Math.min(.92, t.da + .3)))};--ftl:${t.ftl};--ftd:${t.ftd}` +
+    (t.c ? `;--g:${t.c}` : '');
   if (t.glow) { const img = el('img'); img.src = t.glow; img.alt = ''; layer.append(img); }
   f.append(layer);
   const drop = () => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); };
@@ -2163,7 +2175,7 @@ let sheetOut = null;
 const sheetClose = sheet.close.bind(sheet);
 sheet.close = v => {
   if (!sheet.open || sheetOut) return;
-  if (calmMotion()) return sheetClose(v);
+  if (calmMotion() || document.hidden) return sheetClose(v);
   sheetOut = slideDown(sheet, () => { sheetOut = null; sheetClose(v); });
   try { sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, pseudoElement: '::backdrop', fill: 'forwards' }); } catch {}
 };
@@ -3057,8 +3069,19 @@ if (STAY) {
 }
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { hiddenAt = Date.now(); savePos(); remember(); }
-  else if (hiddenAt && Date.now() - hiddenAt >= AWAY) goHome();
+  // Leaving the app from the Library or Settings: it comes back on Home (the book stays open if you were reading).
+  const root = document.documentElement;
+  if (document.hidden) {
+    hiddenAt = Date.now(); savePos();
+    // 'instant' until it shows again, so you never come back to the Library still sliding away
+    if (!book && (history.state?.lib || history.state?.shelf || history.state?.tab === 'settings' || sheet.open)) {
+      root.classList.add('instant'); if (sheet.open) sheet.close(); pushed = 0; toHome();
+    }
+    remember();
+  } else {
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('instant')));
+    if (hiddenAt && Date.now() - hiddenAt >= AWAY) goHome();
+  }
 });
 addEventListener('pagehide', () => { savePos(); remember(); });
 addEventListener('pageshow', e => { if (e.persisted && hiddenAt && Date.now() - hiddenAt >= AWAY) goHome(); });
@@ -3088,25 +3111,23 @@ async function closeBook(pop = false) {
 }
 $('#back').onclick = () => closeBook();
 
-// ---- Start: the last screen if the app was left less than 15 minutes ago, else the Library ----
+// ---- Start: always Home, or straight back into the book if it was left less than 15 minutes ago.
+// Never the Library, a collection or Settings. ----
 history.scrollRestoration = 'manual';
-const reload = fresh && !!history.state;   // this same page reloaded: its history stack is still there
-let s0 = fresh ? history.state || last.s || {} : {};
-s0 = { ...s0, tab: TABS.includes(s0.tab) ? s0.tab : 'library' };   // the old Collections tab opens Home
-if (s0.tab === 'settings') { delete s0.shelf; delete s0.colls; }
-if (reload) history.replaceState(s0, '');
-else {   // a fresh launch: rebuild the steps so Back still works
-  history.replaceState({ tab: 'library' }, '');
-  if (s0.tab === 'settings') step({ tab: 'settings' });
-  else if (s0.lib || s0.colls || s0.shelf) {
-    step({ tab: 'library', lib: true });
-    if (s0.shelf) step({ tab: 'library', lib: true, shelf: s0.shelf });
-  }
-}
-if (s0.tab !== 'settings' && !STAY) pushed = s0.shelf ? 2 : s0.lib || s0.colls ? 1 : 0;
+const s0 = fresh ? history.state || last.s || {} : {};
+history.replaceState({ tab: 'library' }, '');
 show(history.state);
 await refresh();
-if (s0.book) openBook(s0.book, !reload);
+if (s0.book) openBook(s0.book, true);
+// iPhone only takes "draw under the time and battery" when Folio is added to the Home Screen. Added before that, it
+// paints the strip itself in one flat colour that never follows the covers, and the page reports no room up there.
+if (STAY && innerHeight > innerWidth) {
+  const probe = el('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
+  document.body.append(probe);
+  if (!probe.offsetHeight && !s0.book) status('To let each book\'s colour reach the very top of the screen, remove Folio from your Home Screen and add it again. Save a backup first, then restore it after.',
+    { actions: [['Save a backup', () => { status(''); $('#backupSave').click(); }, true]] });
+  probe.remove();
+}
 </script>
 </body>
 </html>
