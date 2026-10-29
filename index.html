@@ -2666,41 +2666,92 @@ function cleanAuthor(a) {
   a = (a || '').replace(/\s+/g, ' ').trim();
   return a.length > 1 && a.length <= 60 && !/@|https?:|www\.|\.com\b|^(admin(istrator)?|user|owner|unknown|author|microsoft|calibre|oceanofpdf)\b/i.test(a) ? a : '';
 }
+// Adding books happens in two steps. First every picked PDF is copied into Folio's own storage and put on a to-do list
+// (quick). Then each one is read and laid out (slow: many books take many minutes). The list survives the app being
+// closed or thrown away part way, which iPhone does to a page once the screen locks or it sits in the background,
+// and the next launch carries on from it. The screen is kept awake meanwhile.
+// The same PDF under another name is turned away: same bytes means same size, so only books of that size are
+// fingerprinted, once each.
+const QKEY = 'folio-queue';
+const queued = () => { try { return JSON.parse(localStorage.getItem(QKEY)) || []; } catch { return []; } };
+const setQueue = q => { try { if (q.length) localStorage.setItem(QKEY, JSON.stringify(q)); else localStorage.removeItem(QKEY); } catch {} };
+const sha = async buf => [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+async function twinOf(size, hash, q) {
+  for (const x of q) if (x.hash === hash) return x.name;
+  for (const m of books) {
+    if (!m.id.endsWith(':' + size)) continue;
+    if (!m.hash) { const b = await get('files', m.id).catch(() => null); if (!b) continue; m.hash = await sha(b); const h = m.hash; update(m.id, x => { x.hash = h; }).catch(() => {}); }
+    if (m.hash === hash) return m.title;
+  }
+  return null;
+}
+const addError = (name, e) => e?.name === 'PasswordException' ? `“${name}” is password-protected. Remove the password in another app, then add it again.`
+  : e?.name === 'QuotaExceededError' ? 'There isn’t enough free space on this device for that PDF. Delete a book you’ve finished, then try again.'
+  : `Couldn't read “${name}”: ${e?.message || e}`;
+let adding = false, wake = null;
+async function keepAwake() {
+  try { if (adding && !wake && !document.hidden && navigator.wakeLock) { wake = await navigator.wakeLock.request('screen'); wake.onrelease = () => { wake = null; }; } } catch {}
+}
 async function addFiles(files) {
   await dbReady;
   if (!db) return;
   navigator.storage?.persisted?.().then(p => p || navigator.storage.persist()).catch(() => {});   // keep books from being evicted
-  const added = [];
-  let failed = 0;
+  const q = queued();
+  let failed = 0, dup = 0, n = 0;
   for (const f of files) {
+    n++;
     if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { failed++; status(`“${f.name}” isn't a PDF. Choose a file that ends in .pdf.`, { error: true }); continue; }
     const id = f.name + ':' + f.size;
-    if (await get('meta', id)) { failed++; status(`“${f.name}” is already in your library.`); continue; }
     try {
-      status(`Adding “${f.name}”`, { pct: 0, busy: true });
-      const buf = await f.arrayBuffer();
-      const r = await processPdf(buf.slice(0), (n, of) => status(`Adding “${f.name}”: page ${n} of ${of}`, { pct: n / of * 100, busy: true }));
+      if (files.length > 1) status(`Getting ${plural(files.length, 'book')} ready: ${n} of ${files.length}`, { pct: n / files.length * 100, busy: true });
+      const known = books.find(m => m.id === id) || q.find(x => x.id === id);
+      const buf = known ? null : await f.arrayBuffer(), hash = buf && await sha(buf), twin = known ? known.title || known.name : await twinOf(f.size, hash, q);
+      if (twin) { dup++; status(`“${f.name}” is already in your library${twin !== f.name ? ` as “${twin}”` : ''}.`); continue; }
       await put('files', id, buf);
-      await put('text', id, r.text);
-      await put('covers', id, r.cover);
-      const title = r.title || f.name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim();
-      await put('meta', id, { id, title, author: r.author, art: r.art, pages: r.text.numPages, page: 1, pct: 0, added: Date.now() });
-      added.push({ id, title }); status('');
-    } catch (e) {
-      failed++;
-      await Promise.all(['files', 'text', 'covers'].map(s => del(s, id))).catch(() => {});
-      status(e?.name === 'PasswordException' ? `“${f.name}” is password-protected. Remove the password in another app, then add it again.`
-        : e?.name === 'QuotaExceededError' ? 'There isn’t enough free space on this device for that PDF. Delete a book you’ve finished, then try again.'
-        : `Couldn't read “${f.name}”: ${e?.message || e}`, { error: true });
-    }
-    await refresh();
+      q.push({ id, name: f.name, hash }); setQueue(q);
+    } catch (e) { failed++; await del('files', id).catch(() => {}); status(addError(f.name, e), { error: true }); }
   }
+  await addQueued(dup, failed);
+}
+// Reads and lays out each book on the list, first to last; books added meanwhile join the end.
+async function addQueued(dup = 0, failed = 0) {
+  if (adding) return;
+  adding = true; keepAwake();
+  const added = [];
+  let done = 0;
+  try {
+    for (let q; (q = queued()).length;) {
+      const { id, name, hash } = q[0];
+      done++;
+      try {
+        if (!await get('meta', id)) {   // already there when the app was closed between saving it and ticking it off
+          const buf = await get('files', id);
+          if (!buf) throw Error('the file went missing; add it again');
+          const label = `Adding “${name}”` + (done + q.length > 2 ? ` (${done} of ${done + q.length - 1})` : '');
+          status(label, { pct: 0, busy: true });
+          const r = await processPdf(buf, (p, of) => status(`${label}: page ${p} of ${of}`, { pct: p / of * 100, busy: true }));
+          await put('text', id, r.text);
+          await put('covers', id, r.cover);
+          const title = r.title || name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim();
+          await put('meta', id, { id, title, author: r.author, art: r.art, pages: r.text.numPages, page: 1, pct: 0, added: Date.now(), hash });
+          added.push({ id, title });
+        }
+      } catch (e) {
+        failed++;
+        await Promise.all(['files', 'text', 'covers'].map(s => del(s, id))).catch(() => {});
+        status(addError(name, e), { error: true });
+      }
+      setQueue(queued().filter(x => x.id !== id));
+      await refresh();
+    }
+  } finally { adding = false; wake?.release().catch(() => {}); wake = null; }
   // "Read now" only when the new book isn't already the resume card's Start reading button.
   const one = added.length === 1 && added[0], actions = [];
+  const extra = [dup && `${plural(dup, 'book was', 'books were')} already in your library.`, failed && `${plural(failed, 'file')} couldn't be added.`].filter(Boolean).join(' ');
   if (one && one.id !== nowId) actions.push(['Read now', () => openBook(one.id), true]);
   if (added.length) actions.push(['Add to collection', () => pickCollection(added.map(a => a.id))]);
-  if (added.length) status((one ? `“${one.title}” is ready.` : `${plural(added.length, 'book')} added.`)
-    + (failed ? ` ${plural(failed, 'file')} couldn't be added.` : ''), { actions });
+  if (added.length) status((one ? `“${one.title}” is ready.` : `${plural(added.length, 'book')} added.`) + (extra ? ' ' + extra : ''), { actions });
+  else if (dup + failed > 1) status(extra, { error: failed > 0 });   // a single one already said what it was
   if (added.length) offerShelves(added.map(a => a.id)).catch(() => {});
 }
 $('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
@@ -3319,6 +3370,7 @@ document.addEventListener('visibilitychange', () => {
     remember();
   } else {
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('instant')));
+    keepAwake();   // the screen lock is let go while away; back to adding books, it's taken again
     if (hiddenAt && Date.now() - hiddenAt >= AWAY) goHome();
   }
 });
@@ -3358,6 +3410,7 @@ history.replaceState({ tab: 'library' }, '');
 show(history.state);
 await refresh();
 if (s0.book) openBook(s0.book, true);
+if (queued().length) addQueued();   // books still on the list when the app was last closed
 // iPhone only takes "draw under the time and battery" when Folio is added to the Home Screen. Added before that, it
 // paints the strip itself in one flat colour that never follows the covers, and the page reports no room up there.
 if (STAY && innerHeight > innerWidth) {
