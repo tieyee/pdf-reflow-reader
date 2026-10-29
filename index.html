@@ -75,14 +75,18 @@ try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = d
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 /* No rubber-band bounce past the top or bottom: on iPhone it pulls the page away and shows a bare strip behind it */
-html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrollbar-color:var(--line) transparent;background:var(--bg);overscroll-behavior-y:none}
+/* --strip (set by chrome()) is the colour of the top of whatever is on screen. An iPhone home-screen app paints the
+   strip above it (time, battery) from the page's own background, not theme-color (seen on a real iPhone, 2026-10-29),
+   so html and body carry it; what you see is painted over them (Home's light, #reader's page). */
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scrollbar-color:var(--line) transparent;background:var(--strip,var(--bg));overscroll-behavior-y:none}
 /* Paper grain on Home, book grids and Settings, never under book text */
-body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--bg);color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
-body.reading{background:var(--page)}
-/* iPhone paints the strip above the app (time, battery) in the flat theme colour; the grain fades in below it, so the
-   page meets that strip without an edge */
+body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grain) var(--strip,var(--bg));color:var(--ink);font:400 15px/21px var(--ui);font-synthesis:none}
+/* The strip gets the dimmed page; the page itself is #reader's, dimmed by the layer above it */
+body.reading{background:var(--strip,var(--page))}
+#reader{min-height:100dvh;background:var(--page)}
+/* The grain fades in below the strip, so the page meets it without an edge */
 body::before{content:"";position:fixed;z-index:15;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 22px);pointer-events:none;
-  background:linear-gradient(var(--bg) env(safe-area-inset-top),color-mix(in srgb,var(--bg) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent)}
+  background:linear-gradient(var(--strip,var(--bg)) env(safe-area-inset-top),color-mix(in srgb,var(--strip,var(--bg)) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent)}
 body.reading::before{display:none}
 body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:#000;opacity:var(--dim,0);pointer-events:none}
 body.reading dialog.sheet{filter:var(--dim-sheet,none)}   /* sheets sit above that layer; brightness(1 - dim) matches it */
@@ -330,6 +334,7 @@ body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 .drawer.leaving[hidden],#dscrim.leaving[hidden]{display:block!important;pointer-events:none}
 #dscrim{animation-duration:.35s}
 html.lib{overflow:hidden}
+html.fit body.home #v-library{touch-action:pan-x}   /* Home fits the screen: no up-down panning, its own pull instead */
 html.lib,html.lib body{background:var(--bar-dim)}
 html.lib body::before{display:none}
 #views,#field{transition:transform .42s var(--sheet-ease),border-radius .42s var(--sheet-ease)}
@@ -579,6 +584,9 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 .endcard .rhead{align-items:center}
 .endcard .btns{align-self:stretch;margin-top:4px}
 #retBtn{position:fixed;z-index:22;left:50%;bottom:max(122px,calc(env(safe-area-inset-bottom) + 100px));transform:translateX(-50%);box-shadow:0 8px 24px rgba(23,24,27,.28);animation:pop .26s var(--ease)}
+/* It shows for a few seconds after a jump, then fades; Contents keeps it as its top row */
+#retBtn.gone{opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+#sheetBody > .retrow{margin-bottom:14px}
 @keyframes pop{from{opacity:0;transform:translate(-50%,12px)}}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -1244,9 +1252,11 @@ const pct = v => v ? v + '%' : 'Off';
 let fieldTone = null;   // [light, dark] colour of the top of Home's light, set by setField
 let slides = [], cur = 0;   // Home's books you're reading, and which one is in front
 const chrome = () => {
-  const r = document.documentElement, lib = !$('#drawer').hidden;
-  $('meta[name=theme-color]').content = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
-    : getComputedStyle(r).getPropertyValue(book ? '--page' : lib ? '--bar-dim' : '--bg').trim();
+  const r = document.documentElement, lib = !$('#drawer').hidden, v = n => getComputedStyle(r).getPropertyValue(n).trim();
+  // While reading, the page as Dim leaves it (the dim layer is black at that opacity, so the same mix with black).
+  const c = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
+    : book ? (prefs.dim ? mixHex(v('--page'), '#000000', prefs.dim / 100) : v('--page')) : v(lib ? '--bar-dim' : '--bg');
+  $('meta[name=theme-color]').content = c; r.style.setProperty('--strip', c);   // theme-color for browsers that use it
 };
 function applyPrefs() {
   const r = document.documentElement;
@@ -1386,19 +1396,21 @@ function showDrawer(open, shelf) {
   const d = $('#drawer'), sc = $('#dscrim'), was = !d.hidden;
   if (!open || (shelf ? arranging?.startsWith('colls') : arranging === 'books')) arranging = null;
   if (open) leaving?.cancel();   // opened again while it was still sliding away
-  if (open && !was) d.style.animation = '';   // a drag turns the opening slide off; this turns it back on
+  if (open && !was) d.style.animation = sc.style.animation = '';   // a drag turns the opening slide off; this turns it back on
   d.hidden = sc.hidden = !open;
   // Closed at once for everything else; on screen it slides down from where it is (or from where a finger let go).
   if (!open && was && !calmMotion()) {
     d.classList.add('leaving'); sc.classList.add('leaving');
     const a = leaving = d.animate([{ transform: d.style.transform || 'translateY(0)' }, { transform: 'translateY(100%)' }], { duration: 320, easing: 'cubic-bezier(.32,.72,0,1)' });
-    sc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: 'ease-out' });
+    sc.animate([{ opacity: sc.style.opacity || 1 }, { opacity: 0 }], { duration: 320, easing: 'ease-out' });
     // Ends when the slide does, or on a timer if the browser never says so (a busy WebKit can drop the event), so
     // a closed Library is never left on screen.
-    const done = () => { clearTimeout(t); d.classList.remove('leaving'); sc.classList.remove('leaving'); d.style.transform = ''; if (leaving === a) leaving = null; };
+    const done = () => { clearTimeout(t); d.classList.remove('leaving'); sc.classList.remove('leaving'); d.style.transform = sc.style.opacity = ''; if (leaving === a) leaving = null; };
     const t = setTimeout(() => { a.cancel(); done(); }, 420);
     a.onfinish = a.oncancel = done;
-  } else if (!open) d.style.transform = '';
+  } else if (!open) d.style.transform = sc.style.opacity = '';
+  // Home behind leaves where a drag had it and eases to its size for the new state (its CSS transition).
+  for (const e of [$('#views'), $('#field')]) e.style.transition = e.style.transform = '';
   document.documentElement.classList.toggle('lib', open);
   chrome();
   $('#libOpen').setAttribute('aria-expanded', open);
@@ -1416,24 +1428,94 @@ $('#libOpen').onclick = $('#peekRow').onclick = openLib;
 $('#libSearch').onclick = () => { openLib(); $('#lq').focus(); };
 $('#libClose').onclick = $('#dscrim').onclick = closeLib;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidden && !sheet.open) closeLib(); });
-// Pulling the peek up opens the drawer; pulling the drawer's top edge down closes it (it follows the finger).
+// The Library moves with the finger like an iPhone sheet. Pull the tray up and it rises with you; pull it down from
+// anywhere while its list is at the top (by its header at any time) and it comes down with you, Home growing back
+// behind it. Let go a quarter of the way down, or with a flick, and it carries on; short of that it settles back.
 {
-  let y0 = null;
-  $('#peek').addEventListener('pointerdown', e => { y0 = e.clientY; });
-  $('#peek').addEventListener('pointerup', e => { if (y0 != null && y0 - e.clientY > 24) openLib(); y0 = null; });
-  const head = $('#drawer .dhead'), d = $('#drawer');
-  let h0 = null;
-  head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; h0 = e.clientY; head.setPointerCapture(e.pointerId); d.style.animation = 'none'; });
-  head.addEventListener('pointermove', e => { if (h0 != null) d.style.transform = `translateY(${Math.max(0, e.clientY - h0)}px)`; });
-  // Let go far enough and it carries on down; not far enough and it springs back up.
-  const end = e => {
-    if (h0 == null) return;
-    const dy = e.clientY - h0, from = d.style.transform; h0 = null;
-    if (dy > 90) return closeLib();
-    d.style.transform = '';
-    if (from && !calmMotion()) d.animate([{ transform: from }, { transform: 'translateY(0)' }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
+  const d = $('#drawer'), sc = $('#dscrim'), behind = [$('#views'), $('#field')];
+  let g = null;   // the drag: where the finger started, how far the drawer is from open (off), its speed (v, px/ms)
+  const start = (y, x, mode) => { g = { y0: y, x0: x, mode, live: false, off: 0, v: 0, t: performance.now(), span: innerHeight - $('#peek').offsetHeight - d.offsetTop }; };
+  const goLive = y => {
+    g.live = true; g.y0 = y;
+    if (g.mode === 'open') openLib();
+    d.style.animation = sc.style.animation = 'none';   // the finger places them, not their opening animations
   };
-  head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+  // off: how far below open the drawer is; the dimming and Home behind follow it.
+  const drag = y => {
+    const now = performance.now(), off = Math.max(0, (g.mode === 'open' ? g.span : 0) + y - g.y0);
+    g.v = .6 * (off - g.off) / Math.max(1, now - g.t) + .4 * g.v; g.off = off; g.t = now;
+    const p = Math.min(1, off / g.span);
+    d.style.transform = `translateY(${off}px)`; sc.style.opacity = 1 - p;
+    for (const e of behind) { e.style.transition = 'none'; e.style.transform = `translateY(calc(env(safe-area-inset-top) * ${1 - p})) scale(${.93 + .07 * p})`; }
+  };
+  const finish = () => {
+    if (!g?.live) { g = null; return; }
+    const { off, span, mode } = g, v = performance.now() - g.t > 90 ? 0 : g.v;   // a finger that stopped before letting go isn't a flick
+    g = null;
+    if (v > .45 || v > -.45 && off > (mode === 'open' ? span * .7 : Math.min(140, span * .25))) return closeLib();
+    const from = d.style.transform, o = sc.style.opacity;
+    d.style.transform = sc.style.opacity = '';
+    for (const e of behind) e.style.transition = e.style.transform = '';
+    if (!calmMotion()) {
+      d.animate([{ transform: from }, { transform: 'translateY(0)' }], { duration: 380, easing: 'cubic-bezier(.32,.72,0,1)' });
+      sc.animate([{ opacity: o }, { opacity: 1 }], { duration: 380, easing: 'ease-out' });
+    }
+  };
+  const T = e => e.touches[0] || e.changedTouches[0];
+  $('#peek').addEventListener('touchstart', e => { if (e.touches.length === 1) start(T(e).clientY, T(e).clientX, 'open'); }, { passive: true });
+  // The tray doesn't scroll (touch-action none), so it waits until the finger has clearly gone up.
+  $('#peek').addEventListener('touchmove', e => {
+    if (!g) return;
+    const t = T(e), dy = t.clientY - g.y0;
+    if (!g.live) { if (Math.abs(dy) < 6) return; if (dy > 0 || Math.abs(t.clientX - g.x0) > -dy) { g = null; return; } goLive(t.clientY); }
+    drag(t.clientY);
+  }, { passive: true });
+  d.addEventListener('touchstart', e => {
+    g = null;
+    if (e.touches.length === 1 && !e.target.closest('.grip, input') && (d.scrollTop <= 0 || e.target.closest('.dhead'))) start(T(e).clientY, T(e).clientX, 'close');
+  }, { passive: true });
+  // The list scrolls, so the first move decides (the phone starts scrolling right after it): down and mostly
+  // down is the drawer's, anything else is the list's or a shelf row's.
+  d.addEventListener('touchmove', e => {
+    if (!g) return;
+    const t = T(e), dy = t.clientY - g.y0, dx = t.clientX - g.x0;
+    if (!g.live) { if (!dy && !dx) return; if (dy <= 0 || Math.abs(dx) > dy || !e.cancelable) { g = null; return; } goLive(t.clientY); }
+    e.preventDefault();
+    drag(t.clientY);
+  }, { passive: false });
+  for (const x of [$('#peek'), d]) { x.addEventListener('touchend', finish); x.addEventListener('touchcancel', finish); }
+  // A mouse drags the drawer by its header.
+  const head = d.querySelector('.dhead');
+  head.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.target.closest('button')) return;
+    start(e.clientY, e.clientX, 'close'); goLive(e.clientY); head.setPointerCapture(e.pointerId);
+  });
+  head.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && g?.live) drag(e.clientY); });
+  for (const ev of ['pointerup', 'pointercancel']) head.addEventListener(ev, e => { if (e.pointerType === 'mouse') finish(); });
+}
+// Home pulls down a little and springs back, its light staying put behind it. While Home fits the screen (it's
+// built to) the page itself doesn't pan up and down (html.fit), so the phone's own bounce never shows a bare strip.
+{
+  const v = $('#views'), root = document.documentElement;
+  // Overflow can change without the body resizing, so each touch checks again (for the next one: the phone has
+  // already read touch-action for this one, and the pull follows what it read).
+  const fits = () => root.classList.toggle('fit', root.scrollHeight <= innerHeight + 8);
+  new ResizeObserver(fits).observe(document.body); addEventListener('resize', fits);
+  let h = null;
+  $('#v-library').addEventListener('touchstart', e => {
+    const fit = root.classList.contains('fit');
+    fits();
+    h = e.touches.length === 1 && fit && $('#drawer').hidden ? { y0: e.touches[0].clientY, x0: e.touches[0].clientX, live: false } : null;
+  }, { passive: true });
+  $('#v-library').addEventListener('touchmove', e => {
+    if (!h) return;
+    const dy = e.touches[0].clientY - h.y0;
+    if (!h.live) { if (Math.abs(dy) < 6) return; if (dy < 0 || Math.abs(e.touches[0].clientX - h.x0) > dy) { h = null; return; } h.live = true; h.y0 = e.touches[0].clientY; v.style.transition = 'none'; }
+    const p = Math.max(0, e.touches[0].clientY - h.y0);
+    v.style.transform = `translateY(${p * 120 / (p + 120)}px)`;   // gives less the further it goes, never past 120px
+  }, { passive: true });
+  const end = () => { if (h?.live) v.style.transition = v.style.transform = ''; h = null; };   // its CSS transition springs it back
+  $('#v-library').addEventListener('touchend', end); $('#v-library').addEventListener('touchcancel', end);
 }
 $('#goSettings').onclick = () => goPage({ tab: 'settings' }, '#h-settings');
 $('#shelfBack').onclick = () => {
@@ -2350,7 +2432,8 @@ async function openBook(id, push = true) {
   closeFind();
   const b = book = { id, meta, text, doc: null, mode: null, q: '', ...prep(text) };
   if (push) history.pushState({ ...history.state, book: id }, '');
-  $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); chrome();
+  // The Library's scroll lock comes off while reading (closeBook's show() puts it back if the Library was open).
+  $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); document.documentElement.classList.remove('lib'); chrome();
   $('#rtitle').textContent = meta.title; $('#rauthor').textContent = meta.author || '';
   await render();
   if (book !== b) return;
@@ -2579,11 +2662,24 @@ async function toggleMark() {
 $('#markBtn').onclick = toggleMark;
 
 // A jump (search hit, chapter, bookmark) keeps a way back to where the reader was.
+// After a jump, "Back to page N" shows for a few seconds, then fades and waits at the top of Contents until it's
+// used or a new jump replaces it.
+let backT = 0;
 function showBack(back) {
   const r = $('#retBtn');
-  r.hidden = false;
+  book.back = back;
+  r.hidden = false; r.classList.remove('gone');
   r.replaceChildren(svg(ICON.undo), `Back to page ${back.page}`);
-  r.onclick = () => { restoreBlock(back.pos, back.ppos); r.hidden = true; showPos(); };
+  r.onclick = goBack;
+  clearTimeout(backT);
+  backT = setTimeout(() => { r.classList.add('gone'); backT = setTimeout(() => { r.hidden = true; r.classList.remove('gone'); }, 400); }, 4000);
+}
+function goBack() {
+  const back = book?.back;
+  if (!back) return;
+  if (sheet.open) sheet.close();
+  book.back = null; clearTimeout(backT); $('#retBtn').hidden = true;
+  restoreBlock(back.pos, back.ppos); showPos();
 }
 function jump(pos, ppos) {
   if (sheet.open) sheet.close();
@@ -2642,6 +2738,7 @@ async function openGoto() {
   ch.forEach((c, j) => { if (c.i <= here) k = j; });
   openSheet('Contents', body => {
     const sc = el('div', 'scroll'), ms = marks();
+    if (b.back) { const r = el('button', 'pill block retrow'); r.append(svg(ICON.undo), `Back to page ${b.back.page}`); r.onclick = goBack; body.append(r); }
     if (ch.length) body.append(tabBar([['chapters', 'Chapters'], ['bookmarks', 'Bookmarks']], tab, t => { gotoTab = t; openGoto(); }));
     else sc.append(el('h3', 'label lbl', 'Bookmarks'));
     if (tab === 'chapters') {
