@@ -84,6 +84,15 @@ body{margin:0;min-height:100dvh;overscroll-behavior-y:none;background:var(--grai
 /* The strip gets the dimmed page; the page itself is #reader's, dimmed by the layer above it */
 body.reading{background:var(--strip,var(--page))}
 #reader{min-height:100dvh;background:var(--page)}
+/* Swiping back from the reader (body.swipe): the book slides right with the finger over the screen it goes back to,
+   which comes in from a little to the left, as on iPhone */
+@property --px{syntax:"<length>";inherits:true;initial-value:0px}
+body.swipe #app[hidden]{display:block!important;position:fixed;inset:0;z-index:0;overflow:hidden;translate:calc((var(--px) - 100vw) * .3) 0}
+body.swipe.home.tinted #field,body.swipe #drawer:not([hidden]),body.swipe #dscrim:not([hidden]),body.swipe.home #peek:not([hidden]){display:block}
+body.swipe #reader{background:none}
+body.swipe #reader::before{content:"";position:fixed;inset:0;z-index:1;background:var(--page);translate:var(--px) 0;box-shadow:-10px 0 30px rgba(0,0,0,.22)}
+body.swipe #text,body.swipe #endCard{position:relative;z-index:2;translate:var(--px) 0}
+body.swipe .rtop,body.swipe .rbot,body.swipe #ribbon,body.swipe #retBtn,body.swipe.reading::after{translate:var(--px) 0}
 /* The grain fades in below the strip, so the page meets it without an edge */
 body::before{content:"";position:fixed;z-index:15;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 22px);pointer-events:none;
   background:linear-gradient(var(--strip,var(--bg)) env(safe-area-inset-top),color-mix(in srgb,var(--strip,var(--bg)) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent) var(--strip0,transparent)}
@@ -203,12 +212,12 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 body.home.tinted #field{display:block}
 body.home.tinted::before{display:none}   /* the field paints its own flat band under the status bar */
 #field{will-change:transform}
-#field .fl{position:absolute;inset:0;opacity:0;transition:opacity .6s var(--ease);--a:var(--la);--b:var(--lb);--c3:var(--lc)}
-[data-theme=dark] #field .fl{--a:var(--da);--b:var(--db);--c3:var(--dc)}
+#field .fl{position:absolute;inset:0;opacity:0;transition:opacity .6s var(--ease);--a:var(--la);--b:var(--lb);--c3:var(--lc);--ft:var(--ftl)}
+[data-theme=dark] #field .fl{--a:var(--da);--b:var(--db);--c3:var(--dc);--ft:var(--ftd)}
 #field .fl.on{opacity:1}
 #field img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* already blurred (readTint) */
 #field .fl::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(var(--bg) env(safe-area-inset-top),transparent calc(env(safe-area-inset-top) + 150px)),
+  background:linear-gradient(var(--ft) env(safe-area-inset-top),rgb(var(--fov) / 0) calc(env(safe-area-inset-top) + 70px)),
     linear-gradient(rgb(var(--fov) / var(--a)),rgb(var(--fov) / var(--b)) 45%,rgb(var(--fov) / var(--c3)) 85%)}
 .htop{display:flex;justify-content:space-between;align-items:center;min-height:52px}
 /* Folio: its F is the ribbon from the app icon, cream (or ink) arms on an oxblood bookmark */
@@ -1256,14 +1265,13 @@ const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice
 const pct = v => v ? v + '%' : 'Off';
 // The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, on Home the
 // top of the light from the book you're reading, else the ground.
-// Home's top is the ground for every book, its light fading in below: iPhone takes the strip's colour late (as a
-// screen appears), so a strip that changed with each swipe lagged behind it.
-let stripNow = '';
+let fieldTone = null, stripNow = '';   // [light, dark] colour of the top of Home's light, set by setField
 let slides = [], cur = 0;   // Home's books you're reading, and which one is in front
 const chrome = () => {
   const r = document.documentElement, lib = !$('#drawer').hidden, v = n => getComputedStyle(r).getPropertyValue(n).trim();
   // While reading, the page as Dim leaves it (the dim layer is black at that opacity, so the same mix with black).
-  const c = book ? (prefs.dim ? mixHex(v('--page'), '#000000', prefs.dim / 100) : v('--page')) : v(lib ? '--bar-dim' : '--bg');
+  const c = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
+    : book ? (prefs.dim ? mixHex(v('--page'), '#000000', prefs.dim / 100) : v('--page')) : v(lib ? '--bar-dim' : '--bg');
   $('meta[name=theme-color]').content = c; r.style.setProperty('--strip', c);   // theme-color for browsers that use it
   // iPhone looks at the strip's colour again when a layer at the top edge appears, not when a colour changes.
   if (c !== stripNow) { stripNow = c; const t = $('#tint'); t.hidden = true; requestAnimationFrame(() => { t.hidden = false; }); }
@@ -1397,8 +1405,13 @@ function show(s = {}) {
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
+// In the iPhone home-screen app the phone's own swipe back showed half a second of black on these screens (it has
+// no picture of the screen under), so there they replace the history step instead of adding one; the reader has
+// its own swipe back (below). Elsewhere (a browser, Android) Back works as before.
+const STAY = navigator.standalone === true;
+const step = st => STAY ? history.replaceState(st, '') : history.pushState(st, '');
 function goPage(state, focus) {
-  history.pushState(state, ''); show(history.state);
+  step(state); show(history.state);
   if (state.lib) $('#drawer').scrollTop = 0; else scrollTo(0, 0);
   $(focus).focus({ preventScroll: true });
 }
@@ -1432,7 +1445,7 @@ function showDrawer(open, shelf) {
   $('#dLib').hidden = !!shelf; $('#v-shelf').hidden = !shelf; d.classList.toggle('inshelf', !!shelf);
   if (shelf) renderShelf(shelf); else renderLib();
 }
-const openLib = () => { if ($('#drawer').hidden) { pushed = 1; goPage({ tab: 'library', lib: true }, '#h-lib'); } };
+const openLib = () => { if ($('#drawer').hidden) { pushed = STAY ? 0 : 1; goPage({ tab: 'library', lib: true }, '#h-lib'); } };
 const closeLib = () => {
   if (pushed && !history.state?.shelf) { pushed = 0; showDrawer(false); back(remember); }   // slides down now, not after the step back
   else { pushed = 0; toHome(); }
@@ -1443,7 +1456,7 @@ function back(then) {
   const t = setTimeout(() => { if (popWait === r) { popWait = null; then(); } }, 500);
   popWait = r; history.back();
 }
-const goShelf = id => { pushed++; goPage({ tab: 'library', lib: true, shelf: id }, '#shelfName'); };
+const goShelf = id => { if (!STAY) pushed++; goPage({ tab: 'library', lib: true, shelf: id }, '#shelfName'); };
 $('#libOpen').onclick = $('#peekRow').onclick = openLib;
 $('#libSearch').onclick = () => { openLib(); $('#lq').focus(); };
 $('#libClose').onclick = $('#dscrim').onclick = closeLib;
@@ -1543,7 +1556,7 @@ $('#shelfBack').onclick = () => {
   if (pushed > 1) { pushed--; history.back(); }
   else { pushed = 1; history.replaceState({ tab: 'library', lib: true }, ''); show(history.state); $('#h-lib').focus({ preventScroll: true }); }
 };
-$('#setBack').onclick = () => history.state?.tab === 'settings' ? history.back() : toHome();
+$('#setBack').onclick = () => history.state?.tab === 'settings' && !STAY ? history.back() : toHome();
 addEventListener('popstate', () => {
   if (popWait) { const r = popWait; popWait = null; return r(); }
   const root = document.documentElement;
@@ -1803,7 +1816,7 @@ async function readTint(m) {
   }
   const L = lum(top);
   const da = Math.max(.3, Math.min(.86, 1 - .1 / Math.max(L, .01))), la = Math.max(.38, Math.min(.82, (.55 - L) / (.86 - L)));
-  return { url, glow, top, c, cf, da, la };
+  return { url, glow, top, c, cf, da, la, ftd: mixHex(top, '#0c0b0a', da), ftl: mixHex(top, '#f1eee8', la) };
 }
 function paintNow(t) {
   const s = $('#nowCard').style;
@@ -1812,13 +1825,15 @@ function paintNow(t) {
 // Home's light: a new layer fades in over the old one, which then goes.
 function setField(m, t) {
   const f = $('#field');
-  if (!m) return f.replaceChildren();
+  if (!m) { f.replaceChildren(); fieldTone = null; return chrome(); }
+  fieldTone = [t.ftl, t.ftd];
+  chrome();
   const key = m.id + ' ' + (t.url || t.top);   // a new cover for the same book is new light too
   if (f.lastElementChild?.dataset.key === key) return;
   const layer = el('div', 'fl'), num = v => v.toFixed(2);
   layer.dataset.id = m.id; layer.dataset.key = key;
   layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
-    `--da:${num(t.da)};--db:${num(Math.min(.9, t.da + .15))};--dc:${num(Math.max(.72, Math.min(.94, t.da + .4)))}`;
+    `--da:${num(t.da)};--db:${num(Math.min(.9, t.da + .15))};--dc:${num(Math.max(.72, Math.min(.94, t.da + .4)))};--ftl:${t.ftl};--ftd:${t.ftd}`;
   if (t.glow) { const img = el('img'); img.src = t.glow; img.alt = ''; layer.append(img); }
   f.append(layer);
   const drop = () => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); };
@@ -2505,7 +2520,7 @@ async function openBook(id, push = true) {
   else appY = scrollY;
   closeFind();
   const b = book = { id, meta, text, doc: null, mode: null, q: '', ...prep(text) };
-  if (push) history.pushState({ ...history.state, book: id }, '');
+  if (push) step({ ...history.state, book: id });
   // The Library's scroll lock comes off while reading (closeBook's show() puts it back if the Library was open).
   $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); document.documentElement.classList.remove('lib'); chrome();
   $('#rtitle').textContent = meta.title; $('#rauthor').textContent = meta.author || '';
@@ -2939,6 +2954,44 @@ $('#text').onclick = () => {
   if (tapClosed) { tapClosed = false; return; }
   if (!getSelection().toString()) reader.classList.toggle('hide');
 };
+// The reader's own swipe back (iPhone home-screen app, where screens aren't history steps): from the left edge the
+// book follows the finger right over the screen under it; let go past a third of the way, or with a flick, and it
+// goes, else it slides back.
+if (STAY) {
+  const root = document.documentElement, px = v => root.style.setProperty('--px', v + 'px');
+  let e = null;
+  const slide = (from, to, then) => {
+    const t0 = performance.now(), ms = calmMotion() ? 0 : 280;
+    const f = now => { const k = ms ? Math.min(1, (now - t0) / ms) : 1, ease = 1 - (1 - k) ** 3; px(from + (to - from) * ease); if (k < 1) requestAnimationFrame(f); else then(); };
+    requestAnimationFrame(f);
+  };
+  addEventListener('touchstart', ev => {
+    const t = ev.touches[0];
+    e = book && !sheet.open && $('#rset').hidden && ev.touches.length === 1 && t.clientX < 24 ? { x0: t.clientX, y0: t.clientY, live: false, dx: 0, v: 0, t: performance.now() } : null;
+  }, { passive: true });
+  addEventListener('touchmove', ev => {
+    if (!e) return;
+    const t = ev.touches[0], dx = t.clientX - e.x0, dy = t.clientY - e.y0;
+    if (!e.live) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > dx || !ev.cancelable) { e = null; return; }   // up and down is reading
+      e.live = true; px(0); document.body.classList.add('swipe');
+    }
+    ev.preventDefault();
+    const now = performance.now(), d = Math.max(0, dx);
+    e.v = .6 * (d - e.dx) / Math.max(1, now - e.t) + .4 * e.v; e.dx = d; e.t = now;
+    px(d);
+  }, { passive: false });
+  const end = () => {
+    if (!e?.live) { e = null; return; }
+    const { dx } = e, v = performance.now() - e.t > 90 ? 0 : e.v, go = v > .5 || v > -.3 && dx > innerWidth / 3;
+    e = null;
+    const done = () => { document.body.classList.remove('swipe'); root.style.removeProperty('--px'); };
+    if (go) slide(dx, innerWidth, () => closeBook().then(done));
+    else slide(dx, 0, done);
+  };
+  addEventListener('touchend', end); addEventListener('touchcancel', end);
+}
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); savePos(); remember(); }
@@ -2963,7 +3016,8 @@ async function closeBook(pop = false) {
   // The book's history entry is left after; its popstate is swallowed.
   const s = { ...history.state };
   delete s.book;
-  if (!pop && history.state?.book) back(() => { if (history.state?.book) history.replaceState(s, ''); });
+  if (STAY) history.replaceState(s, '');
+  else if (!pop && history.state?.book) back(() => { if (history.state?.book) history.replaceState(s, ''); });
   teardown();
   reader.hidden = true; reader.classList.remove('hide'); document.body.classList.remove('reading'); $('#app').hidden = false;
   show(s); scrollTo(0, appY); chrome();
@@ -2980,13 +3034,13 @@ if (s0.tab === 'settings') { delete s0.shelf; delete s0.colls; }
 if (reload) history.replaceState(s0, '');
 else {   // a fresh launch: rebuild the steps so Back still works
   history.replaceState({ tab: 'library' }, '');
-  if (s0.tab === 'settings') history.pushState({ tab: 'settings' }, '');
+  if (s0.tab === 'settings') step({ tab: 'settings' });
   else if (s0.lib || s0.colls || s0.shelf) {
-    history.pushState({ tab: 'library', lib: true }, '');
-    if (s0.shelf) history.pushState({ tab: 'library', lib: true, shelf: s0.shelf }, '');
+    step({ tab: 'library', lib: true });
+    if (s0.shelf) step({ tab: 'library', lib: true, shelf: s0.shelf });
   }
 }
-if (s0.tab !== 'settings') pushed = s0.shelf ? 2 : s0.lib || s0.colls ? 1 : 0;
+if (s0.tab !== 'settings' && !STAY) pushed = s0.shelf ? 2 : s0.lib || s0.colls ? 1 : 0;
 show(history.state);
 await refresh();
 if (s0.book) openBook(s0.book, !reload);
