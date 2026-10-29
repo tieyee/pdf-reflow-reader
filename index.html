@@ -198,6 +198,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
    washed with the paper (or near-black) so text stays readable, and Resume wears the cover's strongest colour.
    The books you're reading are covers you swipe between; the light follows the one in front. */
 #views{position:relative;z-index:1}
+#tint{position:fixed;z-index:100;top:0;left:0;right:0;height:8px;background:var(--strip,var(--bg));opacity:0;pointer-events:none}
 #field{position:fixed;inset:0;z-index:0;display:none;overflow:hidden;background:var(--strip,var(--bg));pointer-events:none}
 body.home.tinted #field{display:block}
 body.home.tinted::before{display:none}   /* the field paints its own flat band under the status bar */
@@ -205,7 +206,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 #field .fl{position:absolute;inset:0;opacity:0;transition:opacity .6s var(--ease);--a:var(--la);--b:var(--lb);--c3:var(--lc);--ft:var(--ftl)}
 [data-theme=dark] #field .fl{--a:var(--da);--b:var(--db);--c3:var(--dc);--ft:var(--ftd)}
 #field .fl.on{opacity:1}
-#field img{position:absolute;left:-90px;top:-90px;width:calc(100% + 180px);height:calc(100% + 180px);object-fit:cover;filter:blur(70px) saturate(1.7)}
+#field img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* already blurred (readTint) */
 #field .fl::after{content:"";position:absolute;inset:0;
   background:linear-gradient(var(--ft) env(safe-area-inset-top),rgb(var(--fov) / 0) calc(env(safe-area-inset-top) + 70px)),
     linear-gradient(rgb(var(--fov) / var(--a)),rgb(var(--fov) / var(--b)) 45%,rgb(var(--fov) / var(--c3)) 85%)}
@@ -596,6 +597,7 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 </style>
 </head>
 <body>
+<div id="tint" aria-hidden="true"></div>
 <div id="app">
 <div id="field" aria-hidden="true"></div>
 <main id="views">
@@ -1252,7 +1254,7 @@ const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice
 const pct = v => v ? v + '%' : 'Off';
 // The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, on Home the
 // top of the light from the book you're reading, else the ground.
-let fieldTone = null;   // [light, dark] colour of the top of Home's light, set by setField
+let fieldTone = null, stripNow = '';   // [light, dark] colour of the top of Home's light, set by setField
 let slides = [], cur = 0;   // Home's books you're reading, and which one is in front
 const chrome = () => {
   const r = document.documentElement, lib = !$('#drawer').hidden, v = n => getComputedStyle(r).getPropertyValue(n).trim();
@@ -1260,6 +1262,8 @@ const chrome = () => {
   const c = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
     : book ? (prefs.dim ? mixHex(v('--page'), '#000000', prefs.dim / 100) : v('--page')) : v(lib ? '--bar-dim' : '--bg');
   $('meta[name=theme-color]').content = c; r.style.setProperty('--strip', c);   // theme-color for browsers that use it
+  // iPhone looks at the strip's colour again when a layer at the top edge appears, not when a colour changes.
+  if (c !== stripNow) { stripNow = c; const t = $('#tint'); t.hidden = true; requestAnimationFrame(() => { t.hidden = false; }); }
   r.style.setProperty('--strip0', /^#[\da-f]{6}$/i.test(c) ? c + '00' : 'transparent');   // the same at alpha 0, for see-through layers
 };
 function applyPrefs() {
@@ -1720,14 +1724,43 @@ function tintFor(m) {
   if (!tints.has(key)) tints.set(key, readTint(m));
   return tints.get(key);
 }
+// The cover as a 60×90 picture, colours lifted 1.7× and blurred by hand (three box blurs ≈ a Gaussian), since
+// canvas filters aren't in every Safari. The cover is drawn bigger than the picture so its edges stay out of it.
+function blurred(img) {
+  const W = 60, H = 90, R = 8, g = document.createElement('canvas'); g.width = W; g.height = H;
+  const x = g.getContext('2d', { willReadFrequently: true });
+  x.drawImage(img, -20, -30, W + 40, H + 60);
+  const d = x.getImageData(0, 0, W, H), a = d.data;
+  for (let i = 0; i < a.length; i += 4) {   // saturate(1.7); the array clamps to 0–255 itself
+    const l = .2126 * a[i] + .7152 * a[i + 1] + .0722 * a[i + 2];
+    for (let k = 0; k < 3; k++) a[i + k] = l + (a[i + k] - l) * 1.7;
+  }
+  for (let pass = 0; pass < 3; pass++) for (const [n, m, along, across] of [[W, H, 4, W * 4], [H, W, W * 4, 4]]) {
+    const line = new Float32Array(n * 3);
+    for (let j = 0; j < m; j++) {
+      const o = j * across;
+      for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) line[i * 3 + k] = a[o + i * along + k];
+      for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) {
+        let sum = 0;
+        for (let t = -R; t <= R; t++) sum += line[Math.min(n - 1, Math.max(0, i + t)) * 3 + k];
+        a[o + i * along + k] = sum / (2 * R + 1);
+      }
+    }
+  }
+  x.putImageData(d, 0, 0);
+  return g.toDataURL('image/png');
+}
 async function readTint(m) {
   const url = coverUrl(m);
-  let px = null;
+  let px = null, glow = null;
   if (url) try {
     const img = new Image(); img.src = url; await img.decode();
     const c = document.createElement('canvas'); c.width = 24; c.height = 36;
     const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 24, 36);
     px = x.getImageData(0, 0, 24, 36).data;
+    // Home's light: the cover blurred once into a small picture the page scales up. A live CSS blur this size took
+    // the phone about a third of a second a frame to redraw whenever Home came back (a blank second after a book).
+    glow = blurred(img);
   } catch {}
   let top, vivid;
   if (!px) top = vivid = CLOTH[(tones.get(m.id) || 0) % 4];   // a bookcloth cover is its cloth colour
@@ -1756,7 +1789,7 @@ async function readTint(m) {
   }
   const L = lum(top);
   const da = Math.max(.3, Math.min(.86, 1 - .1 / Math.max(L, .01))), la = Math.max(.38, Math.min(.82, (.55 - L) / (.86 - L)));
-  return { url, top, c, cf, da, la, ftd: mixHex(top, '#0c0b0a', da), ftl: mixHex(top, '#f1eee8', la) };
+  return { url, glow, top, c, cf, da, la, ftd: mixHex(top, '#0c0b0a', da), ftl: mixHex(top, '#f1eee8', la) };
 }
 function paintNow(t) {
   const s = $('#nowCard').style;
@@ -1774,10 +1807,13 @@ function setField(m, t) {
   layer.dataset.id = m.id; layer.dataset.key = key;
   layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
     `--da:${num(t.da)};--db:${num(Math.min(.9, t.da + .15))};--dc:${num(Math.max(.72, Math.min(.94, t.da + .4)))};--ftl:${t.ftl};--ftd:${t.ftd}`;
-  if (t.url) { const img = el('img'); img.src = t.url; img.alt = ''; layer.append(img); }
+  if (t.glow) { const img = el('img'); img.src = t.glow; img.alt = ''; layer.append(img); }
   f.append(layer);
+  const drop = () => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); };
+  // Out of sight (while reading) it changes at once, so Home comes back already in the new light.
+  if (!f.getClientRects().length) { layer.classList.add('on'); return drop(); }
   requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('on')));
-  setTimeout(() => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); }, 650);
+  setTimeout(drop, 650);
 }
 
 // ---- The Library drawer: Fiction, then Non-fiction, each with its collections as shelves and an Add button.
@@ -1969,7 +2005,9 @@ function runLib() {
 }
 const closeFind = () => { $('#lq').value = ''; $('#lq').blur(); runLib(); };
 $('#lq').oninput = runLib;
-$('#lq').onfocus = $('#lq').onblur = () => setTimeout(runLib);   // Cancel shows while the field is in use
+// Cancel shows while the field is in use. Only Cancel changes: redrawing the results here replaced the row under a
+// tap (the tap blurs the field) between press and release, and the tap was lost.
+$('#lq').onfocus = $('#lq').onblur = () => setTimeout(() => { $('#lqCancel').hidden = !$('#lq').value.trim() && document.activeElement !== $('#lq'); });
 $('#libFind').onsubmit = e => { e.preventDefault(); $('#lq').blur(); };
 $('#lqClear').onclick = () => { $('#lq').value = ''; runLib(); $('#lq').focus(); };
 $('#lqCancel').onclick = closeFind;
@@ -2440,6 +2478,7 @@ async function openBook(id, push = true) {
   closeFind();
   const b = book = { id, meta, text, doc: null, mode: null, q: '', ...prep(text) };
   if (push) history.pushState({ ...history.state, book: id }, '');
+  tintFor(meta);   // its light, ready for Home when you leave the book
   // The Library's scroll lock comes off while reading (closeBook's show() puts it back if the Library was open).
   $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); document.documentElement.classList.remove('lib'); chrome();
   $('#rtitle').textContent = meta.title; $('#rauthor').textContent = meta.author || '';
@@ -2887,18 +2926,24 @@ function teardown() {
   $('#retBtn').hidden = true; $('#ribbon').hidden = true;
 }
 async function closeBook(pop = false) {
-  if (!book) return;
+  if (!book || book.closing) return;   // Back pressed twice while Home gets ready
+  book.closing = true;
   if (sheet.open) sheet.close();
+  const b = book;
   await savePos();
-  teardown();
-  reader.hidden = true; reader.classList.remove('hide'); document.body.classList.remove('reading'); $('#app').hidden = false; chrome();
   // Leave the book's history entry; wait for that step so the next screen reads the right state.
   if (!pop && history.state?.book) await new Promise(r => { popWait = r; history.back(); setTimeout(() => { if (popWait === r) { popWait = null; r(); } }, 500); });
   const s = { ...history.state };
   delete s.book;
   if (history.state?.book) history.replaceState(s, '');
-  show(s); scrollTo(0, appY);
+  // Home is made ready behind the book (the book just read in front, in its light) and swapped in at once: iPhone
+  // takes the colour of the strip above the app as Home appears, and keeps it.
   await refresh();
+  if (slides[cur]) await tintFor(slides[cur]);
+  if (book !== b) return;   // another book was opened meanwhile
+  teardown();
+  reader.hidden = true; reader.classList.remove('hide'); document.body.classList.remove('reading'); $('#app').hidden = false;
+  show(s); scrollTo(0, appY); chrome();
 }
 $('#back').onclick = () => closeBook();
 
