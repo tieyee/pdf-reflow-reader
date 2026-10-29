@@ -86,9 +86,10 @@ body.reading{background:var(--strip,var(--page))}
 #reader{min-height:100dvh;background:var(--page)}
 /* The grain fades in below the strip, so the page meets it without an edge */
 body::before{content:"";position:fixed;z-index:15;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 22px);pointer-events:none;
-  background:linear-gradient(var(--strip,var(--bg)) env(safe-area-inset-top),color-mix(in srgb,var(--strip,var(--bg)) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent)}
+  background:linear-gradient(var(--strip,var(--bg)) env(safe-area-inset-top),color-mix(in srgb,var(--strip,var(--bg)) 70%,transparent) calc(env(safe-area-inset-top) + 8px),transparent) var(--strip0,transparent)}
 body.reading::before{display:none}
-body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:#000;opacity:var(--dim,0);pointer-events:none}
+/* Black drawn as an image: its background colour is the strip's at alpha 0 (see --strip) */
+body.reading::after{content:"";position:fixed;inset:0;z-index:40;background:linear-gradient(#000,#000) var(--strip0,transparent);opacity:var(--dim,0);pointer-events:none}
 body.reading dialog.sheet{filter:var(--dim-sheet,none)}   /* sheets sit above that layer; brightness(1 - dim) matches it */
 ::selection{background:var(--highlight);color:inherit}
 h1,h2,h3,p,blockquote,figure{margin:0}
@@ -197,7 +198,7 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
    washed with the paper (or near-black) so text stays readable, and Resume wears the cover's strongest colour.
    The books you're reading are covers you swipe between; the light follows the one in front. */
 #views{position:relative;z-index:1}
-#field{position:fixed;inset:0;z-index:0;display:none;overflow:hidden;background:var(--bg);pointer-events:none}
+#field{position:fixed;inset:0;z-index:0;display:none;overflow:hidden;background:var(--strip,var(--bg));pointer-events:none}
 body.home.tinted #field{display:block}
 body.home.tinted::before{display:none}   /* the field paints its own flat band under the status bar */
 #field{will-change:transform}
@@ -323,7 +324,7 @@ body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 .dtitle .icon-btn svg{width:20px;height:20px;margin-left:auto;color:var(--ink-2)}
 .pkrow{display:flex;gap:12px;margin-top:6px;cursor:pointer}
 .cover.pk{width:84px}
-#dscrim{position:fixed;inset:0;z-index:24;background:var(--scrim);animation:fade .2s}
+#dscrim{position:fixed;inset:0;z-index:24;background:linear-gradient(var(--scrim),var(--scrim)) var(--strip0,transparent);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
 /* The Library opens as a card: Home shrinks back behind it, its top edge still showing, instead of being cut off */
 .drawer{position:fixed;z-index:25;left:0;right:0;bottom:0;top:calc(10px + env(safe-area-inset-top));max-width:640px;margin:0 auto;overflow-y:auto;overscroll-behavior:contain;
@@ -520,7 +521,9 @@ dialog.sheet[open],.panel:not([hidden]){animation:rise .24s var(--ease)}
 /* Reader: a top bar with back and the title, and every control used while reading in the bottom bar */
 .rtop,.rbot{position:fixed;z-index:20;color:var(--page-ink);transition:transform .22s var(--ease)}
 .rtop{top:0;left:0;right:0;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px;padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) 0 max(4px,env(safe-area-inset-left));
-  background:var(--page);box-shadow:0 1px 0 color-mix(in srgb,var(--page-ink) 7%,transparent)}
+  background:var(--strip,var(--page));box-shadow:0 1px 0 color-mix(in srgb,var(--page-ink) 7%,transparent)}
+/* The bar's own colour is the strip's (dimmed page); what you see is the page under it, dimmed by the dim layer */
+.rtop::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--page)}
 .rtop .icon-btn,.rbot .icon-btn{color:var(--page-ink)}
 .rtitle{display:flex;flex-direction:column;align-items:center;min-width:0;padding:7px 0 8px;text-align:center}
 #rtitle{max-width:100%;font:500 17px/21px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1257,6 +1260,7 @@ const chrome = () => {
   const c = !book && !lib && fieldTone && !$('#v-library').hidden ? fieldTone[r.dataset.theme === 'dark' ? 1 : 0]
     : book ? (prefs.dim ? mixHex(v('--page'), '#000000', prefs.dim / 100) : v('--page')) : v(lib ? '--bar-dim' : '--bg');
   $('meta[name=theme-color]').content = c; r.style.setProperty('--strip', c);   // theme-color for browsers that use it
+  r.style.setProperty('--strip0', /^#[\da-f]{6}$/i.test(c) ? c + '00' : 'transparent');   // the same at alpha 0, for see-through layers
 };
 function applyPrefs() {
   const r = document.documentElement;
@@ -1627,10 +1631,10 @@ async function refresh() {
 // ---- Home: the books you're reading as covers you swipe between, the one in front with Resume under it, and the
 // Library tray along the bottom. The page and Resume take their colour from the cover in front. ----
 function renderLibrary() {
-  const n = books.length, reading = books.filter(m => state(m) === 'progress').sort(SORT.opened[1]);
+  const n = books.length, recent = books.filter(m => state(m) !== 'finished' && (m.opened || m.pct)).sort(SORT.opened[1]);
   $('#first').hidden = n > 0;
-  // Every book in progress, opened last first; with none, the newest unread book, else the one opened last.
-  const now = reading.length ? reading.slice(0, 8) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
+  // The three books opened last (not finished), last first; with none, the newest unread book, else the one opened last.
+  const now = recent.length ? recent.slice(0, 3) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
   $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).slice(0, 6).map(m => coverEl(m, 'pk')));
@@ -1639,8 +1643,12 @@ function renderLibrary() {
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
 }
 // Tap the cover in front (or Resume) to read, tap one behind to bring it forward; hold any cover for its options.
+let front0 = '';   // the book opened last, and when, as Home last drew it
 function renderNow(list) {
-  const card = $('#nowCard'), pager = $('#pager'), keep = slides[cur]?.id;
+  // The cover you swiped to stays in front, unless a book was opened since: then the one you just read is.
+  const k0 = list[0] ? list[0].id + ' ' + touched(list[0]) : '', keep = k0 === front0 ? slides[cur]?.id : list[0]?.id;
+  const card = $('#nowCard'), pager = $('#pager');
+  front0 = k0;
   card.hidden = !list.length;
   document.body.classList.toggle('tinted', list.length > 0);
   slides = list;
