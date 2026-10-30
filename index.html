@@ -2721,10 +2721,14 @@ async function addQueued(dup = 0, failed = 0) {
   let done = 0;
   try {
     for (let q; (q = queued()).length;) {
-      const { id, name, hash } = q[0];
+      const { id, name, hash, tries = 0 } = q[0];
       done++;
       try {
         if (!await get('meta', id)) {   // already there when the app was closed between saving it and ticking it off
+          // Each start is noted before the slow part. A book that was started twice and never finished has closed
+          // Folio twice (too big for the phone's memory), and would close it on every launch if tried again.
+          if (tries >= 2) throw Error('it closed Folio twice while being added, so it was skipped. It may be too big for this phone');
+          q[0].tries = tries + 1; setQueue(q);
           const buf = await get('files', id);
           if (!buf) throw Error('the file went missing; add it again');
           const label = `Adding “${name}”` + (done + q.length > 2 ? ` (${done} of ${done + q.length - 1})` : '');
@@ -2831,7 +2835,9 @@ async function processPdf(buf, progress) {
       O.paintImageMaskXObjectRepeat, O.paintInlineImageXObjectGroup, O.paintImageMaskXObjectGroup, O.paintSolidColorImageMask]);
     for (const [i, p] of pages.entries()) {
       if (p.chars >= 40) continue;
-      const ops = (await (await doc.getPage(i + 1)).getOperatorList()).fnArray;
+      // cleanup() lets go of the page's decoded pictures; in Safari they pile up otherwise (GBs for a scan) and iPhone kills the page.
+      const page = await doc.getPage(i + 1), ops = (await page.getOperatorList()).fnArray;
+      page.cleanup();
       p.image = ops.some(f => IMG.has(f)) || ops.filter(f => f === O.constructPath).length > 20;
     }
     const r = Reflow.reflow(pages), info = (await doc.getMetadata().catch(() => null))?.info, scan = pages.filter(p => p.image).length >= N / 2;
