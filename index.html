@@ -245,7 +245,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
    depends on the screen alone, and the title block below it is always room for two lines plus the author. The spacer lets the
    last book come to the front too. */
 /* Room under the covers for their shadows, which a scrolling row would otherwise cut off in a hard line */
-.pager{--sw:clamp(110px,min(80vw,calc((100dvh - 466px) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:flex-end;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
+.pager{--sw:clamp(110px,min(80vw,calc((100dvh - 466px - max(0px,env(safe-area-inset-top) - 8px) - env(safe-area-inset-bottom)) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:flex-end;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
 .pager::-webkit-scrollbar{display:none}
 .pager::after{content:"";flex:none;width:calc(100% - var(--sw));height:1px}
@@ -257,7 +257,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 .slide::after{content:"";position:absolute;inset:0;border-radius:2px 4px 4px 2px;background:#000;opacity:calc(var(--d,0) * .42);pointer-events:none}
 .cover.pg{width:100%;aspect-ratio:2/3;border-radius:2px 4px 4px 2px;box-shadow:0 2px 3px rgba(0,0,0,.3),0 30px 44px -20px rgba(0,0,0,.6)}
 .ninfo{margin:8px 4px 0}
-.ninfo .tb{height:105px;display:flex;flex-direction:column;justify-content:flex-end}   /* two title lines (80) + author (4 + 21) */
+.ninfo .tb{height:105px;display:flex;flex-direction:column}   /* title right under the cover; room for two title lines (80) + author (4 + 21) */
 .ntitle{font:500 36px/40px var(--display);letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:balance}
 .ninfo .by{min-height:21px;margin-top:4px;font:400 16px/21px var(--ui);color:color-mix(in srgb,var(--ink) 68%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Resume: glass tinted with the cover's colour, where you are under it, the progress along its bottom edge */
@@ -2456,6 +2456,13 @@ function cleanTitle(t) {
   t = (t || '').trim();
   return t.length > 2 && !/\.(pdf|docx?|indd|tex|rtf)$/i.test(t) && !/^(untitled|microsoft word)/i.test(t) ? t : '';
 }
+// "The Butcher's Masquerade (Matt Dinniman) (Z-Library)" -> ["The Butcher's Masquerade", "Matt Dinniman"]: download-site tags
+// go, and a last bracket that reads as a name (no digits, no "book"/"series", up to four words) becomes the author.
+function splitBy(t) {
+  t = t.replace(/(\s*[(\[](z-?lib[^)\]]*|z-library|libgen[^)\]]*|oceanofpdf[^)\]]*|anna'?s archive)[)\]])+\s*$/i, '').trim();
+  const m = t.match(/^(.+?)\s*[(\[]([^()\[\]]+)[)\]]$/);
+  return m && !/\d|book|series|edition|vol|novel|saga|trilogy|cycle/i.test(m[2]) && m[2].trim().split(/\s+/).length <= 4 ? [m[1], cleanAuthor(m[2])] : [t, ''];
+}
 function cleanAuthor(a) {
   a = (a || '').replace(/\s+/g, ' ').trim();
   return a.length > 1 && a.length <= 60 && !/@|https?:|www\.|\.com\b|^(admin(istrator)?|user|owner|unknown|author|microsoft|calibre|oceanofpdf)\b/i.test(a) ? a : '';
@@ -2530,8 +2537,8 @@ async function addQueued(dup = 0, failed = 0) {
           const r = await processPdf(buf, (p, of) => status(`${label}: page ${p} of ${of}`, { pct: p / of * 100, busy: true }));
           await put('text', id, r.text);
           await put('covers', id, r.cover);
-          const title = r.title || name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim();
-          await put('meta', id, { id, title, author: r.author, art: r.art, pages: r.text.numPages, page: 1, pct: 0, added: Date.now(), hash });
+          const [title, by] = splitBy(r.title || name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').trim());
+          await put('meta', id, { id, title, author: r.author || by, art: r.art, pages: r.text.numPages, page: 1, pct: 0, added: Date.now(), hash });
           added.push({ id, title });
         }
       } catch (e) {
@@ -2614,6 +2621,10 @@ async function findAuthors() {
   looking = true;
   let any = false;
   const sq = t => (t || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const m of books.filter(m => m.author === '')) {   // books added before splitBy existed: take the author out of the title first
+    const [t, by] = splitBy(m.title);
+    if (by || t !== m.title) { any = true; await update(m.id, x => { x.title = t; x.author = by; }).catch(() => {}); m.title = t; m.author = by; }
+  }
   for (const m of books.filter(m => m.author === '' && !m.alook)) {
     if (book || !navigator.onLine) break;
     try {
