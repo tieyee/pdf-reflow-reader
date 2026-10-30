@@ -3256,15 +3256,6 @@ if (queued().length) addQueued();   // books still on the list when the app was 
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { tries = 0; setTimeout(heal, 100); } });
   setTimeout(heal, 400);
 }
-// iPhone only takes "draw under the time and battery" when Folio is added to the Home Screen. Added before that, it
-// paints the strip itself in one flat colour that never follows the covers, and the page reports no room up there.
-if (STAY && innerHeight > innerWidth) {
-  const probe = el('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
-  document.body.append(probe);
-  if (!probe.offsetHeight && !s0.book) status('To let each book\'s colour reach the very top of the screen, remove Folio from your Home Screen and add it again. Save a backup first, then restore it after.',
-    { actions: [['Save a backup', () => { status(''); $('#backupSave').click(); }, true]] });
-  probe.remove();
-}
 </script>
 </body>
 </html>
