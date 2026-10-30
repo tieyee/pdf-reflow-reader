@@ -241,9 +241,11 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 @property --cf{syntax:"<color>";inherits:true;initial-value:#fff}
 .now{display:flex;flex-direction:column;--c:var(--ink);--cf:var(--bg);transition:--c .45s var(--ease),--cf .45s var(--ease)}
 /* The books you're reading, the one in front full size, the next peeking in from the right. The cover grows or shrinks to the
-   screen so Resume sits just above the Library tray, never with a gap or under it. The spacer lets the last book come to the front too. */
+   screen so Resume sits just above the Library tray, never with a gap or under it. Everything has a fixed place: the cover size
+   depends on the screen alone, and the title block below it is always room for two lines plus the author. The spacer lets the
+   last book come to the front too. */
 /* Room under the covers for their shadows, which a scrolling row would otherwise cut off in a hard line */
-.pager{--sw:clamp(150px,min(80vw,calc((100dvh - 436px - var(--tx,0px)) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:center;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
+.pager{--sw:clamp(150px,min(80vw,calc((100dvh - 466px) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:center;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
 .pager::-webkit-scrollbar{display:none}
 .pager::after{content:"";flex:none;width:calc(100% - var(--sw));height:1px}
@@ -254,7 +256,8 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
   transform-origin:0 50%;transform:scale(calc(1 - .12 * var(--d,0)));will-change:transform}
 .slide::after{content:"";position:absolute;inset:0;border-radius:2px 4px 4px 2px;background:#000;opacity:calc(var(--d,0) * .42);pointer-events:none}
 .cover.pg{width:100%;border-radius:2px 4px 4px 2px;box-shadow:0 2px 3px rgba(0,0,0,.3),0 30px 44px -20px rgba(0,0,0,.6)}
-.ninfo{margin:18px 4px 0}
+.ninfo{margin:8px 4px 0}
+.ninfo .tb{height:105px;display:flex;flex-direction:column;justify-content:flex-end}   /* two title lines (80) + author (4 + 21) */
 .ntitle{font:500 36px/40px var(--display);letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:balance}
 .ninfo .by{min-height:21px;margin-top:4px;font:400 16px/21px var(--ui);color:color-mix(in srgb,var(--ink) 68%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Resume: glass tinted with the cover's colour, where you are under it, the progress along its bottom edge */
@@ -638,8 +641,8 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
     <section id="nowCard" class="now" aria-labelledby="nowT" hidden>
       <div id="pager" class="pager" aria-label="Books you're reading"></div>
       <div class="ninfo">
-        <h2 id="nowT" class="ntitle clamp2"></h2>
-        <p id="nowBy" class="by"></p>
+        <div class="tb"><h2 id="nowT" class="ntitle clamp2"></h2>
+        <p id="nowBy" class="by"></p></div>
         <button id="nowGo" class="slab"><span class="tx"><b></b><small id="nowWhere"></small></span>
           <span class="arr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
           <span class="sbar" aria-hidden="true"><i id="nowBar"></i></span></button>
@@ -1428,7 +1431,7 @@ function show(s = {}) {
   showDrawer(tab === 'library' && !!(s.lib || s.shelf || s.colls), s.shelf);
   $('#peek').hidden = tab !== 'library' || !books.length;
   document.body.classList.toggle('home', tab === 'library');
-  if (tab === 'library' && slides.length) { fitNow(); $('#pager').scrollLeft = cur * slideStep(); syncPager(); }   // laid out again now it shows
+  if (tab === 'library' && slides.length) { $('#pager').scrollLeft = cur * slideStep(); syncPager(); }   // laid out again now it shows
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
@@ -1747,21 +1750,10 @@ function renderNow(list) {
   }));
   const i = Math.max(0, list.findIndex(m => m.id === keep));
   setCur(i);
-  fitNow();
   pager.scrollLeft = i * slideStep();
   syncPager();
   buildField(list);
 }
-// A title on two or three lines takes more room, so the covers give up that much height: Resume stays above the tray
-// whichever book is in front (the worst title of the books you're reading decides, so covers never resize on a swipe).
-function fitNow() {
-  const t = $('#nowT'), keep = t.textContent, r = document.documentElement;
-  let h = 0;
-  for (const m of slides) { t.textContent = m.title; h = Math.max(h, t.offsetHeight); }
-  t.textContent = keep;
-  if (h) r.style.setProperty('--tx', Math.max(0, h - 40) + 'px');
-}
-addEventListener('resize', () => { if (slides.length && !$('#v-library').hidden) fitNow(); });
 const slideStep = () => { const c = $('#pager').children; return c.length > 1 ? c[1].offsetLeft - c[0].offsetLeft : 0; };
 const toSlide = i => $('#pager').scrollTo({ left: i * slideStep(), behavior: calmMotion() ? 'auto' : 'smooth' });
 // Each cover's distance from the front, from the row's scroll position; returns the one nearest the front.
