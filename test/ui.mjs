@@ -475,7 +475,7 @@ check('home layout', async ({ page, engine }) => {
   await put(page, 'Harbour Lights', { pct: 40, page: 3, opened: Date.now(), chap: 'PREFACE AND THANKS' });
   await put(page, 'Quiet Ledger', { pct: 5, page: 1, opened: Date.now() - 1000, chap: 'Click here to sign up' });
   await relaunch(page);
-  assert.ok(await shown(page, '#h-library .mk'), 'the ribbon F logo');
+  assert.match(await page.textContent('#h-library'), /^Good (morning|afternoon|evening)$/, 'time-of-day greeting');
   assert.equal(await page.textContent('#nowT'), 'Harbour Lights');
   assert.equal(await page.textContent('#nowGo b'), 'Resume reading');
   assert.equal(await page.textContent('#nowWhere'), 'Preface and thanks · 60% left', 'capitals read in sentence case');
@@ -555,7 +555,7 @@ check('home is ready as it appears', async ({ page }) => {
   await put(page, 'Harbour Lights', { pct: 10, page: 1, opened: Date.now() });
   // Quiet Ledger gets a cover picture (the app icon), so its light is a picture.
   const [qid] = await metaOf(page, 'Quiet Ledger');
-  await idb(page, (db, id) => fetch('folio-192.png').then(r => r.arrayBuffer()).then(b => new Promise((res, rej) => {
+  await idb(page, (db, id) => fetch('versal-192.png').then(r => r.arrayBuffer()).then(b => new Promise((res, rej) => {
     const t = db.transaction('covers', 'readwrite'); t.objectStore('covers').put(b, id); t.oncomplete = res; t.onerror = () => rej(t.error); })), qid);
   await put(page, 'Quiet Ledger', { art: true });
   await relaunch(page);
@@ -715,7 +715,7 @@ check('pick a book', async ({ page }) => {
 
 // Apple Books and Open Library answered with made-up results; every cover picture is the app icon.
 async function fakeCoverSites(ctx, { down = false } = {}) {
-  const png = fs.readFileSync(path.join(ROOT, 'folio-512.png')), hits = [];
+  const png = fs.readFileSync(path.join(ROOT, 'versal-512.png')), hits = [];
   const json = (route, body) => route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: JSON.stringify(body) });
   await ctx.route(/itunes\.apple\.com|openlibrary\.org|mzstatic\.com/, route => {
     const u = route.request().url(); hits.push(u);

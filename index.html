@@ -6,17 +6,17 @@
 <meta name="theme-color" content="#f1eee8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Folio">
+<meta name="apple-mobile-web-app-title" content="Versal">
 <!-- The page draws under the time and battery (they turn white), so the top is always the page itself: a strip
      painted by the phone took its colour late and lagged behind swipes. -->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="Folio reads PDF books on your phone as text you can resize. Free, no account, nothing uploaded.">
+<meta name="description" content="Versal reads PDF books on your phone as text you can resize. Free, no account, nothing uploaded.">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="folio-192.png">
-<link rel="apple-touch-icon" href="folio-192.png">
+<link rel="icon" href="versal-192.png">
+<link rel="apple-touch-icon" href="versal-192.png">
 <link rel="preload" href="vendor/fonts/garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="vendor/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
-<title>Folio</title>
+<title>Versal</title>
 <script>
 // Theme and book face before first paint, so dark mode never flashes light. Same rules as loadPrefs() in the app script.
 try { const p = JSON.parse(localStorage.getItem('reflow-settings')) || {}, r = document.documentElement, t = p.v >= 2 ? p.theme : 'system';
@@ -230,9 +230,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
   background:linear-gradient(rgb(0 0 0 / var(--clock,0)),transparent calc(env(safe-area-inset-top) + 36px)),   /* the light runs up under the time; a little shade keeps the white time readable on a light page */
     linear-gradient(rgb(var(--fov) / var(--a)),rgb(var(--fov) / var(--b)) 45%,rgb(var(--fov) / var(--c3)) 85%)}
 .htop{display:flex;justify-content:space-between;align-items:center;min-height:52px}
-/* Folio: its F is the ribbon from the app icon, cream (or ink) arms on an oxblood bookmark */
-.wordmark{display:flex;align-items:flex-start;font:500 34px/1 var(--display);letter-spacing:-.02em}
-.wordmark .mk{width:auto;height:38px;margin:2px 1px 0 0}
+.wordmark{font:500 34px/1 var(--display);letter-spacing:-.02em}
 .htools{display:flex;gap:10px;margin-right:-2px}
 .icon-btn.glass{width:46px;height:46px;border:1px solid var(--glass-edge);background:var(--glass-btn);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 var(--glass-hi)}
 .icon-btn.glass svg{width:24px;height:24px}
@@ -632,7 +630,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
 
   <section id="v-library" class="view" aria-labelledby="h-library">
     <header class="htop">
-      <h1 id="h-library" class="wordmark"><span class="sr">Folio</span><svg class="mk" viewBox="166 92 182 330" aria-hidden="true"><defs><linearGradient id="silk" x1="0" x2="1"><stop offset="0" stop-color="#7d2236"/><stop offset=".45" stop-color="#b43c53"/><stop offset="1" stop-color="#7d2236"/></linearGradient></defs><rect x="226" y="92" width="122" height="44" fill="currentColor"/><rect x="226" y="222" width="86" height="40" fill="currentColor"/><path d="M166 92h60v330l-30-26-30 26z" fill="url(#silk)"/></svg><span aria-hidden="true">olio</span></h1>
+      <h1 id="h-library" class="wordmark"></h1>
       <span class="htools">
         <button class="icon-btn glass" data-add aria-label="Add a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
         <button id="goSettings" class="icon-btn glass" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
@@ -652,7 +650,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
       <div id="first" class="card first" hidden>
         <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
         <h2 class="card-title">Add your first book</h2>
-        <p class="lead">Pick a PDF on this phone. Folio turns it into text you can resize, and keeps your place.</p>
+        <p class="lead">Pick a PDF on this phone. Versal turns it into text you can resize, and keeps your place.</p>
         <button class="pill primary" data-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Choose a PDF</button>
         <p class="note">Nothing is uploaded: your books stay on this device.<span class="drophint"> You can also drop PDFs onto this page.</span></p>
       </div>
@@ -697,7 +695,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
       </ul>
       <input id="backupFile" type="file" hidden>
     </section>
-    <p class="note sidenote">Folio keeps your books, bookmarks and places on this phone. There’s no account and nothing is uploaded.</p>
+    <p class="note sidenote">Versal keeps your books, bookmarks and places on this phone. There’s no account and nothing is uploaded.</p>
   </section>
 
 </main>
@@ -1151,6 +1149,8 @@ navigator.serviceWorker?.register('sw.js').catch(() => {});
 
 // ---- The 15-minute rule: back within 15 minutes of leaving resumes the exact screen, later starts on the Library.
 // Read before anything else runs, because every screen change rewrites it.
+const hello = () => { const h = new Date().getHours(); document.getElementById('h-library').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+hello(); document.addEventListener('visibilitychange', () => { if (!document.hidden) hello(); });
 const LAST = 'folio-last', AWAY = 15 * 60e3;
 let last = null;
 try { last = JSON.parse(localStorage.getItem(LAST)); } catch {}
@@ -2160,7 +2160,7 @@ $('#backupSave').onclick = async () => {
   for (const id of ck) await add(head.covers, 'covers', id);
   const json = new TextEncoder().encode(JSON.stringify(head));
   const day = new Date().toISOString().slice(0, 10);
-  const file = new File(['FOLIO1', String(json.length).padStart(10, '0'), json, ...parts], `Folio backup ${day}.folio`, { type: 'application/octet-stream' });
+  const file = new File(['FOLIO1', String(json.length).padStart(10, '0'), json, ...parts], `Versal backup ${day}.folio`, { type: 'application/octet-stream' });
   status('');
   // iPhone: the share sheet's "Save to Files"; elsewhere a download.
   if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file] }); } catch {} return; }
@@ -2172,7 +2172,7 @@ $('#backupFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
   try {
-    if (await f.slice(0, 6).text() !== 'FOLIO1') throw Error('not a Folio backup');
+    if (await f.slice(0, 6).text() !== 'FOLIO1') throw Error('not a Versal backup');
     const n = +await f.slice(6, 16).text(), head = JSON.parse(await f.slice(16, 16 + n).text()), base = 16 + n;
     await dbReady;
     for (const [i, m] of head.meta.entries()) {
@@ -2467,7 +2467,7 @@ function cleanAuthor(a) {
   a = (a || '').replace(/\s+/g, ' ').trim();
   return a.length > 1 && a.length <= 60 && !/@|https?:|www\.|\.com\b|^(admin(istrator)?|user|owner|unknown|author|microsoft|calibre|oceanofpdf)\b/i.test(a) ? a : '';
 }
-// Adding books happens in two steps. First every picked PDF is copied into Folio's own storage and put on a to-do list
+// Adding books happens in two steps. First every picked PDF is copied into Versal's own storage and put on a to-do list
 // (quick). Then each one is read and laid out (slow: many books take many minutes). The list survives the app being
 // closed or thrown away part way, which iPhone does to a page once the screen locks or it sits in the background,
 // and the next launch carries on from it. The screen is kept awake meanwhile.
@@ -2528,7 +2528,7 @@ async function addQueued(dup = 0, failed = 0) {
         if (!await get('meta', id)) {   // already there when the app was closed between saving it and ticking it off
           // Each start is noted before the slow part. A book that was started twice and never finished has closed
           // Folio twice (too big for the phone's memory), and would close it on every launch if tried again.
-          if (tries >= 2) throw Error('it closed Folio twice while being added, so it was skipped. It may be too big for this phone');
+          if (tries >= 2) throw Error('it closed Versal twice while being added, so it was skipped. It may be too big for this phone');
           q[0].tries = tries + 1; setQueue(q);
           const buf = await get('files', id);
           if (!buf) throw Error('the file went missing; add it again');
@@ -3270,7 +3270,10 @@ if (queued().length) addQueued();   // books still on the list when the app was 
     if (tries++ < 2) { const c = vp.content; vp.content = 'width=device-width, initial-scale=1'; requestAnimationFrame(() => { vp.content = c; setTimeout(heal, 250); }); return; }
     root.style.setProperty('--sh', tall() + 'px'); root.classList.add('short');
   };
-  for (const ev of ['resize', 'orientationchange', 'pageshow']) addEventListener(ev, () => { tries = 0; heal(); });
+  for (const ev of ['resize', 'orientationchange', 'pageshow', 'focus']) addEventListener(ev, () => { tries = 0; heal(); });
+  visualViewport?.addEventListener('resize', () => { tries = 0; heal(); });
+  // The phone can shrink the page without telling anyone (a sheet or keyboard closing, Control Centre), so look now and then too
+  setInterval(() => { if (!document.hidden) heal(); }, 1500);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { tries = 0; setTimeout(heal, 100); } });
   setTimeout(heal, 400);
 }

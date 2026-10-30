@@ -1,9 +1,9 @@
 // Keeps the app usable offline. Books and reading positions live in IndexedDB, not in this cache.
-const CACHE = 'folio-v6';                  // bump when the pdf.js or font files below change
+const CACHE = 'folio-v7';                  // bump when the pdf.js or font files below change
 const PDFJS = 'vendor/pdfjs-4.10.38/';
 const FONTS = ['newsreader-latin', 'newsreader-latin-ext', 'newsreader-italic-latin', 'newsreader-italic-latin-ext', 'garamond-latin', 'garamond-latin-ext',
   'literata-latin', 'literata-latin-ext', 'atkinson-next-latin', 'atkinson-next-latin-ext'].map(f => `vendor/fonts/${f}.woff2`);
-const SHELL = ['./', 'manifest.json', 'folio-192.png', 'folio-512.png', PDFJS + 'pdf.min.mjs', PDFJS + 'pdf.worker.min.mjs', ...FONTS];
+const SHELL = ['./', 'manifest.json', 'versal-192.png', 'versal-512.png', PDFJS + 'pdf.min.mjs', PDFJS + 'pdf.worker.min.mjs', ...FONTS];
 
 self.oninstall = e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 self.onactivate = e => e.waitUntil(caches.keys()

@@ -1,4 +1,4 @@
-# Folio
+# Versal
 
 One static `index.html` that turns PDF books into resizable, scrolling text for phones. No account, no server, no build step.
 PDFs, the reflowed text, bookmarks and your reading position stay in the browser (IndexedDB); nothing is uploaded.
