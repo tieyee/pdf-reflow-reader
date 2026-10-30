@@ -330,7 +330,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
    it, opens the drawer; pulling its handle down, the arrow, the dimmed strip above it or Back closes it. */
 /* The tray: Library, Pick and Search, and the tops of a few covers, so the bottom of Home is never empty */
 body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
-.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px env(safe-area-inset-bottom) 16px;overflow:hidden;
+.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px 0 16px;overflow:hidden;
   border-radius:22px 22px 0 0;background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
   box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift);touch-action:none}
 .ptop{display:flex;align-items:center}
@@ -343,7 +343,7 @@ body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 /* The covers scroll sideways (the tray itself takes no panning, so the row allows it) */
 .pkrow{display:flex;gap:12px;margin:6px -6px 0 0;padding-right:16px;cursor:pointer;overflow-x:auto;touch-action:pan-x;scrollbar-width:none;overscroll-behavior-x:contain}
 .pkrow::-webkit-scrollbar{display:none}
-.pkrow .cover{flex:none}
+.pkrow .book{flex:none}
 .cover.pk{width:84px}
 #dscrim{position:fixed;inset:0;z-index:24;background:linear-gradient(var(--scrim),var(--scrim)) var(--strip0,transparent);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
@@ -702,7 +702,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
     <button id="pickBtn" class="icon-btn" aria-label="Pick a book for me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="9" r="1.1" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/></svg></button>
     <button id="libSearch" class="icon-btn" aria-controls="drawer" aria-label="Find a book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4-4"/></svg></button>
   </div>
-  <div id="peekRow" class="pkrow" aria-hidden="true"></div>
+  <div id="peekRow" class="pkrow"></div>
 </div>
 <div id="dscrim" hidden></div>
 <section id="drawer" class="drawer" aria-labelledby="h-lib" hidden>
@@ -1157,6 +1157,9 @@ const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 // The open book: {id, meta, text, doc, mode, io, far, q, heads, first}; els: one element per block (Reflow) or per page (Page).
 let book = null, els = [], appY = 0, scrubbing = false;
+// A big book opens with only the blocks around your place in the page (win: first and one past last), so the first
+// screen doesn't wait for the whole book to be laid out; fillAll() puts the rest in right after it shows.
+let win = null;
 const reader = $('#reader');
 
 // ---- Icons: Lucide-style line icons on a 24px grid, 1.75 stroke, round caps ----
@@ -1356,6 +1359,7 @@ function setSize(v) {
 // Ends once the last size has been applied.
 const sizeDone = () => { clearTimeout(sizeT); if (sizeRaf) sizeEnd = true; else endSizing(); };
 function startSizing() {
+  fillAll();
   if (sizing || !book || book.mode !== 'reflow' || !els.length) return;
   const pos = anchor();
   // Out of the page, not just hidden: Safari restyles hidden blocks on every size step too.
@@ -1466,7 +1470,20 @@ function showDrawer(open, shelf) {
   $('#dLib').hidden = !!shelf; $('#v-shelf').hidden = !shelf; d.classList.toggle('inshelf', !!shelf);
   if (shelf) renderShelf(shelf); else renderLib();
 }
-const openLib = () => { if ($('#drawer').hidden) { pushed = STAY ? 0 : 1; goPage({ tab: 'library', lib: true }, '#h-lib'); } };
+// Scrolled along the tray's covers, the Library opens at the first one showing, on its shelf.
+const trayBook = () => {
+  const r = $('#peekRow'), x = r.getBoundingClientRect().left;
+  return r.scrollLeft > 20 ? [...r.children].find(b => b.getBoundingClientRect().right > x + 30)?.dataset.id : null;
+};
+const openLib = (at = trayBook()) => {
+  if (!$('#drawer').hidden) return;
+  pushed = STAY ? 0 : 1; goPage({ tab: 'library', lib: true }, '#h-lib');
+  const it = at && $('#shelfRows').querySelector(`.sitem[data-id="${CSS.escape(at)}"]`);
+  if (!it) return;
+  const d = $('#drawer'), cov = it.parentNode, r = it.getBoundingClientRect();
+  d.scrollTop += r.top - d.getBoundingClientRect().top - d.clientHeight * .3;
+  cov.scrollLeft += r.left - cov.getBoundingClientRect().left - 16;
+};
 const closeLib = () => {
   if (pushed && !history.state?.shelf) { pushed = 0; showDrawer(false); back(remember); }   // slides down now, not after the step back
   else { pushed = 0; toHome(); }
@@ -1478,8 +1495,8 @@ function back(then) {
   popWait = r; history.back();
 }
 const goShelf = id => { if (!STAY) pushed++; goPage({ tab: 'library', lib: true, shelf: id }, '#shelfName'); };
-$('#libOpen').onclick = $('#peekRow').onclick = openLib;
-$('#libSearch').onclick = () => { openLib(); $('#lq').focus(); };
+$('#libOpen').onclick = () => openLib();
+$('#libSearch').onclick = () => { openLib(null); $('#lq').focus(); };
 $('#libClose').onclick = $('#dscrim').onclick = closeLib;
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidden && !sheet.open) closeLib(); });
 // The Library moves with the finger like an iPhone sheet. Pull the tray up and it rises with you; pull it down from
@@ -1516,11 +1533,9 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidde
     }
   };
   const T = e => e.touches[0] || e.changedTouches[0];
-  // A touch starting on the bottom strip (the safe area, i.e. the iPhone's home bar) is the swipe home, not a pull.
-  $('#peek').addEventListener('touchstart', e => {
-    const p = $('#peek'), edge = parseFloat(getComputedStyle(p).paddingBottom);
-    if (e.touches.length === 1 && !(edge && T(e).clientY > innerHeight - edge - 10)) start(T(e).clientY, T(e).clientX, 'open');
-  }, { passive: true });
+  // Only the tray's top row (Library, Pick, Search) pulls: the covers below scroll sideways and open books, and the
+  // iPhone's swipe home starts down there, so it can never drag the Library up.
+  $('#peek').addEventListener('touchstart', e => { if (e.touches.length === 1 && e.target.closest('.ptop')) start(T(e).clientY, T(e).clientX, 'open'); }, { passive: true });
   // The tray doesn't scroll (touch-action none), so it waits until the finger has clearly gone up.
   $('#peek').addEventListener('touchmove', e => {
     if (!g) return;
@@ -1664,6 +1679,7 @@ function pressable(b, tap, hold) {
 }
 function bookBtn(m, size) {
   const b = el('button', 'book');
+  b.dataset.id = m.id;
   b.append(coverEl(m, size));
   b.setAttribute('aria-label', `${m.title}${m.author ? ', ' + m.author : ''}, ${stateLong(m)}`);
   pressable(b, () => openBook(m.id), () => bookMenu(m));
@@ -1702,7 +1718,7 @@ function renderLibrary() {
   const now = recent.length ? recent.slice(0, 3) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
-  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).map(m => coverEl(m, 'pk')));
+  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).map(m => bookBtn(m, 'pk')));
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
@@ -2667,11 +2683,11 @@ async function openBook(id, push = true) {
   // The Library's scroll lock comes off while reading (closeBook's show() puts it back if the Library was open).
   $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); document.documentElement.classList.remove('lib'); chrome();
   $('#rtitle').textContent = meta.title; $('#rauthor').textContent = meta.author || '';
-  await render();
+  await render(true);
   if (book !== b) return;
   const at = () => restoreBlock(meta.pos, meta.ppos);
   at();
-  requestAnimationFrame(() => { if (book !== b) return; at(); showPos(); lastY = scrollY; reader.classList.remove('hide'); });   // open with the bars showing where you are
+  requestAnimationFrame(() => { if (book !== b) return; at(); showPos(); lastY = scrollY; reader.classList.remove('hide'); if (win) setTimeout(() => { if (book === b) fillAll(); }, 150); });   // open with the bars showing where you are
   meta.opened = Date.now();
   update(id, x => { x.opened = meta.opened; });
   const e = books.find(m => m.id === id);
@@ -2679,9 +2695,10 @@ async function openBook(id, push = true) {
   remember();
 }
 
-async function render() {
+async function render(open = false) {
   const b = book, mode = prefs.mode, text = $('#text');
   stopPages();
+  win = null;
   b.mode = mode;
   text.classList.toggle('pages', mode === 'page');
   if (mode === 'page' && !b.text.sizes) {   // books added before page sizes were saved: measure once
@@ -2714,9 +2731,22 @@ async function render() {
     });
     if (!els.length) els = [el('p', 'c', 'No readable text was found in this PDF. Switch to Page under Text to see it as printed.')];
   }
-  text.replaceChildren(...els);
+  if (open && mode === 'reflow' && els.length > 500) {
+    const i = Math.min(els.length - 1, b.meta.pos?.i ?? 0);
+    win = { lo: Math.max(0, i - 40), hi: Math.min(els.length, i + 160) };
+    text.replaceChildren(...els.slice(win.lo, win.hi));
+  } else text.replaceChildren(...els);
   renderEnd();
+  if (win) $('#endCard').hidden = true;
   showPos();
+}
+function fillAll() {
+  if (!win) return;
+  const pos = anchor();
+  win = null;
+  $('#text').replaceChildren(...els);
+  $('#endCard').hidden = !book.text.blocks.length;
+  restore(pos);
 }
 async function pageSizes(b) {
   const doc = await getDoc(b), out = [];
@@ -2789,12 +2819,13 @@ function anchor() {
   if (sizing) return sizing;   // most blocks are hidden while the size changes, so measuring would be wrong
   if (!els.length) return { i: 0, f: 0 };
   const y0 = lineY();
-  let lo = 0, hi = els.length - 1;
+  let lo = win ? win.lo : 0, hi = win ? win.hi - 1 : els.length - 1;
   while (lo < hi) { const m = (lo + hi) >> 1; if (els[m].getBoundingClientRect().bottom <= y0) lo = m + 1; else hi = m; }
   const r = els[lo].getBoundingClientRect();
   return { i: lo, f: r.height ? (y0 - r.top) / r.height : 0 };
 }
 function restore(pos) {
+  if (win && pos && (pos.i < win.lo || pos.i >= win.hi)) fillAll();
   const e = pos && els[pos.i];
   if (!e) return scrollTo(0, 0);
   const r = e.getBoundingClientRect();
@@ -2807,7 +2838,7 @@ function restoreBlock(pos, ppos) {
   restore({ i: p, f: ppos?.f || 0 });
 }
 function where() {
-  const a = anchor(), N = book.text.numPages, atEnd = !sizing && innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+  const a = anchor(), N = book.text.numPages, atEnd = !sizing && !win && innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
   const pg = book.mode === 'page' ? a.i : +els[a.i]?.dataset.p || 0, page = atEnd ? N : Math.min(N, pg + 1);
   return { pos: book.mode === 'page' ? { i: book.first[pg] ?? 0, f: 0 } : a, ppos: book.mode === 'page' ? a : null, pg, page, pct: Math.round(page / N * 100) };
 }
@@ -2864,7 +2895,7 @@ scrub.addEventListener('change', () => { scrubbing = false; if (book) { showPos(
 const marks = () => book.meta.marks || [];
 function markY(m) {
   const e = book.mode === 'page' ? els[m.page] : els[m.i];
-  if (!e) return null;
+  if (!e?.isConnected) return null;   // not laid out yet (a big book still filling in)
   const r = e.getBoundingClientRect();
   return r.top + (book.mode === 'page' ? m.pf || 0 : m.f) * r.height;
 }
@@ -3156,7 +3187,7 @@ addEventListener('pageshow', e => { if (e.persisted && hiddenAt && Date.now() - 
 function teardown() {
   stopPages();
   book.doc?.then(d => d.destroy()).catch(() => {});
-  book = null; els = []; scrubbing = false; ribbonOn = false; sizing = null;
+  book = null; els = []; win = null; scrubbing = false; ribbonOn = false; sizing = null;
   $('#text').replaceChildren(); $('#endCard').replaceChildren(); $('#endCard').hidden = true; showSettings(false);
   $('#retBtn').hidden = true; $('#ribbon').hidden = true;
 }
