@@ -330,7 +330,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
    it, opens the drawer; pulling its handle down, the arrow, the dimmed strip above it or Back closes it. */
 /* The tray: Library, Pick and Search, and the tops of a few covers, so the bottom of Home is never empty */
 body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
-.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px 0 16px;overflow:hidden;
+.peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px env(safe-area-inset-bottom) 16px;overflow:hidden;
   border-radius:22px 22px 0 0;background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
   box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift);touch-action:none}
 .ptop{display:flex;align-items:center}
@@ -340,7 +340,10 @@ body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
 .ptop .icon-btn{margin-top:14px;color:color-mix(in srgb,var(--ink) 80%,transparent)}
 .ptop .icon-btn svg{width:22px;height:22px}
 .dtitle .icon-btn svg{width:20px;height:20px;margin-left:auto;color:var(--ink-2)}
-.pkrow{display:flex;gap:12px;margin-top:6px;cursor:pointer}
+/* The covers scroll sideways (the tray itself takes no panning, so the row allows it) */
+.pkrow{display:flex;gap:12px;margin:6px -6px 0 0;padding-right:16px;cursor:pointer;overflow-x:auto;touch-action:pan-x;scrollbar-width:none;overscroll-behavior-x:contain}
+.pkrow::-webkit-scrollbar{display:none}
+.pkrow .cover{flex:none}
 .cover.pk{width:84px}
 #dscrim{position:fixed;inset:0;z-index:24;background:linear-gradient(var(--scrim),var(--scrim)) var(--strip0,transparent);animation:fade .2s}
 @keyframes fade{from{opacity:0}}
@@ -492,30 +495,6 @@ dialog.sheet[open]::backdrop{animation:fade .3s ease-out}
 .cover.add svg{width:22px;height:22px}
 .savebar{position:sticky;bottom:0;z-index:3;margin-top:14px;padding:10px 0 2px;background:var(--surface);
   box-shadow:0 60px 0 var(--surface)}   /* also covers the sheet's bottom padding, which the covers would scroll through */
-/* Sort my books: proposed shelves as cards, each with a tick (make it or not) and its covers (tap one to leave it out) */
-#sortBtn{margin-bottom:22px}
-.sorth{margin:14px 0 8px;font:italic 400 24px/28px var(--display)}
-.sgrp{margin-bottom:10px;padding:2px 12px 14px;border-radius:16px;background:var(--bg);transition:opacity .2s}
-.sgrp.off{opacity:.45}
-.sghead{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:0;border:0;background:none;color:var(--ink);text-align:left}
-.sghead .tick{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--on-accent);transition:background-color .15s}
-.sghead .tick svg{width:14px;height:14px}
-.sghead[aria-pressed=false] .tick{background:none;box-shadow:inset 0 0 0 1.5px var(--ink-2);color:transparent}
-.sghead .sgn{min-width:0;font:500 19px/23px var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sghead .tag{flex:none;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);font:500 12px/16px var(--ui);color:var(--ink-2)}
-.sghead .meta{flex:none;margin-left:auto}
-.sgcov{display:flex;gap:10px;margin:0 -12px;padding:2px 12px 2px 46px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
-.sgcov::-webkit-scrollbar{display:none}
-.sgb{flex:none;display:flex;flex-direction:column;gap:5px;width:64px;padding:0;border:0;background:none;color:var(--ink-2);font:500 12px/15px var(--ui)}
-.sgb .cover{width:64px;transition:opacity .15s,transform .15s var(--ease)}
-.sgb:active .cover{transform:scale(.97)}
-.sgb>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sgb[aria-pressed=false] .cover{opacity:.28}
-.sgb[aria-pressed=false]>span:last-child{text-decoration:line-through}
-.offer{display:flex;align-items:center;gap:14px;margin:4px 0 18px}
-.offer .cover{width:56px;flex:none}
-.offer .ot{font:500 20px/24px var(--display)}
-.offer+.pill{margin-bottom:10px}
 .btns{display:flex;gap:10px}
 .btns .pill{flex:1}
 .status .btns .pill{flex:none}
@@ -741,7 +720,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
         <button type="button" id="lqClear" class="icon-btn" aria-label="Clear" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></label>
       <button type="button" id="lqCancel" class="link" hidden>Cancel</button>
     </form>
-    <div id="libMain"><button id="sortBtn" class="pill block" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M5 16V5h3v11M10 16V7h3v9M15.5 16l2.6-9.6 2.9.8-2.6 9.6"/></svg>Sort my books</button><div id="shelfRows"></div></div>
+    <div id="libMain"><div id="shelfRows"></div></div>
     <section id="libResults" aria-labelledby="lqSum" hidden>
       <h3 id="lqSum" class="label glabel" aria-live="polite"></h3>
       <ul id="lqList" class="group"></ul>
@@ -1537,7 +1516,11 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidde
     }
   };
   const T = e => e.touches[0] || e.changedTouches[0];
-  $('#peek').addEventListener('touchstart', e => { if (e.touches.length === 1) start(T(e).clientY, T(e).clientX, 'open'); }, { passive: true });
+  // A touch starting on the bottom strip (the safe area, i.e. the iPhone's home bar) is the swipe home, not a pull.
+  $('#peek').addEventListener('touchstart', e => {
+    const p = $('#peek'), edge = parseFloat(getComputedStyle(p).paddingBottom);
+    if (e.touches.length === 1 && !(edge && T(e).clientY > innerHeight - edge - 10)) start(T(e).clientY, T(e).clientX, 'open');
+  }, { passive: true });
   // The tray doesn't scroll (touch-action none), so it waits until the finger has clearly gone up.
   $('#peek').addEventListener('touchmove', e => {
     if (!g) return;
@@ -1632,6 +1615,8 @@ const SORT = {
 const sorted = list => list.sort((SORT[prefs.sort] || SORT.opened)[1]);
 const leftLine = m => m.pct >= 100 ? 'Finished' : `${100 - m.pct}% left`;
 // A heading set in capitals in the PDF reads in sentence case: "PREFACE AND …" → "Preface and …".
+// Publisher ads in the front matter ("Click here to sign up") are set big like headings but are never a chapter.
+const PROMO = /click here|sign up|mailing list|newsletter|subscribe|free e-?book/i;
 const calm = h => /^[^a-z]*[A-Z]{3}[^a-z]*$/.test(h) ? h[0] + h.slice(1).toLowerCase() : h;
 
 // Page 1 of the PDF when it is cover art (a picture page in a book with real text), else a bookcloth cover with
@@ -1717,7 +1702,7 @@ function renderLibrary() {
   const now = recent.length ? recent.slice(0, 3) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
-  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).slice(0, 6).map(m => coverEl(m, 'pk')));
+  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).map(m => coverEl(m, 'pk')));
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
@@ -1767,7 +1752,7 @@ function setCur(i, swiped = false) {
   $('#nowT').textContent = m.title;
   $('#nowBy').textContent = m.author || '';
   $('#nowGo b').textContent = started ? 'Resume reading' : 'Start reading';
-  $('#nowWhere').textContent = started ? [calm(m.chap || ''), leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`;
+  $('#nowWhere').textContent = started ? [calm(PROMO.test(m.chap) ? '' : m.chap || ''), leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`;
   $('#nowBar').style.width = (started ? Math.min(100, m.pct) : 0) + '%';
   tintFor(m).then(t => { if (slides[cur] === m) { paintNow(t); setField(m, t); } });
 }
@@ -1937,7 +1922,6 @@ function renderLib() {
   const none = sorted(loose(''));
   if (none.length) out.push(shelfRow({ s: { id: 'loose:', name: looseName('') }, list: none }));
   $('#shelfRows').replaceChildren(...out);
-  $('#sortBtn').hidden = books.filter(m => !shelves.some(s => s.id === m.shelf)).length < 2;
 }
 // One collection: its name with See all (tap opens it; on a collection, hold for its options), then a row of its
 // covers with their titles and how far you are.
@@ -2262,7 +2246,7 @@ function askConfirm(title, text, label, fn) {
   return false;
 }
 // A new collection goes to the side being shown.
-let shelfN = 0;   // several collections made in one go (Sort my books) still get their own ids
+let shelfN = 0;   // collections made in the same millisecond still get their own ids
 const addShelf = async (name, side = '') => { const s = { id: 's' + Date.now().toString(36) + (shelfN++).toString(36), name, order: Date.now() + shelfN, side }; await put('shelves', s.id, s); return s.id; };
 // A book put in a collection goes to the end of its arranged order.
 const moveBook = (id, shelfId) => update(id, m => {
@@ -2445,218 +2429,6 @@ function pickCollection(ids) {
   });
 }
 
-// ---- Sort my books: shelves from each book's series and genre. Folio proposes them, you untick what's wrong, then it
-// makes them. Series come from Open Library (its "series:X" subject; edition records like "A Court of Thorns and
-// Roses, 2" give the number), from any book's "Also by" page, or from "(Series #2)" in the title or file name.
-// Genres come from Apple Books. A book already in a collection stays put; a shelf named like one you have adds to it.
-// A book in a series goes on the series shelf only. Each book is looked up once and keeps the answer (m.look). ----
-// Apple's genres onto a short list, first match wins; a book takes the first of its own genres that has one.
-const GENRES = [
-  [/graphic novel|comic|manga/i, 'Comics', 'fiction'], [/romance/i, 'Romance', 'fiction'], [/fantasy/i, 'Fantasy', 'fiction'],
-  [/sci-?fi|science fiction/i, 'Science fiction', 'fiction'], [/myster|thriller|crime|suspense|detective/i, 'Mystery & thriller', 'fiction'],
-  [/horror/i, 'Horror', 'fiction'], [/historical fiction|^historical$/i, 'Historical fiction', 'fiction'], [/classic/i, 'Classics', 'fiction'],
-  [/^(?!.*non-?fiction).*(fiction|literary|literature|short stor|poetry)/i, 'Literary fiction', 'fiction'],
-  [/financ|invest|money|economic/i, 'Money', 'nonfiction'], [/business|management|leadership|marketing|entrepreneur|career/i, 'Business', 'nonfiction'],
-  [/self-?improvement|self-?help|motivation|personal growth|success/i, 'Self-help', 'nonfiction'], [/psycholog/i, 'Psychology', 'nonfiction'],
-  [/health|fitness|diet|nutrition|mind & body/i, 'Health', 'nonfiction'], [/biograph|memoir/i, 'Biography', 'nonfiction'],
-  [/histor/i, 'History', 'nonfiction'], [/science|nature|math|technolog|computer/i, 'Science & tech', 'nonfiction'],
-  [/philosoph/i, 'Philosophy', 'nonfiction'], [/religio|spiritual|christian|bible/i, 'Religion', 'nonfiction'],
-  [/politic|current events|social science|sociolog/i, 'Politics & society', 'nonfiction'], [/cook|food|wine/i, 'Cooking', 'nonfiction'],
-  [/travel/i, 'Travel', 'nonfiction'], [/parenting|family|relationship/i, 'Family & relationships', 'nonfiction'],
-  [/\barts?\b|design|photograph|music|film/i, 'Arts', 'nonfiction'],
-];
-const genreOf = gs => { for (const g of gs) for (const [re, name, side] of GENRES) if (g !== 'Books' && re.test(g)) return [name, side]; return null; };
-// A title as a search wants it: no file junk, no "(Series 1)", no "by Author (date) Paperback".
-const plainT = t => (t || '').replace(/\.pdf$/i, '').replace(/oceanofpdf(\.com)?/ig, ' ').replace(/_+/g, ' ').replace(/\s*[([][^)\]]*[)\]]/g, ' ')
-  .replace(/\s+by\s+.*$/i, '').replace(/\s+-\s+.*$/, '').replace(/\s+/g, ' ').trim();
-// Titles and series names compared loosely: "The Throne of Glass Series" = "Throne of Glass".
-const normT = t => plainT(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(':')[0].replace(/&/g, ' and ')
-  .replace(/[^a-z0-9]+/g, ' ').trim().replace(/^(the|a|an) /, '');
-const normS = s => normT(s).replace(/ (series|trilogy|saga|sequence|cycle|novels|books)$/, '');
-// "A Court of Thorns and Roses, 2", "The Empyrean (#1)", "Court of Thorns & Roses Tril 1" → [name, number].
-const numbered = s => { const x = /^(.*?)[\s,;:(#]*(?:book|bk|vol(?:ume)?\.?|tril(?:ogy)?|no\.?|#)?\s*#?(\d{1,2}(?:\.\d)?)\)?\s*$/i.exec(s.trim());
-  return x && /[a-z]{2}/i.test(x[1]) ? [x[1].trim(), +x[2]] : null; };
-// Series name and number from Open Library: its series subject, or two editions agreeing on a name; the number most
-// editions give (translations number the same way). Publishers' lines (Penguin Classics…) aren't series.
-function olSeries(subjects, eds) {
-  const BAD = /classic|paperback|hardcover|edition|library|penguin|vintage|oxford|bestseller|large print|reader/i;
-  let name = (subjects || []).find(s => /^\[?series:/i.test(s))?.replace(/^\[?series:/i, '').replace(/\]$/, '').replace(/_/g, ' ').trim();
-  if (name && BAD.test(name)) name = null;
-  const all = eds.flatMap(e => e.series || []).filter(s => typeof s === 'string' && !BAD.test(s)), nums = all.map(numbered).filter(Boolean);
-  if (!name) {
-    const count = new Map();
-    for (const s of all) if (/^[\x20-\x7e]+$/.test(s)) { const n = numbered(s)?.[0] || s, k = normS(n); if (k) count.set(k, [(count.get(k)?.[0] || 0) + 1, n]); }
-    const best = [...count.values()].sort((a, b) => b[0] - a[0])[0];
-    if (best?.[0] >= 2) name = best[1];
-  }
-  if (!name) return null;
-  const k = normS(name), mine = nums.filter(([n]) => normS(n) === k), c = new Map();
-  for (const [, n] of mine.length ? mine : nums) c.set(n, (c.get(n) || 0) + 1);
-  return [name, [...c].sort((a, b) => b[1] - a[1])[0]?.[0]];
-}
-// The book's "Also by" page (in its first 8 or last 10 pages): [title, series, number] for each book listed under a
-// "… Series" heading. One book's page can name the series of others in the library.
-async function alsoBy(id) {
-  const doc = await openPdf(await get('files', id)), out = [];
-  try {
-    const N = doc.numPages, want = new Set([...Array(Math.min(8, N)).keys()].map(i => i + 1).concat([...Array(Math.min(10, N)).keys()].map(i => N - i)));
-    for (const n of want) {
-      const page = await doc.getPage(n), tc = await page.getTextContent();
-      page.cleanup();
-      const lines = tc.items.map(i => i.str + (i.hasEOL ? '\n' : '')).join('').split('\n').map(s => s.trim()).filter(Boolean);
-      const at = lines.findIndex(s => /^(also|other books|more books|books) by\b|^by the same author/i.test(s));
-      if (at < 0) continue;
-      let sr = '', no = 0;
-      for (const s of lines.slice(at + 1, at + 80)) {
-        const h = /^(.+?)\s+(series|trilogy|saga|sequence|cycle|novels)$/i.exec(s);
-        if (h) { sr = h[1]; no = 0; }
-        else if (sr && s.length < 90 && !/oceanofpdf|copyright|www\.|\.com/i.test(s)) out.push([normT(s), sr, ++no]);
-      }
-    }
-  } finally { doc.destroy(); }
-  return out.slice(0, 60);
-}
-let abQueue = Promise.resolve();   // one PDF open at a time: a phone can't hold several big ones
-const alsoByOne = id => (abQueue = abQueue.catch(() => {}).then(() => alsoBy(id)));
-// One book looked up online (and its Also by page), saved on the book. Throws when offline; nothing is saved then.
-async function lookUp(m) {
-  const t = plainT(m.title), q = encodeURIComponent(`${t} ${m.author || ''}`.trim());
-  const json = u => fetch(u).then(r => { if (!r.ok) throw Error(r.status); return r.json(); });
-  const same = x => { const a = normT(x), b = normT(t); return !!a && !!b && (a === b || a.startsWith(b + ' ') || b.startsWith(a + ' ')); };
-  // Apple allows about 20 searches a minute, so a big first sort runs past it: then Open Library's subjects give the genre.
-  const [ap, ol] = await Promise.allSettled([json(`https://itunes.apple.com/search?media=ebook&limit=5&term=${q}`),
-    json(`https://openlibrary.org/search.json?limit=5&fields=key,title,subject&q=${q}`)]);
-  if (ap.status === 'rejected' && ol.status === 'rejected') throw ol.reason;
-  const r = ap.value?.results?.find(x => same(x.trackName)), d = ol.value?.docs?.find(x => same(x.title));
-  const eds = d?.key ? (await json(`https://openlibrary.org${d.key}/editions.json?limit=60`).catch(() => ({}))).entries || [] : [];
-  const g = genreOf(r?.genres || []) || (!r && genreOf(d?.subject || [])), sr = olSeries(d?.subject, eds), f = r && fic(r.genres || []);
-  const look = { v: 1, g: g?.[0], side: g?.[1] || (f === true ? 'fiction' : f === false ? 'nonfiction' : ''), sr: sr?.[0], no: sr?.[1],
-    ab: await alsoByOne(m.id).catch(() => []) };
-  await update(m.id, x => { x.look = look; });
-  m.look = look;
-}
-// Books looked up three at a time; returns how many couldn't be.
-async function lookAll(list, progress) {
-  let i = 0, done = 0, failed = 0;
-  const work = async () => { while (i < list.length) { const m = list[i++]; try { await lookUp(m); } catch { failed++; } progress?.(++done, list.length); } };
-  await Promise.all([work(), work(), work()]);
-  return failed;
-}
-// A book's series: Open Library's, else another book's Also by page, else "(Name #2)" in its title or file name.
-function seriesOf(m, ab) {
-  if (m.look?.sr) return [m.look.sr, m.look.no];
-  const a = ab.get(normT(m.title));
-  if (a) return a;
-  for (const s of [m.title, m.id.replace(/:\d+$/, '')]) for (const [, p] of s.matchAll(/\(([^()]+)\)/g)) if (!/\d{4}/.test(p) && numbered(p)) return numbered(p);
-  return null;
-}
-// The shelves to propose for books in no collection: series first (2+ books, or a collection of that name exists),
-// then genres for the rest. only: just the shelves holding one of these book ids.
-function propose(only) {
-  const mine = new Set(shelves.map(s => s.id)), free = books.filter(m => !mine.has(m.shelf) && m.look);
-  const ab = new Map(), named = new Map(shelves.map(s => [normS(s.name), s])), out = [];
-  for (const m of books) for (const [t, sr, no] of m.look?.ab || []) if (!ab.has(t)) ab.set(t, [sr, no]);
-  const group = (map, key, o, x) => (map.get(key) || map.set(key, { ...o, key, list: [] }).get(key)).list.push(x);
-  const ser = new Map();
-  for (const m of free) { const s = seriesOf(m, ab); if (s) group(ser, normS(s[0]), { name: s[0], kind: 'series' }, { m, no: s[1] }); }
-  for (const g of ser.values()) {
-    g.into = named.get(g.key);
-    if (g.list.length < 2 && !g.into) continue;
-    const nf = g.list.filter(x => (x.m.side || x.m.look.side) === 'nonfiction').length;
-    g.side = g.into?.side || (nf > g.list.length / 2 ? 'nonfiction' : 'fiction');
-    g.list.sort((a, b) => (a.no ?? 99) - (b.no ?? 99) || a.m.title.localeCompare(b.m.title));
-    out.push(g);
-  }
-  const placed = new Set(out.flatMap(g => g.list.map(x => x.m))), gen = new Map();
-  for (const m of free) if (!placed.has(m) && m.look.g) group(gen, normS(m.look.g), { name: m.look.g, kind: 'genre', side: m.look.side }, { m });
-  for (const g of gen.values()) {
-    g.into = named.get(g.key);
-    if (g.list.length < 2 && !g.into) continue;
-    if (g.into?.side) g.side = g.into.side;
-    out.push(g);
-  }
-  return only ? out.filter(g => g.list.some(x => only.has(x.m.id))) : out;
-}
-// Makes the ticked shelves with the books left in them. A series shelf is in reading order. Every book whose category
-// was found gets it, unless one was set already.
-async function makeShelves(groups) {
-  for (const g of groups) {
-    const list = g.list.filter(x => x.on !== false);
-    if (g.off || !list.length) continue;
-    const sid = g.into?.id || await addShelf(g.name, g.side), t0 = Date.now();
-    const byTime = books.some(m => m.shelf === sid && (m.rank ?? 0) > 1e6);   // a collection you arranged keeps your order
-    await updateMany('meta', list.map(x => x.m.id), (m, i) => {
-      m.shelf = sid; m.rank = g.kind === 'series' && !byTime ? list[i].no ?? 100 + i : t0 + i; m.side ||= g.side;
-    });
-  }
-  const rest = books.filter(m => !m.side && m.look?.side).map(m => m.id);
-  if (rest.length) await updateMany('meta', rest, m => { m.side ||= m.look?.side; });
-}
-async function sortBooks() {
-  const msg = el('p', 'msg', 'Looking up your books…');
-  openSheet('Sort my books', body => body.append(msg), true);
-  const todo = books.filter(m => !m.look && !shelves.some(s => s.id === m.shelf));
-  const failed = await lookAll(todo, (n, of) => { msg.textContent = `Looking up your books… ${n} of ${of}`; });
-  if (!sheet.open || !msg.isConnected) return;   // the sheet was closed (or replaced) meanwhile
-  showProposal(propose(), failed ? (failed === todo.length ? 'Sorting needs an internet connection the first time.' : `${plural(failed, 'book')} couldn’t be looked up; try again later.`) : '');
-}
-$('#sortBtn').onclick = sortBooks;
-function showProposal(groups, note = '') {
-  openSheet('Sort my books', body => {
-    if (!groups.length) return body.append(el('p', 'msg', note || 'Nothing to sort yet. A shelf needs two books from the same series or genre.'));
-    const sc = el('div', 'scroll'), sum = el('p', 'meta'), bar = el('div', 'savebar'), go = el('button', 'pill primary block');
-    const free = books.filter(m => !shelves.some(s => s.id === m.shelf)).length;
-    const changed = () => {
-      const on = groups.filter(g => !g.off && g.list.some(x => x.on !== false)), n = on.reduce((s, g) => s + g.list.filter(x => x.on !== false).length, 0), k = Math.max(0, free - n);
-      sum.textContent = `${plural(on.length, 'shelf', 'shelves')} for ${plural(n, 'book')} · ${k} ${k === 1 ? 'stays' : 'stay'} unsorted`;
-      go.textContent = on.length ? `Make ${plural(on.length, 'shelf', 'shelves')}` : 'Nothing ticked'; go.disabled = !on.length;
-    };
-    if (note) sc.append(el('p', 'meta', note));
-    for (const [side, label] of Object.entries(SIDES)) {
-      const gs = groups.filter(g => g.side === side);
-      if (gs.length) sc.append(el('h3', 'sorth', label), ...gs.map(g => groupCard(g, changed)));
-    }
-    go.onclick = async () => { go.disabled = true; go.textContent = 'Saving…'; await makeShelves(groups); sheet.close(); refresh(); };
-    bar.append(go); body.append(sum, sc, bar); changed();
-  }, true);
-}
-// One proposed shelf: tap its name to skip it, a cover to leave that book out.
-function groupCard(g, changed) {
-  const card = el('section', 'sgrp'), head = el('button', 'sghead'), tick = el('span', 'tick'), covs = el('div', 'sgcov');
-  tick.append(svg(ICON.check));
-  head.append(tick, el('span', 'sgn', g.name), el('span', 'tag', g.into ? 'Adds to yours' : g.kind === 'series' ? 'Series' : 'Genre'), el('span', 'meta num', String(g.list.length)));
-  head.setAttribute('aria-pressed', 'true'); head.setAttribute('aria-label', `${g.name} shelf, ${plural(g.list.length, 'book')}`);
-  head.onclick = () => { g.off = !g.off; head.setAttribute('aria-pressed', !g.off); card.classList.toggle('off', g.off); changed(); };
-  for (const x of g.list) {
-    const b = el('button', 'sgb');
-    b.append(coverEl({ ...x.m, pct: 0 }, 'grid'), el('span', '', x.no ? 'Book ' + x.no : x.m.title));
-    b.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-label', `${x.m.title}${x.no ? ', book ' + x.no : ''}`);
-    b.onclick = () => { x.on = x.on === false; b.setAttribute('aria-pressed', x.on); changed(); };
-    covs.append(b);
-  }
-  card.append(head, covs);
-  return card;
-}
-// Right after books are added: if one belongs on a shelf you have, or makes a series pair with a book you own, ask.
-// Several at once: the Sort sheet with just their shelves.
-async function offerShelves(ids) {
-  await lookAll(books.filter(m => ids.includes(m.id) && !m.look));
-  if (book || sheet.open) return;   // reading already, or busy with another sheet
-  const only = new Set(ids), gs = propose(only).filter(g => g.kind === 'series' || g.into);
-  if (!gs.length) return;
-  if (gs.length > 1 || gs[0].list.filter(x => only.has(x.m.id)).length > 1) return showProposal(gs);
-  const g = gs[0], x = g.list.find(y => only.has(y.m.id)), others = g.list.filter(y => y !== x);
-  openSheet(g.into ? `Add to ${g.name}?` : `Start a ${g.name} shelf?`, body => {
-    const head = el('div', 'offer'), info = el('div'), yes = el('button', 'pill primary block', g.into ? `Add to ${g.name}` : `Make the ${g.name} shelf`), no = el('button', 'pill block', 'Not now');
-    info.append(el('p', 'ot', x.m.title), el('p', 'meta', [g.kind === 'series' ? g.name : '', x.no ? 'book ' + x.no : ''].filter(Boolean).join(' · ')));
-    if (!g.into) info.append(el('p', 'meta', 'With ' + others.map(y => y.m.title).join(', ')));
-    head.append(coverEl({ ...x.m, pct: 0 }, 'grid'), info);
-    yes.onclick = async () => { await makeShelves([g]); sheet.close(); refresh(); };
-    no.onclick = () => sheet.close();
-    body.append(head, yes, no);
-  });
-}
-
 // ---- Adding books ----
 function cleanTitle(t) {
   t = (t || '').trim();
@@ -2756,7 +2528,6 @@ async function addQueued(dup = 0, failed = 0) {
   if (added.length) actions.push(['Add to collection', () => pickCollection(added.map(a => a.id))]);
   if (added.length) status((one ? `“${one.title}” is ready.` : `${plural(added.length, 'book')} added.`) + (extra ? ' ' + extra : ''), { actions });
   else if (dup + failed > 1) status(extra, { error: failed > 0 });   // a single one already said what it was
-  if (added.length) offerShelves(added.map(a => a.id)).catch(() => {});
 }
 $('#file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
 for (const b of $$('[data-add]')) b.onclick = () => $('#file').click();
@@ -2891,6 +2662,7 @@ async function openBook(id, push = true) {
   else appY = scrollY;
   closeFind();
   const b = book = { id, meta, text, doc: null, mode: null, q: '', ...prep(text) };
+  if (!Array.isArray(text.toc)) tocFor(b).then(() => { b.ch = null; if (book === b) showPos(); });   // older books: read the PDF's contents once
   if (push) step({ ...history.state, book: id });
   // The Library's scroll lock comes off while reading (closeBook's show() puts it back if the Library was open).
   $('#app').hidden = true; reader.hidden = false; document.body.classList.add('reading'); document.documentElement.classList.remove('lib'); chrome();
@@ -3048,11 +2820,11 @@ function chapLabel(h) {
   h = calm(h);
   return h.length > 28 ? h.slice(0, 26).trimEnd() + '…' : h;
 }
-function headAt(i) {
-  const hs = book.heads;
-  let lo = 0, hi = hs.length;
-  while (lo < hi) { const m = (lo + hi) >> 1; if (hs[m] <= i) lo = m + 1; else hi = m; }
-  return lo - 1;
+// The chapter at block i, from the same list as Contents (the PDF's own contents first), ads left out.
+function chapAt(i) {
+  let t = '';
+  for (const c of book.ch ||= chaptersOf(book).filter(c => !PROMO.test(c.t))) if (c.i <= i) t = c.t;
+  return t ? chapLabel(t) : '';
 }
 const posLine = (page, N, pct) => `p. ${page} of ${N} · ${pct >= 100 ? 'finished' : 100 - pct + '% left'}`;
 function setScrub(page, N) {
@@ -3062,18 +2834,16 @@ function setScrub(page, N) {
 }
 function showPos() {
   if (!book) return;
-  const w = where(), N = book.text.numPages, k = headAt(w.pos.i);
-  const chap = k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '';
-  $('#chap').textContent = chap;
+  const w = where(), N = book.text.numPages;
+  $('#chap').textContent = chapAt(w.pos.i);
   $('#pos').textContent = posLine(w.page, N, w.pct);
   if (!scrubbing) setScrub(w.page, N);
   ribbon();
 }
 async function savePos() {
   if (!book || !els.length) return;
-  const w = where(), k = headAt(w.pos.i);
-  const v = { pos: w.pos, ppos: w.ppos, page: w.page, pct: w.pct,
-    chap: k >= 0 ? chapLabel(book.text.blocks[book.heads[k]].text) : '' };
+  const w = where();
+  const v = { pos: w.pos, ppos: w.ppos, page: w.page, pct: w.pct, chap: chapAt(w.pos.i) };
   Object.assign(book.meta, v);
   await update(book.id, x => { Object.assign(x, v); }).catch(() => {});
 }
