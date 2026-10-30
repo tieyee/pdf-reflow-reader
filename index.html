@@ -213,11 +213,13 @@ body.drag #views{outline:2px dashed var(--accent-ink);outline-offset:-6px;border
 #tint{position:fixed;z-index:100;top:0;left:0;right:0;height:8px;background:var(--strip,var(--bg));opacity:0;pointer-events:none}
 #field{position:fixed;inset:0;z-index:0;display:none;overflow:hidden;background:var(--strip,var(--bg));pointer-events:none}
 body.home.tinted #field{display:block}
+/* An iPhone sometimes gives a home-screen app a page about 60px short at the bottom; heal() sizes the light and the tray to the real screen then */
+html.short #field{bottom:auto;height:var(--sh)}
+html.short .peek{bottom:auto;top:calc(var(--sh) - 148px - env(safe-area-inset-bottom))}
 body.home.tinted::before{display:none}   /* the field paints its own flat band under the status bar */
 #field{will-change:transform}
-#field .fl{position:absolute;inset:0;opacity:0;transition:opacity .6s var(--ease);--a:var(--la);--b:var(--lb);--c3:var(--lc);--ft:var(--ftl)}
+#field .fl{position:absolute;inset:0;opacity:0;will-change:opacity;--a:var(--la);--b:var(--lb);--c3:var(--lc);--ft:var(--ftl)}
 [data-theme=dark] #field .fl{--a:var(--da);--b:var(--db);--c3:var(--dc);--ft:var(--ftd)}
-#field .fl.on{opacity:1}
 :root:not([data-theme=dark]) #field{--clock:.16}
 #field img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* already blurred (readTint) */
 /* The bloom: the cover's strongest colour glowing behind the book, over the wash so dark mode can't bury it */
@@ -238,10 +240,10 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 @property --c{syntax:"<color>";inherits:true;initial-value:#000}
 @property --cf{syntax:"<color>";inherits:true;initial-value:#fff}
 .now{display:flex;flex-direction:column;--c:var(--ink);--cf:var(--bg);transition:--c .45s var(--ease),--cf .45s var(--ease)}
-/* The books you're reading, the one in front full size, the next peeking in from the right. The cover shrinks on
-   short screens so Resume stays above the Library tray. The spacer lets the last book come to the front too. */
+/* The books you're reading, the one in front full size, the next peeking in from the right. The cover grows or shrinks to the
+   screen so Resume sits just above the Library tray, never with a gap or under it. The spacer lets the last book come to the front too. */
 /* Room under the covers for their shadows, which a scrolling row would otherwise cut off in a hard line */
-.pager{--sw:clamp(150px,min(58vw,calc((100dvh - 470px) * .667)),232px);display:flex;align-items:center;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
+.pager{--sw:clamp(150px,min(80vw,calc((100dvh - 436px - var(--tx,0px)) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:center;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
 .pager::-webkit-scrollbar{display:none}
 .pager::after{content:"";flex:none;width:calc(100% - var(--sw));height:1px}
@@ -254,7 +256,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 .cover.pg{width:100%;border-radius:2px 4px 4px 2px;box-shadow:0 2px 3px rgba(0,0,0,.3),0 30px 44px -20px rgba(0,0,0,.6)}
 .ninfo{margin:18px 4px 0}
 .ntitle{font:500 36px/40px var(--display);letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:balance}
-.ninfo .by{margin-top:4px;font:400 16px/21px var(--ui);color:color-mix(in srgb,var(--ink) 68%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ninfo .by{min-height:21px;margin-top:4px;font:400 16px/21px var(--ui);color:color-mix(in srgb,var(--ink) 68%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Resume: glass tinted with the cover's colour, where you are under it, the progress along its bottom edge */
 .slab{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:70px;margin-top:18px;padding:0 13px 0 20px;border:0;border-radius:20px;overflow:hidden;text-align:left;color:var(--ink);
   background:color-mix(in srgb,var(--c,var(--ink)) 24%,var(--glass));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
@@ -329,7 +331,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 /* The Library: a drawer over Home. Its top edge (the peek) sits along the bottom of Home; pulling it up, or tapping
    it, opens the drawer; pulling its handle down, the arrow, the dimmed strip above it or Back closes it. */
 /* The tray: Library, Pick and Search, and the tops of a few covers, so the bottom of Home is never empty */
-body.home #views{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
+body.home #views{padding-bottom:calc(156px + env(safe-area-inset-bottom))}
 .peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px 0 16px;overflow:hidden;
   border-radius:22px 22px 0 0;background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
   box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift);touch-action:none}
@@ -1289,7 +1291,7 @@ const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice
 const pct = v => v ? v + '%' : 'Off';
 // The status bar strip takes the page's colour: the book's, the dimmed one while the Library is open, on Home the
 // top of the light from the book you're reading, else the ground.
-let fieldTone = null, stripNow = '';   // [light, dark] colour of the top of Home's light, set by setField
+let fieldTone = null, stripNow = '';   // [light, dark] colour of the top of Home's light, set when a cover is in front (setCur)
 let slides = [], cur = 0;   // Home's books you're reading, and which one is in front
 const chrome = () => {
   const r = document.documentElement, lib = !$('#drawer').hidden, v = n => getComputedStyle(r).getPropertyValue(n).trim();
@@ -1426,7 +1428,7 @@ function show(s = {}) {
   showDrawer(tab === 'library' && !!(s.lib || s.shelf || s.colls), s.shelf);
   $('#peek').hidden = tab !== 'library' || !books.length;
   document.body.classList.toggle('home', tab === 'library');
-  if (tab === 'library' && slides.length) { $('#pager').scrollLeft = cur * slideStep(); syncPager(); }   // laid out again now it shows
+  if (tab === 'library' && slides.length) { fitNow(); $('#pager').scrollLeft = cur * slideStep(); syncPager(); }   // laid out again now it shows
   remember();
 }
 const toHome = () => { history.replaceState({ tab: 'library' }, ''); show(history.state); scrollTo(0, 0); };
@@ -1733,7 +1735,7 @@ function renderNow(list) {
   card.hidden = !list.length;
   document.body.classList.toggle('tinted', list.length > 0);
   slides = list;
-  if (!list.length) { nowId = null; return setField(null); }
+  if (!list.length) { nowId = null; $('#field').replaceChildren(); fieldTone = null; return chrome(); }
   pager.classList.toggle('one', list.length < 2);
   pager.replaceChildren(...list.map((m, i) => {
     const b = el('button', 'slide');
@@ -1745,9 +1747,21 @@ function renderNow(list) {
   }));
   const i = Math.max(0, list.findIndex(m => m.id === keep));
   setCur(i);
+  fitNow();
   pager.scrollLeft = i * slideStep();
   syncPager();
+  buildField(list);
 }
+// A title on two or three lines takes more room, so the covers give up that much height: Resume stays above the tray
+// whichever book is in front (the worst title of the books you're reading decides, so covers never resize on a swipe).
+function fitNow() {
+  const t = $('#nowT'), keep = t.textContent, r = document.documentElement;
+  let h = 0;
+  for (const m of slides) { t.textContent = m.title; h = Math.max(h, t.offsetHeight); }
+  t.textContent = keep;
+  if (h) r.style.setProperty('--tx', Math.max(0, h - 40) + 'px');
+}
+addEventListener('resize', () => { if (slides.length && !$('#v-library').hidden) fitNow(); });
 const slideStep = () => { const c = $('#pager').children; return c.length > 1 ? c[1].offsetLeft - c[0].offsetLeft : 0; };
 const toSlide = i => $('#pager').scrollTo({ left: i * slideStep(), behavior: calmMotion() ? 'auto' : 'smooth' });
 // Each cover's distance from the front, from the row's scroll position; returns the one nearest the front.
@@ -1756,7 +1770,34 @@ function syncPager() {
   if (!step) return 0;
   const x = p.scrollLeft / step;
   for (let k = 0; k < p.children.length; k++) p.children[k].style.setProperty('--d', Math.min(1, Math.abs(k - x)).toFixed(3));
+  moveField(x);
   return Math.max(0, Math.min(slides.length - 1, Math.round(x)));
+}
+// Home's light, one layer per book you're reading, stacked in order. Opacity follows the row's scroll position: the
+// layer at the position stays solid and the next one fades in over it as you swipe, so the glow moves with the finger.
+function moveField(x) {
+  const L = $('#field').children;
+  if (!L.length || L.length !== slides.length) return;
+  const a = Math.max(0, Math.min(L.length - 1, Math.floor(x))), f = Math.max(0, Math.min(1, x - a));
+  for (let k = 0; k < L.length; k++) L[k].style.opacity = k === a ? 1 : k === a + 1 ? f.toFixed(3) : 0;
+}
+async function buildField(list) {
+  const f = $('#field'), ts = await Promise.all(list.map(tintFor));
+  if (slides !== list) return;   // the list changed while the colours were being worked out
+  const keys = list.map((m, k) => m.id + ' ' + (ts[k].url || ts[k].top));
+  if ([...f.children].map(l => l.dataset.key).join('|') === keys.join('|')) return moveField(syncPager());
+  const wasEmpty = !f.children.length, num = v => v.toFixed(2);
+  f.replaceChildren(...list.map((m, k) => {
+    const t = ts[k], layer = el('div', 'fl');
+    layer.dataset.id = m.id; layer.dataset.key = keys[k];
+    layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
+      `--da:${num(t.da)};--db:${num(Math.min(.76, t.da + .1))};--dc:${num(Math.max(.72, Math.min(.92, t.da + .3)))};--ftl:${t.ftl};--ftd:${t.ftd}` +
+      (t.c ? `;--g:${t.c}` : '');
+    if (t.glow) { const img = el('img'); img.src = t.glow; img.alt = ''; layer.append(img); }
+    return layer;
+  }));
+  moveField(syncPager());
+  if (wasEmpty && f.getClientRects().length && !calmMotion()) f.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: 'ease-out' });   // first light fades in
 }
 function setCur(i, swiped = false) {
   const m = slides[i], started = m.pct > 0, dir = i > cur ? 1 : -1;
@@ -1770,7 +1811,7 @@ function setCur(i, swiped = false) {
   $('#nowGo b').textContent = started ? 'Resume reading' : 'Start reading';
   $('#nowWhere').textContent = started ? [calm(PROMO.test(m.chap) ? '' : m.chap || ''), leftLine(m)].filter(Boolean).join(' · ') : `Not started · ${plural(m.pages, 'page')}`;
   $('#nowBar').style.width = (started ? Math.min(100, m.pct) : 0) + '%';
-  tintFor(m).then(t => { if (slides[cur] === m) { paintNow(t); setField(m, t); } });
+  tintFor(m).then(t => { if (slides[cur] === m) { paintNow(t); fieldTone = [t.ftl, t.ftd]; chrome(); } });
 }
 $('#nowGo').onclick = () => { if (slides[cur]) openBook(slides[cur].id); };
 {
@@ -1872,28 +1913,6 @@ function paintNow(t) {
   const s = $('#nowCard').style;
   s.setProperty('--c', t.c || 'var(--ink)'); s.setProperty('--cf', t.cf || 'var(--bg)');   // no strong colour: ink
 }
-// Home's light: a new layer fades in over the old one, which then goes.
-function setField(m, t) {
-  const f = $('#field');
-  if (!m) { f.replaceChildren(); fieldTone = null; return chrome(); }
-  fieldTone = [t.ftl, t.ftd];
-  chrome();
-  const key = m.id + ' ' + (t.url || t.top);   // a new cover for the same book is new light too
-  if (f.lastElementChild?.dataset.key === key) return;
-  const layer = el('div', 'fl'), num = v => v.toFixed(2);
-  layer.dataset.id = m.id; layer.dataset.key = key;
-  layer.style.cssText = `background:${t.top};--la:${num(t.la)};--lb:${num(Math.min(.9, t.la + .1))};--lc:${num(Math.min(.94, t.la + .3))};` +
-    `--da:${num(t.da)};--db:${num(Math.min(.76, t.da + .1))};--dc:${num(Math.max(.72, Math.min(.92, t.da + .3)))};--ftl:${t.ftl};--ftd:${t.ftd}` +
-    (t.c ? `;--g:${t.c}` : '');
-  if (t.glow) { const img = el('img'); img.src = t.glow; img.alt = ''; layer.append(img); }
-  f.append(layer);
-  const drop = () => { while (f.firstElementChild && f.firstElementChild !== layer && f.children.length > 1) f.firstElementChild.remove(); };
-  // Out of sight (while reading) it changes at once, so Home comes back already in the new light.
-  if (!f.getClientRects().length) { layer.classList.add('on'); return drop(); }
-  requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('on')));
-  setTimeout(drop, 650);
-}
-
 // ---- The Library drawer: Fiction, then Non-fiction, each with its collections as shelves and an Add button.
 // A book in no collection stands on its category's last shelf (Other fiction, Other non-fiction), or on
 // Not in a collection when it has no category either. Collections made before sides existed get their own heading. ----
@@ -3218,6 +3237,25 @@ show(history.state);
 await refresh();
 if (s0.book) openBook(s0.book, true);
 if (queued().length) addQueued();   // books still on the list when the app was last closed
+// An iPhone now and then hands a home-screen app a page about 60px (the time bar) shorter than the screen: the Library
+// tray floats above the bottom and the page colour shows under it. Looking at the viewport again usually puts it right;
+// if the page stays short, the light and the tray are sized to the real screen. Only when the app draws under the time
+// bar (safe area at the top), so an app added the old way, whose page really does stop there, is left alone.
+{
+  const root = document.documentElement, vp = $('meta[name=viewport]'), tall = () => Math.max(screen.width, screen.height);
+  let tries = 0;
+  const heal = () => {
+    if (!STAY || innerHeight < innerWidth) return;
+    const probe = el('div'); probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
+    document.body.append(probe); const under = probe.offsetHeight > 0; probe.remove();
+    if (!under || innerHeight >= tall() - 40) { root.classList.remove('short'); tries = 0; return; }
+    if (tries++ < 2) { const c = vp.content; vp.content = 'width=device-width, initial-scale=1'; requestAnimationFrame(() => { vp.content = c; setTimeout(heal, 250); }); return; }
+    root.style.setProperty('--sh', tall() + 'px'); root.classList.add('short');
+  };
+  for (const ev of ['resize', 'orientationchange', 'pageshow']) addEventListener(ev, () => { tries = 0; heal(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { tries = 0; setTimeout(heal, 100); } });
+  setTimeout(heal, 400);
+}
 // iPhone only takes "draw under the time and battery" when Folio is added to the Home Screen. Added before that, it
 // paints the strip itself in one flat colour that never follows the covers, and the page reports no room up there.
 if (STAY && innerHeight > innerWidth) {
