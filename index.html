@@ -1663,8 +1663,12 @@ function coverEl(m, size = '') {
     c.append(el('span', 'ct', m.title));
     if (m.author) c.append(el('span', 'ca', m.author));
   }
-  if (m.pct > 0) { const s = el('i', 'sliver'); s.style.width = Math.min(100, m.pct) + '%'; c.append(s); }
+  setSliver(c, m);
   return c;
+}
+function setSliver(c, m) {
+  c.querySelector('.sliver')?.remove();
+  if (m.pct > 0) { const s = el('i', 'sliver'); s.style.width = Math.min(100, m.pct) + '%'; c.append(s); }
 }
 // Tap opens; holding a finger on it for half a second (or a right click) opens its options.
 function pressable(b, tap, hold) {
@@ -1735,11 +1739,18 @@ function renderNow(list) {
   slides = list;
   if (!list.length) { nowId = null; $('#field').replaceChildren(); fieldTone = null; return chrome(); }
   pager.classList.toggle('one', list.length < 2);
-  pager.replaceChildren(...list.map((m, i) => {
+  const label = (m, i) => `${m.title}${m.author ? ', ' + m.author : ''}, ${stateLong(m)}${list.length > 1 ? `, ${i + 1} of ${list.length}` : ''}`;
+  const keyOf = m => [m.id, coverUrl(m), tones.get(m.id), m.title, m.author].join('\n');
+  if (list.length === pager.children.length && list.every((m, i) => pager.children[i].dataset.key === keyOf(m))) {
+    // Same covers as already on screen (coming back from a book): only the progress changes. Rebuilding them would
+    // show each picture blank for a frame while it decodes again.
+    list.forEach((m, i) => { const b = pager.children[i]; b.setAttribute('aria-label', label(m, i)); setSliver(b.firstChild, m); });
+  } else pager.replaceChildren(...list.map((m, i) => {
     const b = el('button', 'slide');
+    b.dataset.key = keyOf(m);
     b.append(coverEl(m, 'pg'));
-    b.setAttribute('aria-label', `${m.title}${m.author ? ', ' + m.author : ''}, ${stateLong(m)}${list.length > 1 ? `, ${i + 1} of ${list.length}` : ''}`);
-    pressable(b, () => i === cur ? openBook(m.id) : toSlide(i), () => bookMenu(m));
+    b.setAttribute('aria-label', label(m, i));
+    pressable(b, () => i === cur ? openBook(slides[i].id) : toSlide(i), () => bookMenu(slides[i]));   // slides[i]: the buttons outlive a refresh
     b.onfocus = () => { if (i !== cur) toSlide(i); };
     return b;
   }));

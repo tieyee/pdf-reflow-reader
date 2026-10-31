@@ -650,6 +650,15 @@ check('home-screen app swipe back', async ({ page, engine }) => {
   assert.ok(!await page.evaluate(() => document.body.classList.contains('swipe')));
   assert.equal(await page.evaluate(() => history.length), n0);
 });
+// Coming back from a book must not rebuild Home's covers: a new picture shows blank for a frame while it decodes.
+check('swipe back keeps the covers', async ({ page, engine }) => {
+  if (engine !== 'chromium') return;
+  await relaunch(page);
+  await openTitle(page, 'Plain Notes');
+  await page.evaluate(() => document.querySelector('#pager .slide').dataset.probe = '1');
+  await tap(page, '#back'); await page.waitForSelector('#reader', { state: 'hidden' }); await page.waitForTimeout(400);
+  assert.ok(await page.evaluate(() => !!document.querySelector('#pager [data-probe]')), 'the cover row was rebuilt');
+});
 // Backup and restore: every book's PDF, details and cover come back after the library is emptied (as when Folio is
 // added to the Home Screen again).
 check('backup and restore', async ({ page, engine }) => {
