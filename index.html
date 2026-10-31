@@ -481,6 +481,14 @@ dialog.sheet[open]::backdrop{animation:fade .3s ease-out}
 .sheet .lbl{margin:10px 0 4px}
 .sheet .msg{margin:2px 0 18px;text-wrap:pretty}
 .rhead.pick{margin:2px 0 18px}
+#sortBtn{margin-bottom:22px}
+/* Add books to a collection: a search field over a grid of covers that scrolls */
+.pickq{flex:none;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:500 16px/1 var(--ui);outline:none}
+.pickq:focus{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
+.pickgrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);align-content:start;gap:16px 12px;padding:4px 2px 12px}
+.pickgrid>[hidden]{display:none}
+.pickbk{display:flex;flex-direction:column;gap:6px;min-width:0;padding:0;border:0;background:none;text-align:left;color:var(--ink)}
+.pickbk .t{font:500 13px/16px var(--display);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .nameform{display:flex;flex-direction:column;gap:12px;padding-top:4px}
 .nameform input{height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font:500 16px/1 var(--ui);outline:none}
 .nameform input:focus{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
@@ -724,7 +732,7 @@ html.instant *,html.instant *::before,html.instant *::after{transition:none!impo
         <button type="button" id="lqClear" class="icon-btn" aria-label="Clear" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></label>
       <button type="button" id="lqCancel" class="link" hidden>Cancel</button>
     </form>
-    <div id="libMain"><div id="shelfRows"></div></div>
+    <div id="libMain"><button id="sortBtn" class="pill block" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M5 16V5h3v11M10 16V7h3v9M15.5 16l2.6-9.6 2.9.8-2.6 9.6"/></svg>Sort my books</button><div id="shelfRows"></div></div>
     <section id="libResults" aria-labelledby="lqSum" hidden>
       <h3 id="lqSum" class="label glabel" aria-live="polite"></h3>
       <ul id="lqList" class="group"></ul>
@@ -855,7 +863,7 @@ const Reflow = (() => {
       let text = '', end = -Infinity, x = Infinity, last = null;
       const chars = new Map();
       for (const it of g.items) {
-        const s = it.str;
+        const s = it.str.replace(/[ﬀ-ﬆ]/g, c => c.normalize('NFKC'));   // ﬁ ﬂ ﬃ… as letters, so search and read-aloud match
         if (!s.trim()) { if (text && !/\s$/.test(text)) text += ' '; continue; }
         if (last && s === last.str && Math.abs(it.x - last.x) < 0.2 * it.size) continue;   // fake bold: same text printed twice
         if (text && !/\s$/.test(text) && !/^\s/.test(s) && it.x - end > 0.15 * it.size) text += ' ';
@@ -1049,9 +1057,37 @@ const Reflow = (() => {
     return out;
   }
 
+  // A guess for PDFs whose fonts draw fi/fl/ff/ffi/ffl as one glyph with no letters behind it: extraction drops them
+  // ("office" reads "oce", "first" reads "rst"). A book with next to no fi/fl/ff words is taken as damaged, and a word that
+  // is one of these with its ligature cut out is put back. Words left under 3 letters ("at" for "flat"), or equal to a
+  // real word ("ash" for "flash"), are not in the list. ponytail: only the words below; add more when a book shows a gap.
+  const LIGWORDS = ('first firstly different difference differences differently difficult difficulty offer offered offering offers office officer officers offices official ' +
+    'effect effects effort efforts effective efficient suffer suffered suffering sufficient insufficient affect affected affair affairs afford afforded affection ' +
+    'staff stuff stiff cliff coffee coffin traffic offend offended offense buffet scoff sniff sniffed muffled ruffled shuffle shuffled giraffe gruff puffed fluff fluffy bluff cuff cuffs ' +
+    'final finally finish finished finishing finger fingers fingertips figure figures figured field fields fifth fifty fifteen fierce fiery fight fighting fighter fighters ' +
+    'filled filling film filth filthy filter fiction fiddle fidget finding findings firm firmly fiancé define defined definite definitely confident confidence confirm confirmed confirmation ' +
+    'specific specifically significant significance sacrifice sacrificed satisfied satisfy identify identified justify justified notify modify magnificent terrified horrified ' +
+    'benefit benefits profit profits artificial suffice defiance infinite infinity unfinished refined refine certificate ratified qualified qualify beautified ' +
+    'flavor flavour flesh flew flight flights floor floors flood flooded floating floated flower flowers fluid flexible flawless flank flanks fleet fleeing flames flamed flicked flirt ' +
+    'reflect reflected reflection reflections reflecting conflict conflicts influence influenced inflict inflicted overflow overflowed flourish flourished fluent flattened flattered ' +
+    'flutter fluttered flung flush flushed').split(' ');
+  const cutLig = w => w.replace(/ffi|ffl|ff|fi|fl/g, '');
+  const LIGFIX = new Map(LIGWORDS.filter(w => cutLig(w).length >= 3 && !LIGWORDS.includes(cutLig(w))).map(w => [cutLig(w), w]).reverse());
+  function ligatures(pages) {
+    let words = 0, have = 0;
+    for (const pg of pages) for (const l of pg.lines) for (const w of l.text.match(WORD) || []) { words++; if (/ff|fi|fl/i.test(w)) have++; }
+    if (words < 3000 || have > words * 0.002) return pages;   // a book that prints fi/fl/ff words is fine
+    const fix = w => {
+      const hit = LIGFIX.get(w.toLowerCase());
+      if (!hit) return w;
+      return w === w.toUpperCase() && w.length > 1 ? hit.toUpperCase() : w[0] === w[0].toUpperCase() ? hit[0].toUpperCase() + hit.slice(1) : hit;
+    };
+    return pages.map(pg => Object.assign({}, pg, { lines: pg.lines.map(l => Object.assign({}, l, { text: l.text.replace(/\p{L}+/gu, fix) })) }));
+  }
+
   // pages: [{lines, w, h, image?}] -> {blocks: [{t:'p'|'h'|'n'|'img', page, text, lvl?, center?, sep?}], removed}
   function reflow(pages) {
-    pages = initials(pages);
+    pages = initials(ligatures(pages));
     const st = stats(pages), s = strip(pages, st);
     return { blocks: blocks(s.pages, st), removed: s.removed };
   }
@@ -1131,15 +1167,23 @@ const Reflow = (() => {
     eq(reflow([{ w: 320, h: 400, lines: [mk('THE LAMPS ALONG THE RIVER HAD BEEN LIT FOR AN', 50, { size: 8 }), mk('hour before anyone noticed it was gone.', 62, { full: false }),
       mk('Then the keeper spoke.', 74, { x: 25, full: false })] }]).blocks.map(b => b.t + ':' + b.text),
       ['p:THE LAMPS ALONG THE RIVER HAD BEEN LIT FOR AN hour before anyone noticed it was gone.', 'p:Then the keeper spoke.'], 'small-caps first line');
+    // Dropped ligatures: a long book with no fi/fl/ff words gets them back; a healthy book is left alone.
+    const bookOf = tail => [{ w: 320, h: 400, lines: Array.from({ length: 60 }, (_, i) => mk(i === 0 ? tail : 'the lamps along the river were lit by the old keeper each night', 20 + i * 12)) }].concat(
+      Array.from({ length: 8 }, () => ({ w: 320, h: 400, lines: Array.from({ length: 60 }, (_, i) => mk('the lamps along the river were lit by the old keeper each night', 20 + i * 12)) })));
+    const text = pgs => pgs.flatMap(p => p.lines.map(l => l.text)).join('\n');
+    const broken = ligatures(bookOf('The oce of the rst keeper. Dierent, DICULT, Oce.'));
+    eq(text(broken).split('\n')[0], 'The office of the first keeper. Different, DIFFICULT, Office.', 'dropped ligatures put back');
+    const fine = bookOf('The oce of the rst keeper.').map(p => p), healthy = fine.concat([{ w: 320, h: 400, lines: Array.from({ length: 12 }, (_, i) => mk('first find offer fine field flat', 20 + i * 12)) }]);
+    eq(ligatures(healthy), healthy, 'healthy book untouched');
     return true;
   }
 
-  return { lines, stats, strip, blocks, join, reflow, isPageNum, selfTest };
+  return { lines, stats, strip, blocks, join, reflow, isPageNum, ligatures, selfTest };
 })();
 </script>
 
 <script type="module">
-const V = 2;   // bump when Reflow output changes: cached reflow results are rebuilt on next open (2: drop caps, small-caps first lines)
+const V = 3;   // bump when Reflow output changes: cached reflow results are rebuilt on next open (2: drop caps, small-caps first lines; 3: dropped ligatures put back)
 // pdf.js 4.10.38 (Apache-2.0), copied from the pdfjs-dist package so the reader works offline. It calls
 // Promise.withResolvers (iOS 17.4+): polyfilled here, and prepended to the vendored worker file.
 const PDFJS = new URL('vendor/pdfjs-4.10.38/', location.href).href;
@@ -1147,15 +1191,16 @@ Promise.withResolvers ||= function () { let a, b; const promise = new Promise((x
 // Offline support: sw.js keeps the app on the device. Books themselves are already local (IndexedDB).
 navigator.serviceWorker?.register('sw.js').catch(() => {});
 
-// ---- The 15-minute rule: back within 15 minutes of leaving resumes the exact screen, later starts on the Library.
-// Read before anything else runs, because every screen change rewrites it.
+// ---- Leaving the app and coming back keeps the screen you were on (the page just stays as it was). Closing the app
+// starts it on Home: the saved screen lives in sessionStorage, which a closed app loses; only a page the phone threw
+// away and reloaded finds it again. Read before anything else runs, because every screen change rewrites it.
 const hello = () => { const h = new Date().getHours(); document.getElementById('h-library').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
 hello(); document.addEventListener('visibilitychange', () => { if (!document.hidden) hello(); });
-const LAST = 'folio-last', AWAY = 15 * 60e3;
+const LAST = 'folio-last';
 let last = null;
-try { last = JSON.parse(localStorage.getItem(LAST)); } catch {}
-const fresh = !!last && Date.now() - last.t < AWAY;
-const remember = () => { try { localStorage.setItem(LAST, JSON.stringify({ t: Date.now(), s: history.state })); } catch {} };
+try { last = JSON.parse(sessionStorage.getItem(LAST)); } catch {}
+const fresh = !!last;
+const remember = () => { try { sessionStorage.setItem(LAST, JSON.stringify({ t: Date.now(), s: history.state })); } catch {} };
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -1715,6 +1760,8 @@ async function refresh() {
 
 // ---- Home: the books you're reading as covers you swipe between, the one in front with Resume under it, and the
 // Library tray along the bottom. The page and Resume take their colour from the cover in front. ----
+const shuffleKeys = new Map();   // each book's random place in the tray, kept until the app is closed
+const shuffleKey = m => { let k = shuffleKeys.get(m.id); if (k == null) shuffleKeys.set(m.id, k = Math.random()); return k; };
 function renderLibrary() {
   const n = books.length, recent = books.filter(m => state(m) !== 'finished' && (m.opened || m.pct)).sort(SORT.opened[1]);
   $('#first').hidden = n > 0;
@@ -1722,7 +1769,7 @@ function renderLibrary() {
   const now = recent.length ? recent.slice(0, 3) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
-  $('#peekRow').replaceChildren(...sorted(books.filter(m => !now.includes(m))).map(m => bookBtn(m, 'pk')));
+  $('#peekRow').replaceChildren(...books.slice().sort((a, b) => shuffleKey(a) - shuffleKey(b)).map(m => bookBtn(m, 'pk')));   // every book, in a new order each time the app starts
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }
@@ -1821,6 +1868,13 @@ $('#nowGo').onclick = () => { if (slides[cur]) openBook(slides[cur].id); };
       const i = syncPager();
       if (i !== cur && slides[i]) setCur(i, true);
     });
+  }, { passive: true });
+  // Swiping the title and author moves between covers too.
+  const tb = $('#nowT').parentNode; let x0 = 0, y0 = 0;
+  tb.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  tb.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > 2 * Math.abs(dy) && slides.length > 1) toSlide(Math.max(0, Math.min(slides.length - 1, cur + (dx < 0 ? 1 : -1))));
   }, { passive: true });
 }
 
@@ -1955,6 +2009,7 @@ function renderLib() {
   const none = sorted(loose(''));
   if (none.length) out.push(shelfRow({ s: { id: 'loose:', name: looseName('') }, list: none }));
   $('#shelfRows').replaceChildren(...out);
+  $('#sortBtn').hidden = !propose().length;
 }
 // One collection: its name with See all (tap opens it; on a collection, hold for its options), then a row of its
 // covers with their titles and how far you are.
@@ -1964,8 +2019,8 @@ function shelfRow({ s, list }) {
   name.append(el('span', 'sn', s.name), el('span', 'meta num', String(list.length)), see);
   name.setAttribute('aria-label', `${s.name}, ${plural(list.length, 'book')}`);
   pressable(name, () => goShelf(s.id), () => { if (!s.id.startsWith('loose:')) shelfMenu(s); });
-  if (list.length) cov.append(...list.map(stripItem));
-  else { const add = el('button', 'addslot'); add.append(svg(ICON.plus), el('span', '', 'Add books')); add.onclick = () => addToShelf(s); cov.append(add); }
+  cov.append(...list.map(stripItem));
+  if (!s.id.startsWith('loose:')) { const add = el('button', 'addslot'); add.append(svg(ICON.plus), el('span', '', 'Add books')); add.onclick = () => addToShelf(s); cov.append(add); }   // last in the row, after the books
   sec.append(name, cov);
   return sec;
 }
@@ -2435,21 +2490,89 @@ function shelfMenu(s) {
       if (history.state?.shelf === s.id) history.back();
     }))));
 }
-// Tap books to put them in the collection; the sheet stays open for the next one.
+// Books in no collection, as covers; tap one to put it in this collection (the sheet stays open for the next one).
+// The field narrows them by title or author.
 function addToShelf(s) {
-  const others = books.filter(m => m.shelf !== s.id).sort(SORT.title[1]);
+  const free = books.filter(m => !shelves.some(x => x.id === m.shelf)).sort(SORT.title[1]);
   openSheet(`Add to ${s.name}`, body => {
-    if (!others.length) return body.append(el('p', 'msg', books.length ? 'Every book is already in this collection.' : 'No books yet. Add a PDF from Home first.'));
-    body.append(...others.map(m => {
-      const b = act(m.title, 'plus', async () => {
-        await moveBook(m.id, s.id); b.remove(); await refresh();
-        if (!body.querySelector('.act')) sheet.close();
-        return false;
-      });
+    if (!free.length) return body.append(el('p', 'msg', books.length ? 'Every book is already in a collection.' : 'No books yet. Add a PDF from Home first.'));
+    const q = el('input', 'pickq'), grid = el('div', 'pickgrid'), none = el('p', 'msg', 'No books match.');
+    q.type = 'search'; q.placeholder = 'Title or author'; q.autocomplete = 'off'; q.enterKeyHint = 'search'; q.setAttribute('aria-label', 'Search books');
+    none.hidden = true;
+    const items = free.map(m => {
+      const b = el('button', 'pickbk');
+      b.append(coverEl(m, 'grid'), el('span', 't', m.title));
+      b.onclick = async () => { await moveBook(m.id, s.id); b.remove(); await refresh(); if (!grid.children.length) sheet.close(); else q.oninput(); };
+      return [m, b];
+    });
+    q.oninput = () => {
+      const n = norm(q.value.trim());
+      for (const [m, b] of items) b.hidden = !!n && !norm(m.title).includes(n) && !norm(m.author).includes(n);
+      none.hidden = !grid.children.length || [...grid.children].some(b => !b.hidden);
+    };
+    grid.append(...items.map(x => x[1]));
+    body.append(q, grid, none);
+  }, true);
+}
+// ---- Sort my books: shelves for the books in no collection, made from what's already known about them, offline.
+// A series first (the "(Name #2)" in a title) when 2+ books share it, then an author with 2+ books; the rest stay
+// unsorted. Everything is shown ticked first so you can untick what's wrong. A shelf named like one of yours adds to it.
+// ponytail: a series is only seen when its title says so; a book named plainly still lands on its author's shelf.
+const SERIES = /[(\[]\s*([^()\[\]#]+?)\s*(?:#|,?\s*(?:book|vol\.?|volume)\s*)(\d+)\s*[)\]]/i;
+const shelfKey = s => norm(s).replace(/[^a-z0-9]+/g, ' ').replace(/^the | (series|trilogy|saga)$/g, '').trim();
+function propose() {
+  const free = books.filter(m => !shelves.some(s => s.id === m.shelf)), groups = [], placed = new Set();
+  const by = (f, kind) => {
+    const map = new Map();
+    for (const m of free) {
+      const v = !placed.has(m) && f(m);
+      if (!v) continue;
+      const k = shelfKey(v[0]);
+      if (!map.has(k)) map.set(k, { name: v[0], list: [] });
+      map.get(k).list.push({ m, no: v[1] });
+    }
+    for (const g of map.values()) {
+      const into = shelves.find(s => shelfKey(s.name) === shelfKey(g.name));
+      if (g.list.length < 2 && !into) continue;
+      g.list.sort((a, b) => (a.no ?? 999) - (b.no ?? 999) || a.m.title.localeCompare(b.m.title, undefined, { numeric: true }));
+      groups.push({ ...g, kind, into, on: true });
+      g.list.forEach(x => placed.add(x.m));
+    }
+  };
+  by(m => { const x = SERIES.exec(m.title); return x && [x[1].trim(), +x[2]]; }, 'series');
+  by(m => m.author && [m.author], 'author');
+  return groups;
+}
+async function makeShelves(gs) {
+  const t0 = Date.now();
+  for (const g of gs) {
+    const side = g.into?.side ?? g.list.find(x => x.m.side)?.m.side ?? 'fiction', sid = g.into?.id || await addShelf(g.name, side);
+    for (const [i, x] of g.list.entries()) await update(x.m.id, m => { m.shelf = sid; m.rank = t0 + i; m.side ||= side; });
+    await refresh();   // the next group may name a shelf this one just made
+  }
+}
+function sortBooks() {
+  const gs = propose();
+  openSheet('Sort my books', body => {
+    if (!gs.length) return body.append(el('p', 'msg', 'Nothing to sort yet. A shelf needs two books in a series (“Name #2” in the title) or by the same author.'));
+    const go = el('button', 'pill primary block');
+    const upd = () => {
+      const on = gs.filter(g => g.on), n = on.reduce((s, g) => s + g.list.length, 0), k = books.filter(m => !shelves.some(s => s.id === m.shelf)).length - n;
+      go.textContent = on.length ? `Make ${plural(on.length, 'shelf', 'shelves')} for ${plural(n, 'book')} · ${k} stay unsorted` : 'Nothing ticked'; go.disabled = !on.length;
+    };
+    go.onclick = async () => { go.disabled = true; await makeShelves(gs.filter(g => g.on)); sheet.close(); };
+    body.append(go, el('hr'), ...gs.map(g => {
+      const b = el('button', 'act'), tick = svg(ICON.check);
+      tick.classList.add('on');
+      b.append(el('span', '', `${g.name} · ${g.list.length}`), el('span', 'meta', g.into ? 'Adds to yours' : g.kind === 'series' ? 'Series' : 'Author'), tick);
+      b.setAttribute('aria-pressed', 'true');
+      b.onclick = () => { g.on = !g.on; b.setAttribute('aria-pressed', g.on); tick.style.visibility = g.on ? '' : 'hidden'; upd(); };
       return b;
     }));
+    upd();
   });
 }
+$('#sortBtn').onclick = sortBooks;
 // After adding books: put them all in one collection.
 function pickCollection(ids) {
   openSheet(ids.length === 1 ? 'Add to collection' : `Add ${plural(ids.length, 'book')} to a collection`, body => {
@@ -3212,25 +3335,12 @@ if (STAY) {
   };
   addEventListener('touchend', end); addEventListener('touchcancel', end);
 }
-let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
-  // Leaving the app from the Library or Settings: it comes back on Home (the book stays open if you were reading).
-  const root = document.documentElement;
-  if (document.hidden) {
-    hiddenAt = Date.now(); savePos();
-    // 'instant' until it shows again, so you never come back to the Library still sliding away
-    if (!book && (history.state?.lib || history.state?.shelf || history.state?.tab === 'settings' || sheet.open)) {
-      root.classList.add('instant'); if (sheet.open) sheet.close(); pushed = 0; toHome();
-    }
-    remember();
-  } else {
-    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('instant')));
-    keepAwake();   // the screen lock is let go while away; back to adding books, it's taken again
-    if (hiddenAt && Date.now() - hiddenAt >= AWAY) goHome();
-  }
+  // Leaving the app changes nothing on screen: back again, it's the same screen.
+  if (document.hidden) { savePos(); remember(); }
+  else keepAwake();   // the screen lock is let go while away; back to adding books, it's taken again
 });
 addEventListener('pagehide', () => { savePos(); remember(); });
-addEventListener('pageshow', e => { if (e.persisted && hiddenAt && Date.now() - hiddenAt >= AWAY) goHome(); });
 
 function teardown() {
   stopPages();
@@ -3257,8 +3367,8 @@ async function closeBook(pop = false) {
 }
 $('#back').onclick = () => closeBook();
 
-// ---- Start: always Home, or straight back into the book if it was left less than 15 minutes ago.
-// Never the Library, a collection or Settings. ----
+// ---- Start: Home, or straight back into the book when the phone only threw the page away and reloaded it
+// (a closed app starts on Home). ----
 history.scrollRestoration = 'manual';
 const s0 = fresh ? history.state || last.s || {} : {};
 history.replaceState({ tab: 'library' }, '');
