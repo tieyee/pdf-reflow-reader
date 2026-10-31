@@ -243,7 +243,7 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
    depends on the screen alone, and the title block below it is always room for two lines plus the author. The spacer lets the
    last book come to the front too. */
 /* Room under the covers for their shadows, which a scrolling row would otherwise cut off in a hard line */
-.pager{--sw:clamp(110px,min(80vw,calc((100dvh - 466px - max(0px,env(safe-area-inset-top) - 8px) - env(safe-area-inset-bottom)) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:flex-end;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
+.pager{--sw:clamp(110px,min(80vw,calc((var(--tall,100dvh) - 466px - max(0px,env(safe-area-inset-top) - 8px) - env(safe-area-inset-bottom)) * .667)),340px);min-height:calc(var(--sw) * 1.5 + 40px);display:flex;align-items:flex-end;gap:16px;margin:8px -16px -34px;padding:0 16px 40px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
 .pager::-webkit-scrollbar{display:none}
 .pager::after{content:"";flex:none;width:calc(100% - var(--sw));height:1px}
@@ -1206,6 +1206,11 @@ navigator.serviceWorker?.register('sw.js').catch(() => {});
 // away and reloaded finds it again. Read before anything else runs, because every screen change rewrites it.
 const hello = () => { const h = new Date().getHours(); document.getElementById('h-library').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
 hello(); document.addEventListener('visibilitychange', () => { if (!document.hidden) hello(); });
+// Home's cover size comes from the real screen height, not the page's. An iPhone sometimes starts the app with a page
+// about 60px short and puts it right a moment later (opening a sheet does it), which made the covers smaller on launch
+// and bigger after. Only a home-screen app has this; in a browser tab the page height is the height.
+const setTall = () => { const r = document.documentElement.style; if (navigator.standalone === true && innerHeight >= innerWidth) r.setProperty('--tall', Math.max(screen.width, screen.height) + 'px'); else r.removeProperty('--tall'); };
+setTall(); addEventListener('resize', setTall);
 const LAST = 'folio-last';
 let last = null;
 try { last = JSON.parse(sessionStorage.getItem(LAST)); } catch {}
@@ -1718,6 +1723,7 @@ function coverEl(m, size = '') {
   c.setAttribute('aria-hidden', 'true');
   if (u) {
     const img = el('img'); img.src = u; img.alt = ''; img.decoding = 'async'; img.draggable = false; c.append(img);
+    if (size !== 'pg') img.loading = 'lazy';   // the tray holds every book: only the covers near the screen are decoded
   } else {
     c.classList.add('gen', TONES[(tones.get(m.id) || 0) % 4]);
     c.append(el('span', 'ct', m.title));
