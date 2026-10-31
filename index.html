@@ -336,7 +336,9 @@ body.home.tinted::before{display:none}   /* the field paints its own flat band u
 body.home #views{padding-bottom:calc(156px + env(safe-area-inset-bottom))}
 .peek{position:fixed;z-index:20;left:0;right:0;bottom:0;max-width:640px;height:calc(148px + env(safe-area-inset-bottom));margin:0 auto;padding:0 6px 0 16px;overflow:hidden;
   border-radius:22px 22px 0 0;background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
-  box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift);touch-action:none}
+  box-shadow:0 -1px 0 var(--glass-edge),var(--sheet-lift),0 200px 0 var(--surface);touch-action:none}
+/* The last shadow is the tray carried on below itself: when an iPhone gives the app a page shorter than the screen,
+   the gap under the tray is tray-coloured instead of showing the page's tint as a band (seen 2026-10-31). */
 .ptop{display:flex;align-items:center}
 .peekhead{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;min-height:60px;padding:16px 0 0;border:0;background:none;color:var(--ink);text-align:left}
 .peekhead .grab,.dhead .grab{position:absolute;top:7px;left:50%;margin:0;translate:-50% 0}
@@ -1057,39 +1059,48 @@ const Reflow = (() => {
     return out;
   }
 
-  // A guess for PDFs whose fonts draw fi/fl/ff/ffi/ffl as one glyph with no letters behind it: extraction drops them
-  // ("office" reads "oce", "first" reads "rst"). A book with next to no fi/fl/ff words is taken as damaged, and a word that
-  // is one of these with its ligature cut out is put back. Words left under 3 letters ("at" for "flat"), or equal to a
-  // real word ("ash" for "flash"), are not in the list. ponytail: only the words below; add more when a book shows a gap.
-  const LIGWORDS = ('first firstly different difference differences differently difficult difficulty offer offered offering offers office officer officers offices official ' +
-    'effect effects effort efforts effective efficient suffer suffered suffering sufficient insufficient affect affected affair affairs afford afforded affection ' +
-    'staff stuff stiff cliff coffee coffin traffic offend offended offense buffet scoff sniff sniffed muffled ruffled shuffle shuffled giraffe gruff puffed fluff fluffy bluff cuff cuffs ' +
-    'final finally finish finished finishing finger fingers fingertips figure figures figured field fields fifth fifty fifteen fierce fiery fight fighting fighter fighters ' +
-    'filled filling film filth filthy filter fiction fiddle fidget finding findings firm firmly fiancé define defined definite definitely confident confidence confirm confirmed confirmation ' +
-    'specific specifically significant significance sacrifice sacrificed satisfied satisfy identify identified justify justified notify modify magnificent terrified horrified ' +
-    'benefit benefits profit profits artificial suffice defiance infinite infinity unfinished refined refine certificate ratified qualified qualify beautified ' +
-    'flavor flavour flesh flew flight flights floor floors flood flooded floating floated flower flowers fluid flexible flawless flank flanks fleet fleeing flames flamed flicked flirt ' +
-    'reflect reflected reflection reflections reflecting conflict conflicts influence influenced inflict inflicted overflow overflowed flourish flourished fluent flattened flattered ' +
-    'flutter fluttered flung flush flushed').split(' ');
-  const cutLig = w => w.replace(/ffi|ffl|ff|fi|fl/g, '');
-  const LIGFIX = new Map(LIGWORDS.filter(w => cutLig(w).length >= 3 && !LIGWORDS.includes(cutLig(w))).map(w => [cutLig(w), w]).reverse());
-  function ligatures(pages) {
-    let words = 0, have = 0;
-    for (const pg of pages) for (const l of pg.lines) for (const w of l.text.match(WORD) || []) { words++; if (/ff|fi|fl/i.test(w)) have++; }
-    if (words < 3000 || have > words * 0.002) return pages;   // a book that prints fi/fl/ff words is fine
-    const fix = w => {
-      const hit = LIGFIX.get(w.toLowerCase());
-      if (!hit) return w;
-      return w === w.toUpperCase() && w.length > 1 ? hit.toUpperCase() : w[0] === w[0].toUpperCase() ? hit[0].toUpperCase() + hit.slice(1) : hit;
+  // Some PDFs draw fi/fl/ff/ffi/ffl as one glyph with no letters behind it, so extraction loses them: "officially" comes
+  // out as "o cially" or "ocially", "fitted" as "tted". LIGWORDS is every common English word holding one of these
+  // (from a 50,000-word frequency list, most used first), leaving out any whose broken form is a real word in its own
+  // right ("ash" for "flash"); test/ligwords.py made it. Each word's broken forms, with the letters gone or a space in
+  // their place, lead back to it. A book is repaired only when the broken forms clearly outnumber whole fi/fl/ff words.
+  const LIGWORDS = 'off first find fine stuff five different fight office finally coffee figure officer finish definitely film floor finished fish offer difficult fighting field difference final figured flight flowers flying sheriff finding afford staff finger fingers filled finds fixed officers offered official affair suffer traffic effect suffering scoffs flower sacrifice effort fishing confidence films flesh terrific flag specific fifth offering suffered selfish financial influence confirm confirmed outfit fields filthy affairs cliff satisfied officially effects benefit figures flies fifty offense profile scientific fighter florida fits profit fifteen fights differently magnificent fingerprints rifle effective affect fires terrified fleet gunfire conflict specifically identified muffled floating flame efforts significant filming stuffed certificate affected filling pacific stiff finishing affection sniffles sniffs finn offended flood offers benefits butterfly fighters florence float officials offensive qualified buffalo fireworks jeffrey fletcher fiona fulfill fiction differences fluid classified flush floors offices sacrificed confidential mafia flynn difficulty fisher flavor profits sniffing fierce flirting sofia fitting efficient jefferson artificial identification handcuffs finch reflection define flattered definition offence filmed battlefield reflect confirmation finals sufficient offend sacrifices fulfilled infinite tiffany geoffrey difficulties filth figuring definite affects flights flirt flows flock fiance floyd bluff flute rifles briefing fitz flags bluffing finale sniff flipped flashlight butterflies briefly unfinished flooded cuffs fiancee affirmative surfing firmly chauffeur starfleet filter fills suffers buffet flatter significance testified fists unidentified fingernails findings confirms effectively notified flattering fingerprint flashing flank influenced fireman infirmary hoffman outfits fluids fiery fleeing affecting fiddle flexible flats justified defined fishermen confiscated finishes fleming offender offspring flipping flaming efficiency refined fitted goldfish springfield finances influential firstly financially fluffy modified cliffs offshore fiber waffles firearms offenders graffiti flaws insignificant flooding superficial flyers fitzgerald sniffling horrific certified refill clifford fitness reflected muffins suffice differ firewood finland stuffy confidentiality florrick caffeine infinity flushed suffocating indifferent flavors sacrificing flavour giraffe flourish reflects firemen confinement flawless duffy fulfilling fibers camouflage trifle infiltrate eiffel bailiff plaintiff griffith conflicts garfield dignified flushing coffees fielding fleas bonfire fleeting affectionate offscreen alphahff whiff indefinitely inflation fleur jellyfish sheffield confirming floods fischer unfit reflex certificates suffocate qualifications flapping snuff confide crucified definitive buffer financing airfield filmmaker firms fingertips handcuffed catfish firepower griff verified defiance florist fireball beneficial waffle reflexes inflicted significantly horrified firearm selfie disqualified fictional fleischman firsthand infiltrated specifics scientifically firefighter finnish offerings selfless payoff suffocated jaffa flushes flattery flashy flakes insufficient afloat influences jiffy playoffs fiasco sufficiently floated fluke indifference fidelity confiscate inflict infinitely jeffries petrified campfire defines flores reflecting infidelity puffy selfishness intensifies unified fixes fickle offenses finalists defining handcuff fines affidavit fluent unofficial flashed defiant flaps firefighters deficit justification offline fives affections finley filters mansfield fisk flashback truffles fleece minefield finesse qualifies confided beneficiary filipino filmmakers firewall flux firehouse affordable flagged baffled confine fitzpatrick glorified modifications sunflower financials financed crucifix floorboards flunked fiercely affliction efficiently fingernail refinery afflicted cardiff shellfish scoffing inflammation filly scofield fightin buffoon floppy fireflies fiscal flannel saffron mortified flammable notification fliers fittest offending cauliflower fiddler flirted dissatisfied unofficially figaro flamingo flattened mayfield crossfire firecracker deficiency firecrackers fiddling overflow flustered disfigured golfing sacrificial dragonfly fortified goofing landfill leaflets flier flexibility birkoff conflicted luftwaffe fibre inflatable insufferable fulfillment fixer wakefield flatten liftoff wildfire infidel scruffy flagship flunk specified defies flimsy flicks offences flanagan firstborn finely flirty amplified offends radcliffe configuration conflicting stuffs finnegan starfish fibres scaffolding toffee reflections justifies renfield differential flashlights bakersfield figment debriefing modification fixation fictitious pacifist sufferings fixated hellfire flickering defibrillator inflamed affinity inflated gifford backfire verification standoff specifications crucifixion stifled qualification cuffed flourished purified sheriffs flicker flipper scaffold ramifications infidels suffocation confines flowery filmmaking suffolk ineffective muffler unfulfilled flaky deflect finlay artificially differentiate puffed microfilm purification flavours scuffle affiliated identifies riffraff flogged reflective infiltration firefight fluorescent flagpole electrified unification pfeiffer finalize finalized fifties sniffed heathcliff defiled classification filippo inflate flamenco flocks fingered coffers offset fleed netflix stiffs flemish flashbacks fluctuations fillet florian figuratively finney flogging flourishing superfluous filtered fluttershy terrifies definitively giraffes afforded floozy inefficient dandruff affront flowering unconfirmed flavia diffuse falsified souffle baffling fishlegs gaddafi snowflakes florentine influenza filial uncuff hasselhoff finders scoff copperfield effectiveness flanks affectionately fleets spitfire flippers whitfield flatline testifies fillings finalist deflector rafferty fiirst semifinals fillmore unselfish flamboyant birkhoff refinement hatfield ceasefire cornfield joffrey floored gratification fittings puffing selfies fixtures flemming fizzy cufflinks stifle mayflower flees cornflakes unaffected clarification defile gaffer clarified camouflaged flavored influencing mummified winfield confidant confidently satisfies amplifier ruffians signifies sniffer fixture inflicting snuffed raffaele affluent swordfish pacifier magnificence prolific flatmate unsatisfied kickoff certification bullfighter firestorm inflammatory fleshy sunflowers indefinite offed confidentially figurines intensified financier flagg infiltrating floorboard flaherty fissure flippin justifiable fiendish flatulence proficient crayfish plaintiffs leaflet effeminate offhand jeffers flounder battlefields buffaloes effortless jeffersonian flaunting refills fingering floater flicking flamingos fistful flirtation filler flirts filtering affiliation fifteenth butterfield fidgeting unqualified gunfighter figurine selfishly chiffon differs undignified turnoff woodruff playoff schaeffer influx ruffled roofie offside wolfie orifice definitions paraffin muirfield hoffmann flannery puffer fleetwood knockoff starfire fiercest affleck fitter flooring scuff fission volkoff affirmation layoffs macduff flamethrower sanctified understaffed effortlessly effendi ruffles flunking crawfish fireballs caulfield florins finito payoffs identifiable blowfish fitzroy fledgling flurry flexing greenfield fiberglass flirtatious stauffenberg shuffled affidavits coffeehouse truffaut duffer deficient aflame cutoff flopped griffiths simplified filipe flared figurehead confiscating flintstone daffodils bailiffs flagrant fluently effigy overconfident magnificently mifflin fluctuating firth delfino flutes flatly loafing stifler certifiable magnified flunky mcfly nonprofit huffy teflon magnifique fiske cuttlefish spliff rifling fishman reflux cliffie jefferies filii flings inflexible fortifications flopping jeffery bluffs roofing jeffy fluctuation magnification reunification affraid flicka fisheries flabbergasted personified redefine figueroa deflected flighty gaffney fairfield finster flocking firmament floodgates flourishes refining fistfight flatlining fleabag fulfills cafferty firsts lafferty figgis reconfigure flagstaff firmer finery reflector flavius firewalls triffids fillory bullfighting fitzy staffed litchfield flyover flaked fishmonger caffee gratified flail ratified heffernan chesterfield flecks firebird flaccid fibrosis infield fleury flocked filings fleck finnerty filtration coffey spiffy affiliate fireproof flossing serafina karloff classifieds codfish finns flippant fishbowl midfield chuffed miffed flatfoot josefina flinging flowered daffodil rafiq flutters chiefly beefing airfields flapjacks bradfield exfil beneficiaries tuffnut flatterer mystified flannigan dragonflies affiliations flawlessly roofies falstaff infirm inflame pontiff financiers outfitted deflecting unflattering afield wildflowers flaring misfire fulfilment flatbush stanfield flicked offstage shuffleboard refineries wallflower flanking fibula fiddlesticks scruff killemoff affords mafioso flayed sufferers flowerpot fingerprinted deflated finches flintstones proficiency fibbing surefire schofield schiff fluoride mummification filipinos flatbed flightless firmness scuffling rockfish stroganoff offal deficiencies butterfingers overflows diversified taffeta deflection goldfinger quickfire edifice unjustified tariff rectified suffragette buffoons offload guffaws deficits aficionado flaco fisticuffs officiate solidified floundering deflate effected thornfield staffer riffs selflessly refilled baffles bluffed inflating ineffectual coffeemaker inefficiency affiliates fibonacci floris finalised fidgety abramoff luffy sufferer forefinger selflessness warfield staffing flue suffrage fierro klinkerhoffen fizzing stiffy pfff flavoured sniffle buffett flotsam fidget flinching mosfilm stiffen flanked fixable flinched figurative starfighter fixit affable roofied efficacy flavio jeffords suffocates flyboy fishnet crossfit flitting outfield flickers overqualified skeffington fincher confidences fizzle liquefied buffers fissures ifield monkfish filibuster finchley doubtfire fiddled bellefleur flophouse guffawing proffer rachmaninoff personification filaments flashpoint lafleur effusion flossie flaubert gaffigan coefficient differing fishies fillets kristoffer josefine jaffar minefields flynt fingertip infiltrators hafiz shaeffer wagstaff magnifico redefined fleeced'.split(' ');
+  const LIG = /ffi|ffl|ff|fi|fl/g;
+  let ligMap = null;
+  const ligFix = () => ligMap ||= LIGWORDS.reduce((m, w) => {
+    for (const k of [w.replace(LIG, ''), w.replace(LIG, ' ').trim().replace(/ +/g, ' ')]) if (!m.has(k)) m.set(k, w);
+    return m;
+  }, new Map());
+  const asCase = (like, w) => like.length > 1 && like === like.toUpperCase() ? w.toUpperCase() : like[0] !== like[0].toLowerCase() ? w[0].toUpperCase() + w.slice(1) : w;
+  // blocks -> the same blocks with lost ligatures put back (or unchanged when the book doesn't look damaged)
+  function ligatures(bl) {
+    const fix = ligFix(), TOK = /\p{L}+(?:['’]\p{L}+)*/gu;
+    let hits = 0, whole = 0;
+    const repair = text => {
+      const t = [...text.matchAll(TOK)];
+      let out = '', at = 0;
+      for (let i = 0; i < t.length; i++) {
+        const a = t[i], b = t[i + 1], end = a.index + a[0].length;
+        if (/\p{N}/u.test(text[a.index - 1] || '')) continue;   // "2nd" is not "find"
+        const pair = b && text.slice(end, b.index) === ' ' && a[0] + ' ' + b[0];
+        const key = pair && fix.has(pair.toLowerCase()) ? pair : fix.has(a[0].toLowerCase()) ? a[0] : null;
+        if (!key) { if (/ff|fi|fl/i.test(a[0])) whole++; continue; }
+        hits++;
+        out += text.slice(at, a.index) + asCase(key, fix.get(key.toLowerCase()));
+        at = a.index + key.length;
+        if (key === pair) i++;
+      }
+      return out + text.slice(at);
     };
-    return pages.map(pg => Object.assign({}, pg, { lines: pg.lines.map(l => Object.assign({}, l, { text: l.text.replace(/\p{L}+/gu, fix) })) }));
+    const fixed = bl.map(b => b.text ? Object.assign({}, b, { text: repair(b.text) }) : b);
+    return hits >= 10 && hits * 2 >= whole ? fixed : bl;
   }
 
   // pages: [{lines, w, h, image?}] -> {blocks: [{t:'p'|'h'|'n'|'img', page, text, lvl?, center?, sep?}], removed}
   function reflow(pages) {
-    pages = initials(ligatures(pages));
+    pages = initials(pages);
     const st = stats(pages), s = strip(pages, st);
-    return { blocks: blocks(s.pages, st), removed: s.removed };
+    return { blocks: ligatures(blocks(s.pages, st)), removed: s.removed };
   }
 
   function selfTest() {
@@ -1167,14 +1178,13 @@ const Reflow = (() => {
     eq(reflow([{ w: 320, h: 400, lines: [mk('THE LAMPS ALONG THE RIVER HAD BEEN LIT FOR AN', 50, { size: 8 }), mk('hour before anyone noticed it was gone.', 62, { full: false }),
       mk('Then the keeper spoke.', 74, { x: 25, full: false })] }]).blocks.map(b => b.t + ':' + b.text),
       ['p:THE LAMPS ALONG THE RIVER HAD BEEN LIT FOR AN hour before anyone noticed it was gone.', 'p:Then the keeper spoke.'], 'small-caps first line');
-    // Dropped ligatures: a long book with no fi/fl/ff words gets them back; a healthy book is left alone.
-    const bookOf = tail => [{ w: 320, h: 400, lines: Array.from({ length: 60 }, (_, i) => mk(i === 0 ? tail : 'the lamps along the river were lit by the old keeper each night', 20 + i * 12)) }].concat(
-      Array.from({ length: 8 }, () => ({ w: 320, h: 400, lines: Array.from({ length: 60 }, (_, i) => mk('the lamps along the river were lit by the old keeper each night', 20 + i * 12)) })));
-    const text = pgs => pgs.flatMap(p => p.lines.map(l => l.text)).join('\n');
-    const broken = ligatures(bookOf('The oce of the rst keeper. Dierent, DICULT, Oce.'));
-    eq(text(broken).split('\n')[0], 'The office of the first keeper. Different, DIFFICULT, Office.', 'dropped ligatures put back');
-    const fine = bookOf('The oce of the rst keeper.').map(p => p), healthy = fine.concat([{ w: 320, h: 400, lines: Array.from({ length: 12 }, (_, i) => mk('first find offer fine field flat', 20 + i * 12)) }]);
-    eq(ligatures(healthy), healthy, 'healthy book untouched');
+    // Lost ligatures: a damaged book gets them back, gap or no gap, keeping capitals; a healthy book is left alone.
+    const para = text => ({ t: 'p', page: 0, text });
+    const hurt = Array.from({ length: 12 }, () => para('It was o cially tted, a denite and ctitious name crossed o the list.'));
+    eq(ligatures(hurt)[0].text, 'It was officially fitted, a definite and fictitious name crossed off the list.', 'lost ligatures put back');
+    eq(ligatures([para('OCIALLY the Oce of the 2nd keeper.'), ...hurt])[0].text, 'OFFICIALLY the Office of the 2nd keeper.', 'capitals kept, 2nd left alone');
+    const sound = [...Array.from({ length: 30 }, () => para('The first and final field was officially fitted.')), ...hurt.slice(0, 3)];
+    eq(ligatures(sound), sound, 'healthy book untouched');
     return true;
   }
 
@@ -1183,7 +1193,7 @@ const Reflow = (() => {
 </script>
 
 <script type="module">
-const V = 3;   // bump when Reflow output changes: cached reflow results are rebuilt on next open (2: drop caps, small-caps first lines; 3: dropped ligatures put back)
+const V = 4;   // bump when Reflow output changes: cached reflow results are rebuilt on next open (2: drop caps, small-caps first lines; 3-4: lost ligatures put back)
 // pdf.js 4.10.38 (Apache-2.0), copied from the pdfjs-dist package so the reader works offline. It calls
 // Promise.withResolvers (iOS 17.4+): polyfilled here, and prepended to the vendored worker file.
 const PDFJS = new URL('vendor/pdfjs-4.10.38/', location.href).href;
@@ -1298,10 +1308,10 @@ const updateMany = (store, ids, fn) => tx(store, 'readwrite', o => ids.map((id, 
 // ---- Settings (shared by the Settings page and the Text and page sheet) ----
 const KEY = 'reflow-settings', LHS = [1.45, 1.62, 1.85], MARGINS = [24, 32, 44];
 const FONTS = { literata: 'Literata', garamond: 'EB Garamond', atkinson: 'Atkinson Hyperlegible' };
-const SORTN = { opened: 'Last opened', title: 'Title', added: 'Date added' };
+const SORTN = { shuffle: 'Shuffled', opened: 'Last opened', title: 'Title', added: 'Date added' };
 const SIDES = { fiction: 'Fiction', nonfiction: 'Non-fiction' };   // a book's or a collection's category
 // autohide: the reader's bars slide away while scrolling down. dim (0–60) and warm (0–100) are percentages.
-const DEF = { v: 5, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, sort: 'opened', font: 'literata', mode: 'reflow', autohide: 'on' };
+const DEF = { v: 6, size: 18, lh: 1.62, margin: 24, align: 'justify', theme: 'system', dim: 0, warm: 0, sort: 'shuffle', font: 'literata', mode: 'reflow', autohide: 'on' };
 const near = (v, a) => a.reduce((x, y) => Math.abs(y - v) < Math.abs(x - v) ? y : x);
 const mq = matchMedia('(prefers-color-scheme: dark)');
 function loadPrefs() {
@@ -1320,14 +1330,14 @@ function loadPrefs() {
   if (p.mode !== 'page') p.mode = 'reflow';
   delete p.wpm;   // the old reading speed setting: "min left" is gone
   if (p.autohide !== 'off') p.autohide = 'on';
-  if (!SORTN[p.sort]) p.sort = DEF.sort;
+  if (!SORTN[p.sort] || p.v < 6) p.sort = DEF.sort;   // version 6: shuffled is the new default, so Home's tray and the Library match
   delete p.reading;   // the old "Show the Reading now shelf" switch: the shelf is gone
   if (!['light', 'dark', 'system'].includes(p.theme)) p.theme = 'system';
   delete p.tint;
   delete p.side;   // Home's old Fiction | Non-fiction switch: the Library shows both now
   const snap = (v, max, step) => Math.min(max, Math.max(0, Math.round((+v || 0) / step) * step));
   p.dim = snap(p.dim, 60, 5); p.warm = snap(p.warm, 100, 10);
-  p.v = 5;
+  p.v = 6;
   return p;
 }
 let prefs = loadPrefs();
@@ -1673,12 +1683,17 @@ const state = m => !m.pct ? 'unread' : m.pct >= 100 ? 'finished' : 'progress';
 const touched = m => m.opened || m.added;
 const stateShort = m => { const s = state(m); return s === 'unread' ? 'New' : s === 'finished' ? 'Finished' : 100 - m.pct + '% left'; };
 const stateLong = m => { const s = state(m); return s === 'unread' ? 'not started' : s === 'finished' ? 'finished' : m.pct + '% read'; };
+// Shuffled: each book gets a random place when the app starts and keeps it until the app is closed, so Home's tray
+// and the Library show the same order all session.
+const shuffleKeys = new Map();
+const shuffleKey = m => { let k = shuffleKeys.get(m.id); if (k == null) shuffleKeys.set(m.id, k = Math.random()); return k; };
 const SORT = {
+  shuffle: [SORTN.shuffle, (a, b) => shuffleKey(a) - shuffleKey(b)],
   opened: [SORTN.opened, (a, b) => touched(b) - touched(a)],
   title: [SORTN.title, (a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' })],
   added: [SORTN.added, (a, b) => b.added - a.added],
 };
-const sorted = list => list.sort((SORT[prefs.sort] || SORT.opened)[1]);
+const sorted = list => list.sort((SORT[prefs.sort] || SORT.shuffle)[1]);
 const leftLine = m => m.pct >= 100 ? 'Finished' : `${100 - m.pct}% left`;
 // A heading set in capitals in the PDF reads in sentence case: "PREFACE AND …" → "Preface and …".
 // Publisher ads in the front matter ("Click here to sign up") are set big like headings but are never a chapter.
@@ -1760,8 +1775,6 @@ async function refresh() {
 
 // ---- Home: the books you're reading as covers you swipe between, the one in front with Resume under it, and the
 // Library tray along the bottom. The page and Resume take their colour from the cover in front. ----
-const shuffleKeys = new Map();   // each book's random place in the tray, kept until the app is closed
-const shuffleKey = m => { let k = shuffleKeys.get(m.id); if (k == null) shuffleKeys.set(m.id, k = Math.random()); return k; };
 function renderLibrary() {
   const n = books.length, recent = books.filter(m => state(m) !== 'finished' && (m.opened || m.pct)).sort(SORT.opened[1]);
   $('#first').hidden = n > 0;
@@ -1769,7 +1782,7 @@ function renderLibrary() {
   const now = recent.length ? recent.slice(0, 3) : [books.filter(m => !m.pct).sort(SORT.added[1])[0] || books.slice().sort(SORT.opened[1])[0]].filter(Boolean);
   renderNow(now);
   $('#peekCount').textContent = $('#libCount').textContent = plural(n, 'book');
-  $('#peekRow').replaceChildren(...books.slice().sort((a, b) => shuffleKey(a) - shuffleKey(b)).map(m => bookBtn(m, 'pk')));   // every book, in a new order each time the app starts
+  $('#peekRow').replaceChildren(...sorted(books.slice()).map(m => bookBtn(m, 'pk')));   // every book, in the Library's order
   $('#peek').hidden = !n || $('#v-library').hidden;
   const s = history.state || {};
   if (!$('#drawer').hidden && !book) { if (s.shelf) renderShelf(s.shelf); else renderLib(); }

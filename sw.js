@@ -18,7 +18,10 @@ self.onfetch = e => {
     const net = () => fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; });
     // pdf.js files never change at a given version path; char maps and fonts are cached the first time they're used.
     if (url.pathname.includes('/' + PDFJS)) return hit || net();
-    // App files: answer from the cache at once and refresh it for next time.
+    // The page itself: the newest from the network, so an update shows on the first launch after it, not the second.
+    // A slow or missing connection falls back to the saved copy after 2.5 seconds.
+    if (req.mode === 'navigate' && hit) return Promise.race([net(), new Promise(r => setTimeout(r, 2500))]).then(r => r || hit, () => hit);
+    // Other app files: answer from the cache at once and refresh it for next time.
     if (hit) { e.waitUntil(net().catch(() => {})); return hit; }
     return net().catch(async () => (req.mode === 'navigate' && await c.match('./', { ignoreVary: true })) || Response.error());
   }));
